@@ -21,7 +21,20 @@
     "target": "es2022",
     "module": "es2022",
     "lib": ["es2022", "dom"],
-    "useDefineForClassFields": false
+    "paths": {
+      "ngc-library": ["../ngc-library/dist/ngc-library"],
+      "ngc-library/*": ["../ngc-library/dist/ngc-library/*"],
+      "@core": ["../ngc-library/dist/ngc-library/esm2020/lib/core/index.mjs"],
+      "@core/*": ["../ngc-library/dist/ngc-library/esm2020/lib/core/*"],
+      "@app/@core": ["../ngc-library/dist/ngc-library/esm2020/lib/core/index.mjs"],
+      "@app/@core/*": ["../ngc-library/dist/ngc-library/esm2020/lib/core/*"],
+      "@resources": ["../ngc-library/dist/ngc-library/esm2020/lib/resources/index.mjs"],
+      "@resources/*": ["../ngc-library/dist/ngc-library/esm2020/lib/resources/*"],
+      "@app/@resources": ["../ngc-library/dist/ngc-library/esm2020/lib/resources/index.mjs"],
+      "@app/@resources/*": ["../ngc-library/dist/ngc-library/esm2020/lib/resources/*"],
+      "@app/@ngc/*": ["../ngc-library/dist/ngc-library"],
+      "@ngc/*": ["../ngc-library/dist/ngc-library"]
+    }
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,

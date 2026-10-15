@@ -502,5 +502,50 @@ export class CompatFormDemoComponent {
    - Dự án đã có sẵn hàng chục màn hình dùng `FormGroup` phức tạp (form nhiều bước, dynamic controls).
    - Bạn chỉ muốn gắn thêm tính năng mới hoặc tối ưu hóa hiển thị UI bằng Signals mà không muốn rủi ro phá vỡ logic cũ.
 
+---
+
+## 8. Tích Hợp Local `ngc-library` Qua TypeScript `paths` & Nâng Cấp UI
+
+### 8.1. Cấu hình `tsconfig.json`
+Để `dev-blog-client` (Angular 22) nhận diện và import trực tiếp từ bản build `dist/ngc-library` của thư viện local:
+
+```json
+{
+  "compilerOptions": {
+    "baseUrl": "./",
+    "paths": {
+      "ngc-library": ["../ngc-library/dist/ngc-library"],
+      "ngc-library/*": ["../ngc-library/dist/ngc-library/*"],
+      "@core": ["../ngc-library/dist/ngc-library/esm2020/lib/core/index.mjs"],
+      "@core/*": ["../ngc-library/dist/ngc-library/esm2020/lib/core/*"],
+      "@app/@core": ["../ngc-library/dist/ngc-library/esm2020/lib/core/index.mjs"],
+      "@app/@core/*": ["../ngc-library/dist/ngc-library/esm2020/lib/core/*"],
+      "@resources": ["../ngc-library/dist/ngc-library/esm2020/lib/resources/index.mjs"],
+      "@resources/*": ["../ngc-library/dist/ngc-library/esm2020/lib/resources/*"],
+      "@app/@resources": ["../ngc-library/dist/ngc-library/esm2020/lib/resources/index.mjs"],
+      "@app/@resources/*": ["../ngc-library/dist/ngc-library/esm2020/lib/resources/*"],
+      "@app/@ngc/*": ["../ngc-library/dist/ngc-library/esm2020/lib/*"],
+      "@ngc/*": ["../ngc-library/dist/ngc-library/esm2020/lib/*"]
+    }
+  }
+}
+```
+
+### 8.2. Các Components từ `ngc-library` đã tích hợp vào UI:
+1. **`NgcAvatarModule` (`<ngc-avatar>`):**
+   - **Header:** Hiển thị Avatar người dùng `label="Phú Cường"` ở góc trên phải.
+   - **Blog Grid & Blog List:** Hiển thị ảnh đại diện tác giả bài viết kèm fallback chữ cái đầu.
+   - **Favorite List:** Hiển thị avatar tròn cho từng bài viết yêu thích.
+2. **`NgcTagModule` (`<ngc-tag>`):**
+   - Hiển thị nhãn trạng thái và phân loại bài viết (ví dụ: `[label]="'Yêu thích'"` màu `#ef4444`, `[label]="'Công nghệ'"` màu `#3b82f6`).
+3. **`NgcBadgeModule` (`<ngc-badge>`):**
+   - Hiển thị badge số lượng bài viết tổng cộng (`[count]="blogPosts().length + ''"`).
+   - Hiển thị badge số lượng bài viết yêu thích (`[count]="favoriteBlogs().length + ''"`).
+4. **`NgcButtonModule` (`button[ngcButton]`):**
+   - Nút chuyển đổi View Mode Lưới / Danh sách (`button[ngcButton]`).
+   - Nút lưu tiêu đề bài viết trong LinkedSignal form.
+   - Nút sửa bài viết trong từng card Grid và dòng List.
+
+
 
 

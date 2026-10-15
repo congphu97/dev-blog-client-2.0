@@ -1,0 +1,48 @@
+<div class="blog-grid">
+  @for (post of posts(); track post.id) {
+    <ngc-card [borderRadius]="'10px'" [contentPaddingVertical]="'0px'" [contentPaddingHorizontal]="'0px'">
+      <div ngcCardHeader class="card-header">
+        <ngc-tag 
+          [label]="post.favorite ? 'Yêu thích' : 'Công nghệ'" 
+          [color]="post.favorite ? '#ef4444' : '#3b82f6'" 
+          [minimize]="false"
+        ></ngc-tag>
+
+        <button class="favorite-btn" (click)="onToggleFavorite(post.id)">
+          @if (post.favorite) {
+            <span>❤️</span>
+          } @else {
+            <span>🤍</span>
+          }
+        </button>
+      </div>
+
+      <div ngcCardContent class="card-main-content">
+        <div class="card-image">
+          <img [src]="post.imageUrl" [alt]="post.title" />
+        </div>
+
+        <div class="card-body">
+          <div class="author-row">
+            <ngc-avatar 
+              [label]="'Phú'" 
+              [avatar]="{ photo: post.imageUrl, mode: 'photo' }" 
+              size="small"
+            ></ngc-avatar>
+            <span class="author-name">Tác giả</span>
+          </div>
+
+          <div class="card-title">
+            {{ post.title }}
+          </div>
+        </div>
+      </div>
+
+      <div ngcCardFooter class="card-actions">
+        <button ngcButton color="#3880ff" textColor="#ffffff" size="small" (click)="onChooseToEdit(post)">
+          ✏️ Sửa bài này
+        </button>
+      </div>
+    </ngc-card>
+  }
+</div>
