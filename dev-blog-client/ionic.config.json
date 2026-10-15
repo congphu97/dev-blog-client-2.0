@@ -1,0 +1,7 @@
+{
+  "name": "dev-blog-client",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}

@@ -1,0 +1,96 @@
+<app-header></app-header>
+<ion-content>
+  <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 12px 0;">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <input 
+        style="padding: 8px 12px; border: 1px solid #ccc; border-radius: 6px; width: 250px;" 
+        [value]="keyword()" 
+        (input)="onSearch($event)" 
+        placeholder="Gõ từ khóa tìm kiếm..." 
+      />
+      @if (debouncedKeyword.status() === 'loading') {
+        <span style="color: #e0ac08; font-weight: bold;">⏳ Đang chờ dừng gõ 400ms...</span>
+      }
+    </div>
+
+    <!-- Nút mở Ionic Modal với 3 chế độ -->
+    <div style="display: flex; gap: 8px;">
+      <ion-button color="success" (click)="openCreateModal('signal-form')">
+        ⚡ Tạo (Signal Form)
+      </ion-button>
+      <ion-button color="primary" fill="outline" (click)="openCreateModal('reactive-form')">
+        Tạo (Reactive)
+      </ion-button>
+      <ion-button color="medium" fill="outline" (click)="openCreateModal('template-driven-form')">
+        Tạo (Template)
+      </ion-button>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- DEMO LINKEDSIGNAL: FORM CHỈNH SỬA TIÊU ĐỀ BÀI VIẾT -->
+  <!-- ============================================== -->
+  <div style="margin: 16px 0; padding: 16px; background: #f4f5f8; border-radius: 8px; border: 2px solid #3880ff;">
+    <h3>✏️ Form chỉnh sửa bài viết (LinkedSignal Demo):</h3>
+    <p>Đang chọn sửa bài: <strong>{{ selectedBlog().title }}</strong> (ID: {{ selectedBlog().id }})</p>
+    
+    <label>Tiêu đề bài viết: </label>
+    <input 
+      style="padding: 6px; width: 60%; margin-right: 8px;"
+      [value]="editTitle()" 
+      (input)="editTitle.set($any($event.target).value)" 
+      placeholder="Nhập tiêu đề mới..." 
+    />
+    <button (click)="saveTitle()" style="padding: 6px 12px; background: #3880ff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+      Lưu tiêu đề
+    </button>
+  </div>
+  <div class="blog-grid">
+    <!-- <div class="blog-card" *ngFor="let post of blogPosts()">
+      <h3>{{ post.title }}</h3>
+      <p>{{ post.summary }}</p>
+    </div> -->
+    @for (post of blogPosts(); track post.id) {
+      <div class="card">
+        <header class="card-header">
+          <button class="favorite-btn" (click)="toggleFavorite(post.id)">
+            @if (post.favorite) {
+              <span>❤️</span>
+            } @else {
+              <span>🤍</span>
+            }
+          </button>
+        </header>
+
+        <div class="card-image">
+          <img [src]="post.imageUrl" alt="{{ post.title }}" />
+        </div>
+
+        <div class="card-title">
+          {{ post.title }}
+        </div>
+        <button (click)="chooseBlogToEdit(post)" style="margin: 8px; padding: 4px 8px; cursor: pointer;">
+          👉 Sửa bài này
+        </button>
+      </div>
+    }
+  </div>
+
+  <div>
+    <h1>favorite List</h1>
+    <div>
+      @for (item of favoriteBlogs(); track item.id) {
+        <div class="card">
+          <div class="card-image">
+            <img [src]="item.imageUrl" alt="{{ item.title }}" />
+          </div>
+          <div class="card-title">
+            {{ item.title }}
+          </div>
+        </div>
+      }
+    </div>
+
+  </div>
+
+</ion-content>

@@ -1,0 +1,170 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>
+      @if (mode === 'signal-form') {
+        Tạo bài (Signal Form ⚡)
+      } @else if (mode === 'reactive-form') {
+        Tạo bài (Reactive Form)
+      } @else {
+        Tạo bài (Template Form)
+      }
+    </ion-title>
+    <ion-buttons slot="start">
+      <ion-button (click)="cancel()">Hủy</ion-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <!-- Nút submit theo từng mode -->
+      @if (mode === 'signal-form') {
+        <ion-button [strong]="true" (click)="submit()" [disabled]="!isSignalFormValid()">
+          Tạo
+        </ion-button>
+      } @else if (mode === 'reactive-form') {
+        <ion-button [strong]="true" (click)="submit()" [disabled]="blogForm.invalid">
+          Tạo
+        </ion-button>
+      } @else {
+        <ion-button [strong]="true" (click)="submit()" [disabled]="!templateModel.title.trim() || !templateModel.summary.trim()">
+          Tạo
+        </ion-button>
+      }
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="form-container">
+    
+    <!-- Badge hiển thị chế độ hiện tại -->
+    <div style="padding: 8px 12px; background: #e0f2fe; color: #0369a1; border-radius: 6px; font-weight: 500; font-size: 0.9rem;">
+      Đang chạy chế độ: <strong>{{ mode }}</strong>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- CHẾ ĐỘ 1: SIGNAL FORM ([value]="signal", (ionInput))     -->
+    <!-- ======================================================== -->
+    @if (mode === 'signal-form') {
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <ion-item lines="full">
+          <ion-input
+            label="Tiêu đề (Signal) *"
+            labelPlacement="floating"
+            placeholder="Nhập tiêu đề (tối thiểu 3 ký tự)"
+            [value]="signalForm().title"
+            (ionInput)="updateSignalField('title', $any($event).detail.value)"
+          ></ion-input>
+        </ion-item>
+        @if (signalForm().title.length > 0 && signalForm().title.length < 3) {
+          <p style="color: red; font-size: 0.8rem; margin: 0 16px;">Tiêu đề phải từ 3 ký tự trở lên.</p>
+        }
+
+        <ion-item lines="full">
+          <ion-textarea
+            label="Tóm tắt (Signal) *"
+            labelPlacement="floating"
+            placeholder="Nhập nội dung tóm tắt"
+            [autoGrow]="true"
+            rows="3"
+            [value]="signalForm().summary"
+            (ionInput)="updateSignalField('summary', $any($event).detail.value)"
+          ></ion-textarea>
+        </ion-item>
+
+        <ion-item lines="full">
+          <ion-input
+            label="Link ảnh (Signal)"
+            labelPlacement="floating"
+            [value]="signalForm().imageUrl"
+            (ionInput)="updateSignalField('imageUrl', $any($event).detail.value)"
+          ></ion-input>
+        </ion-item>
+
+        <!-- Preview dữ liệu Signal tức thời -->
+        <div style="margin-top: 8px; padding: 12px; background: #fef9c3; border-radius: 8px; border: 1px dashed #ca8a04;">
+          <h4 style="margin: 0 0 6px; color: #854d0e;">⚡ Live Signal Preview:</h4>
+          <p style="margin: 2px 0;"><strong>Tiêu đề:</strong> {{ signalForm().title || '(Chưa nhập)' }}</p>
+          <p style="margin: 2px 0;"><strong>Tóm tắt:</strong> {{ signalForm().summary || '(Chưa nhập)' }}</p>
+          <p style="margin: 2px 0;"><strong>Hợp lệ:</strong> {{ isSignalFormValid() ? '✅ Có' : '❌ Chưa đủ điều kiện' }}</p>
+        </div>
+      </div>
+    }
+
+    <!-- ======================================================== -->
+    <!-- CHẾ ĐỘ 2: REACTIVE FORM ([formGroup], formControlName)   -->
+    <!-- ======================================================== -->
+    @if (mode === 'reactive-form') {
+      <form [formGroup]="blogForm">
+        <ion-item lines="full">
+          <ion-input
+            formControlName="title"
+            label="Tiêu đề *"
+            labelPlacement="floating"
+            placeholder="Nhập tiêu đề (tối thiểu 3 ký tự)"
+          ></ion-input>
+        </ion-item>
+        @if (blogForm.get('title')?.touched && blogForm.get('title')?.invalid) {
+          <p style="color: red; font-size: 0.8rem; margin: 4px 16px;">Tiêu đề bắt buộc và tối thiểu 3 ký tự.</p>
+        }
+
+        <ion-item lines="full">
+          <ion-textarea
+            formControlName="summary"
+            label="Tóm tắt nội dung *"
+            labelPlacement="floating"
+            placeholder="Nhập nội dung tóm tắt"
+            [autoGrow]="true"
+            rows="3"
+          ></ion-textarea>
+        </ion-item>
+
+        <ion-item lines="full">
+          <ion-input
+            formControlName="imageUrl"
+            label="Link ảnh"
+            labelPlacement="floating"
+          ></ion-input>
+        </ion-item>
+      </form>
+    }
+
+    <!-- ======================================================== -->
+    <!-- CHẾ ĐỘ 3: TEMPLATE-DRIVEN FORM ([(ngModel)], name)        -->
+    <!-- ======================================================== -->
+    @if (mode === 'template-driven-form') {
+      <form #f="ngForm">
+        <ion-item lines="full">
+          <ion-input
+            name="title"
+            [(ngModel)]="templateModel.title"
+            required
+            label="Tiêu đề (Template) *"
+            labelPlacement="floating"
+            placeholder="Nhập tiêu đề"
+          ></ion-input>
+        </ion-item>
+
+        <ion-item lines="full">
+          <ion-textarea
+            name="summary"
+            [(ngModel)]="templateModel.summary"
+            required
+            label="Tóm tắt nội dung (Template) *"
+            labelPlacement="floating"
+            placeholder="Nhập nội dung tóm tắt"
+            [autoGrow]="true"
+            rows="3"
+          ></ion-textarea>
+        </ion-item>
+
+        <ion-item lines="full">
+          <ion-input
+            name="imageUrl"
+            [(ngModel)]="templateModel.imageUrl"
+            label="Link ảnh"
+            labelPlacement="floating"
+          ></ion-input>
+        </ion-item>
+      </form>
+    }
+
+  </div>
+</ion-content>
