@@ -25,9 +25,7 @@ jobs:
           node-version: 22
 
       - name: Cài đặt dependencies dev-blog-client
-        run: |
-          npm ci --legacy-peer-deps
-          npm i @oxc-parser/binding-linux-x64-gnu@0.150.0 --no-save
+        run: npm ci --legacy-peer-deps
 
       - name: Kiểm tra Lint
         run: npm run lint
