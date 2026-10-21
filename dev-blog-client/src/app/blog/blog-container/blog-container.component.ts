@@ -119,9 +119,6 @@ export class BlogContainerComponent implements OnInit {
     );
   }
 
-  ngOnInit() {
-
-  }
 
   onSearch(event: Event) {
     this.keyword.set((event.target as HTMLInputElement).value);

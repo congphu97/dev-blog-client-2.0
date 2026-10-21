@@ -22,19 +22,16 @@
     "module": "es2022",
     "lib": ["es2022", "dom"],
                 "paths": {
-      "@angular/*": ["./node_modules/@angular/*"],
-      "rxjs": ["./node_modules/rxjs"],
-      "rxjs/*": ["./node_modules/rxjs/*"],
-      "ngc-library": ["../../ngc-library-v22/dist/ngc-library"],
-      "ngc-library/*": ["../../ngc-library-v22/dist/ngc-library/*"],
-      "@core": ["../../ngc-library-v22/dist/ngc-library"],
-      "@core/*": ["../../ngc-library-v22/dist/ngc-library/*"],
-      "@app/@core": ["../../ngc-library-v22/dist/ngc-library"],
-      "@app/@core/*": ["../../ngc-library-v22/dist/ngc-library/*"],
-      "@resources": ["../../ngc-library-v22/dist/ngc-library"],
-      "@resources/*": ["../../ngc-library-v22/dist/ngc-library/*"],
-      "@app/@resources": ["../../ngc-library-v22/dist/ngc-library"],
-      "@app/@resources/*": ["../../ngc-library-v22/dist/ngc-library/*"]
+      "ngc-library": ["./node_modules/ngc-library"],
+      "ngc-library/*": ["./node_modules/ngc-library/*"],
+      "@core": ["./node_modules/ngc-library"],
+      "@core/*": ["./node_modules/ngc-library/*"],
+      "@app/@core": ["./node_modules/ngc-library"],
+      "@app/@core/*": ["./node_modules/ngc-library/*"],
+      "@resources": ["./node_modules/ngc-library"],
+      "@resources/*": ["./node_modules/ngc-library/*"],
+      "@app/@resources": ["./node_modules/ngc-library"],
+      "@app/@resources/*": ["./node_modules/ngc-library/*"]
     }
   },
   "angularCompilerOptions": {

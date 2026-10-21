@@ -8,10 +8,6 @@ import { NgcAvatarModule } from 'ngc-library';
   styleUrls: ['./header.component.scss'],
   imports: [IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, NgcAvatarModule],
 })
-export class HeaderComponent implements OnInit {
-
+export class HeaderComponent {
   constructor() { }
-
-  ngOnInit() { }
-
 }

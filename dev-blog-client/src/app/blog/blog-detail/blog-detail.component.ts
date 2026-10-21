@@ -8,10 +8,6 @@ import { HeaderComponent } from 'src/app/header/header.component';
   imports: [HeaderComponent],
 
 })
-export class BlogDetailComponent implements OnInit {
-
+export class BlogDetailComponent {
   constructor() { }
-
-  ngOnInit() { }
-
 }
