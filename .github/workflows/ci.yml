@@ -19,26 +19,10 @@ jobs:
       - name: Checkout mã nguồn dev-blog-client
         uses: actions/checkout@v4
 
-      - name: Xóa symlink cũ
-        run: rm -rf ngc-library ngc-library-v22
-        working-directory: ${{ github.workspace }}
-
-      - name: Checkout ngc-library-v22
-        uses: actions/checkout@v4
-        with:
-          repository: congphu97/ngc-library-v22
-          path: ngc-library-v22
-
       - name: Thiết lập Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
-
-      - name: Cài đặt và build ngc-library-v22
-        run: |
-          npm ci --legacy-peer-deps
-          npm run build:lib
-        working-directory: ./ngc-library-v22
 
       - name: Cài đặt dependencies dev-blog-client
         run: npm ci --legacy-peer-deps
