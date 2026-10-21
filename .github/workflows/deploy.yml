@@ -41,18 +41,23 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'npm'
           cache-dependency-path: dev-blog-client/package-lock.json
 
       - name: Cài đặt và build ngc-library
         run: |
+          npm install -g @angular/cli@14
           npm ci --legacy-peer-deps
+          export NODE_OPTIONS="--openssl-legacy-provider"
           npm run build:lib
+          mkdir -p dist/ngc-library/esm2020/lib/core/i18n dist/ngc-library/fesm2020/i18n
+          cp -r projects/ngc-library/src/lib/core/i18n/* dist/ngc-library/esm2020/lib/core/i18n/
+          cp -r projects/ngc-library/src/lib/core/i18n/* dist/ngc-library/fesm2020/i18n/
         working-directory: ./ngc-library
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
       - name: Build Web Production
         run: npm run build -- --base-href /${{ github.event.repository.name }}/
