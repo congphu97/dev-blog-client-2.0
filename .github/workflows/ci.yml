@@ -19,7 +19,12 @@ jobs:
       - name: Checkout mã nguồn dev-blog-client
         uses: actions/checkout@v4
 
-      # Clone ngc-library vào thư mục ngang cấp
+      # Thêm bước này để xóa symlink bị gãy trước khi clone:
+      - name: Xóa symlink ngc-library cũ
+        run: rm -rf ngc-library
+        working-directory: ${{ github.workspace }}
+
+      # Clone ngc-library vào thư mục ngc-library
       - name: Checkout ngc-library
         uses: actions/checkout@v4
         with:

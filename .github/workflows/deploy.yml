@@ -27,6 +27,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Thêm bước này:
+      - name: Xóa symlink ngc-library cũ
+        run: rm -rf ngc-library
+        working-directory: ${{ github.workspace }}
+
       - name: Checkout ngc-library
         uses: actions/checkout@v4
         with:
