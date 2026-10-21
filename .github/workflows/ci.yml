@@ -38,6 +38,7 @@ jobs:
         run: |
           npm ci --legacy-peer-deps
           rm -rf node_modules/angular-core/node_modules
+          node scripts/patch-angular-core.js
           npm run build:lib
         working-directory: ./ngc-library-v22
 
