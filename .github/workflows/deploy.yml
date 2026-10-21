@@ -1,0 +1,65 @@
+name: Deploy Web to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: 'pages'
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: ./dev-blog-client
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Checkout ngc-library
+        uses: actions/checkout@v4
+        with:
+          repository: congphu97/ngc-library
+          path: ngc-library
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: dev-blog-client/package-lock.json
+
+      - name: Cài đặt và build ngc-library
+        run: |
+          npm ci --legacy-peer-deps
+          npm run build:lib
+        working-directory: ./ngc-library
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Web Production
+        run: npm run build -- --base-href /${{ github.event.repository.name }}/
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './dev-blog-client/www'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
