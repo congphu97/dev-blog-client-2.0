@@ -1,0 +1,82 @@
+<div class="dashboard-wrapper">
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-badge">
+      <span class="badge-dot"></span>
+      <span>Chào mừng đến với Dev Blog 2.0</span>
+    </div>
+    <h1 class="hero-title">Khám phá Thế giới Công nghệ & Lập trình</h1>
+    <p class="hero-subtitle">
+      Cập nhật kiến thức chuyên sâu về Angular, TypeScript, Ionic và xu hướng công nghệ mới nhất.
+    </p>
+
+    <!-- Quick Stats -->
+    <div class="stats-row">
+      <div class="stat-card" *ngFor="let stat of recentStats">
+        <span class="stat-icon">{{ stat.icon }}</span>
+        <div class="stat-info">
+          <span class="stat-count">{{ stat.count }}</span>
+          <span class="stat-label">{{ stat.label }}</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured Blog Card Section -->
+  <section class="featured-section">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Bài viết nổi bật</h2>
+        <p class="section-desc">Khám phá các bài viết chất lượng được tuyển chọn</p>
+      </div>
+      <button
+        type="button"
+        class="browse-all-btn"
+        (click)="navigateToBlog()">
+        Xem tất cả bài viết →
+      </button>
+    </div>
+
+    <!-- Clickable Featured Blog Card -->
+    <div class="featured-card" (click)="navigateToBlog()">
+      <div class="image-container">
+        <img
+          [src]="featuredBlog.imageUrl"
+          [alt]="featuredBlog.title"
+          class="blog-cover" />
+        <div class="image-overlay">
+          <span class="category-pill">{{ featuredBlog.category }}</span>
+        </div>
+      </div>
+
+      <div class="content-container">
+        <div class="card-meta">
+          <div class="author-info">
+            <span class="author-avatar">💻</span>
+            <span class="author-name">{{ featuredBlog.author }}</span>
+          </div>
+          <span class="meta-dot">•</span>
+          <span class="read-time">{{ featuredBlog.readTime }}</span>
+        </div>
+
+        <h3 class="card-title">{{ featuredBlog.title }}</h3>
+        <p class="card-description">{{ featuredBlog.description }}</p>
+
+        <div class="card-footer">
+          <div class="tags-group">
+            <span class="chip">#Angular22</span>
+            <span class="chip">#Ionic8</span>
+            <span class="chip">#Signals</span>
+          </div>
+
+          <div class="action-btn">
+            <span>Đọc bài viết</span>
+            <svg class="arrow-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

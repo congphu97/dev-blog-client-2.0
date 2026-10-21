@@ -21,19 +21,20 @@
     "target": "es2022",
     "module": "es2022",
     "lib": ["es2022", "dom"],
-    "paths": {
-      "ngc-library": ["../ngc-library/dist/ngc-library"],
-      "ngc-library/*": ["../ngc-library/dist/ngc-library/*"],
-      "@core": ["../ngc-library/dist/ngc-library/esm2020/lib/core/index.mjs"],
-      "@core/*": ["../ngc-library/dist/ngc-library/esm2020/lib/core/*"],
-      "@app/@core": ["../ngc-library/dist/ngc-library/esm2020/lib/core/index.mjs"],
-      "@app/@core/*": ["../ngc-library/dist/ngc-library/esm2020/lib/core/*"],
-      "@resources": ["../ngc-library/dist/ngc-library/esm2020/lib/resources/index.mjs"],
-      "@resources/*": ["../ngc-library/dist/ngc-library/esm2020/lib/resources/*"],
-      "@app/@resources": ["../ngc-library/dist/ngc-library/esm2020/lib/resources/index.mjs"],
-      "@app/@resources/*": ["../ngc-library/dist/ngc-library/esm2020/lib/resources/*"],
-      "@app/@ngc/*": ["../ngc-library/dist/ngc-library"],
-      "@ngc/*": ["../ngc-library/dist/ngc-library"]
+                "paths": {
+      "@angular/*": ["./node_modules/@angular/*"],
+      "rxjs": ["./node_modules/rxjs"],
+      "rxjs/*": ["./node_modules/rxjs/*"],
+      "ngc-library": ["../../ngc-library-v22/dist/ngc-library"],
+      "ngc-library/*": ["../../ngc-library-v22/dist/ngc-library/*"],
+      "@core": ["../../ngc-library-v22/dist/ngc-library"],
+      "@core/*": ["../../ngc-library-v22/dist/ngc-library/*"],
+      "@app/@core": ["../../ngc-library-v22/dist/ngc-library"],
+      "@app/@core/*": ["../../ngc-library-v22/dist/ngc-library/*"],
+      "@resources": ["../../ngc-library-v22/dist/ngc-library"],
+      "@resources/*": ["../../ngc-library-v22/dist/ngc-library/*"],
+      "@app/@resources": ["../../ngc-library-v22/dist/ngc-library"],
+      "@app/@resources/*": ["../../ngc-library-v22/dist/ngc-library/*"]
     }
   },
   "angularCompilerOptions": {
