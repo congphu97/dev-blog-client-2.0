@@ -1,0 +1,68 @@
+name: Build & Distribute Android APK to Firebase
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-and-distribute:
+    name: Build APK & Upload Firebase
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./dev-blog-client
+
+    steps:
+      - name: 1. Checkout mã nguồn
+        uses: actions/checkout@v4
+
+      - name: 2. Cài đặt Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: './dev-blog-client/package-lock.json'
+
+      - name: 3. Cài đặt Java JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: 4. Cài đặt dependencies (NPM)
+        run: npm ci --legacy-peer-deps
+
+      - name: 5. Build mã nguồn Web (Angular www)
+        run: npm run build
+
+      - name: 6. Đồng bộ sang Android Native (Capacitor Sync)
+        run: npx cap sync android
+
+      - name: 7. Cấp quyền thực thi cho Gradle Wrapper
+        run: chmod +x android/gradlew
+
+      - name: 8. Biên dịch Android Debug APK
+        run: |
+          cd android
+          ./gradlew assembleDebug --no-daemon
+
+      - name: 9. Lưu trữ Artifact APK lên GitHub Actions (Tải dự phòng)
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-apk
+          path: ./dev-blog-client/android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 14
+
+      - name: 10. Phân phối APK lên Firebase App Distribution
+        uses: wzieba/Firebase-App-Distribution-Github-Action@v1
+        with:
+          appId: ${{ secrets.FIREBASE_APP_ID }}
+          token: ${{ secrets.FIREBASE_TOKEN }}
+          groups: dev-team
+          file: ./dev-blog-client/android/app/build/outputs/apk/debug/app-debug.apk
+          releaseNotes: |
+            Commit: ${{ github.sha }}
+            Message: ${{ github.event.head_commit.message }}
+            Branch: ${{ github.ref_name }}
