@@ -21,7 +21,10 @@
     "target": "es2022",
     "module": "es2022",
     "lib": ["es2022", "dom"],
-                "paths": {
+    "paths": {
+      "@angular/*": ["./node_modules/@angular/*"],
+      "rxjs": ["./node_modules/rxjs"],
+      "rxjs/*": ["./node_modules/rxjs/*"],
       "ngc-library": ["./node_modules/ngc-library"],
       "ngc-library/*": ["./node_modules/ngc-library/*"],
       "@core": ["./node_modules/ngc-library"],

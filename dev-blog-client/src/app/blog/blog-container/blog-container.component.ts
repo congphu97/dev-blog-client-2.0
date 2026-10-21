@@ -25,7 +25,7 @@ import { NgcBadgeModule, NgcButtonModule, NgcTagModule, NgcAvatarModule } from '
     NgcAvatarModule
   ],
 })
-export class BlogContainerComponent implements OnInit {
+export class BlogContainerComponent {
   private modalCtrl = inject(ModalController);
 
   // Chế độ hiển thị: 'grid' hoặc 'list' bằng Signal
