@@ -1,4 +1,9 @@
 {
+  "name": "dev-blog-client-2.0",
+  "scripts": {
+    "build.android": "npm --prefix dev-blog-client run build.android",
+    "build.ios": "npm --prefix dev-blog-client run build.ios"
+  },
   "dependencies": {
     "@capacitor/ios": "^7.6.9"
   }
