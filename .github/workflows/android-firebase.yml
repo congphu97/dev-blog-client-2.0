@@ -32,7 +32,9 @@ jobs:
           java-version: '17'
 
       - name: 4. Cài đặt dependencies (NPM)
-        run: npm ci --legacy-peer-deps
+        run: |
+          npm ci --legacy-peer-deps
+          npm i @oxc-parser/binding-linux-x64-gnu@0.150.0 --no-save
 
       - name: 5. Build mã nguồn Web (Angular www)
         run: npm run build
