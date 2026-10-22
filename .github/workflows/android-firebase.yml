@@ -56,7 +56,7 @@ jobs:
           retention-days: 14
 
       - name: 10. Phân phối APK lên Firebase App Distribution
-        uses: wzieba/Firebase-App-Distribution-Github-Action@v1
+        uses: wzieba/Firebase-Distribution-Github-Action@v1
         with:
           appId: ${{ secrets.FIREBASE_APP_ID }}
           token: ${{ secrets.FIREBASE_TOKEN }}

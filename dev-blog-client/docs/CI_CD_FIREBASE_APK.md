@@ -175,7 +175,7 @@ jobs:
           retention-days: 14
 
       - name: 10. Phân phối APK lên Firebase App Distribution
-        uses: wzieba/Firebase-App-Distribution-Github-Action@v1
+        uses: wzieba/Firebase-Distribution-Github-Action@v1
         with:
           appId: ${{ secrets.FIREBASE_APP_ID }}
           token: ${{ secrets.FIREBASE_TOKEN }}
@@ -199,7 +199,7 @@ jobs:
 | `chmod +x android/gradlew` | Cấp quyền chạy file thực thi (`execute permission`) cho file `gradlew`. | Git trên môi trường Linux thường làm mất quyền execute của file `gradlew`. Nếu không có lệnh `chmod +x`, máy ảo sẽ báo lỗi `Permission denied: ./gradlew`. |
 | `./gradlew assembleDebug` | Biên dịch project Android thành file `.apk`. | Lệnh này gọi hệ thống Gradle của Android để đóng gói code Java/Kotlin, mã web, assets thành file APK debug hoàn chỉnh. |
 | `actions/upload-artifact@v4` | Đính kèm file APK vào trang kết quả của GitHub Actions. | Dự phòng: Bạn và team có thể vào trực tiếp tab Actions của commit đó tải thẳng file `app-debug.apk` về máy tính bất cứ lúc nào (lưu trữ 14 ngày). |
-| `wzieba/Firebase-App-Distribution...` | Action đẩy APK lên Firebase. | Tự động kết nối với API Firebase App Distribution, upload file APK lên cloud, đính kèm ghi chú commit message và tự gửi email mời cài đặt tới nhóm `dev-team`. |
+| `wzieba/Firebase-Distribution...` | Action đẩy APK lên Firebase. | Tự động kết nối với API Firebase App Distribution, upload file APK lên cloud, đính kèm ghi chú commit message và tự gửi email mời cài đặt tới nhóm `dev-team`. |
 
 ---
 
