@@ -1,0 +1,16 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "TEAM_ID.com.devblog.client",
+        "paths": [
+          "*",
+          "/dev-blog-client-2.0/*",
+          "/blog/*",
+          "/home"
+        ]
+      }
+    ]
+  }
+}
