@@ -4,6 +4,14 @@ on:
   push:
     branches: [ main ]
   workflow_dispatch:
+    inputs:
+      custom_version:
+        description: 'Tùy chọn: Nhập version (ví dụ 0.0.2 hoặc 1.0.0, để trống sẽ tự động tăng +1)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
 
 jobs:
   build-and-distribute:
@@ -18,6 +26,8 @@ jobs:
     steps:
       - name: 1. Checkout mã nguồn
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: 2. Cài đặt Node.js 22
         uses: actions/setup-node@v4
@@ -26,45 +36,68 @@ jobs:
           cache: 'npm'
           cache-dependency-path: './dev-blog-client/package-lock.json'
 
-      - name: 3. Cài đặt Java JDK 21
+      - name: 3. Tăng version ứng dụng (package.json)
+        id: bump_version
+        run: |
+          if [ -n "${{ inputs.custom_version }}" ]; then
+            npm version ${{ inputs.custom_version }} --no-git-tag-version
+          else
+            npm version patch --no-git-tag-version
+          fi
+          NEW_VERSION=$(node -p "require('./package.json').version")
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+          echo "✅ Đã cập nhật version lên: $NEW_VERSION"
+
+      - name: 4. Cài đặt Java JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '21'
           cache: 'gradle'
 
-      - name: 4. Cài đặt dependencies (NPM)
+      - name: 5. Cài đặt dependencies (NPM)
         run: npm ci --legacy-peer-deps
 
-      - name: 5. Build mã nguồn Web (Angular www)
+      - name: 6. Build mã nguồn Web (Angular www)
         run: npm run build
 
-      - name: 6. Đồng bộ sang Android Native (Capacitor Sync)
+      - name: 7. Đồng bộ sang Android Native (Capacitor Sync)
         run: npx cap sync android
 
-      - name: 7. Cấp quyền thực thi cho Gradle Wrapper
+      - name: 8. Cấp quyền thực thi cho Gradle Wrapper
         run: chmod +x android/gradlew
 
-      - name: 8. Biên dịch Android Debug APK
+      - name: 9. Biên dịch Android Debug APK
         run: |
           cd android
-          ./gradlew assembleDebug --no-daemon
+          ./gradlew assembleDebug -PversionCode=${{ github.run_number }} -PversionName=${{ env.NEW_VERSION }} --no-daemon
 
-      - name: 9. Lưu trữ Artifact APK lên GitHub Actions (Tải dự phòng)
+      - name: 10. Lưu trữ Artifact APK lên GitHub Actions (Tải dự phòng)
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug-apk
+          name: app-debug-${{ env.NEW_VERSION }}
           path: ./dev-blog-client/android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 14
 
-      - name: 10. Phân phối APK lên Firebase App Distribution
+      - name: 11. Phân phối APK lên Firebase App Distribution
         uses: wzieba/Firebase-Distribution-Github-Action@v1
+        continue-on-error: true
         with:
           appId: ${{ secrets.FIREBASE_APP_ID }}
           token: ${{ secrets.FIREBASE_TOKEN }}
           groups: dev-team
           file: ./dev-blog-client/android/app/build/outputs/apk/debug/app-debug.apk
           releaseNotes: |
+            Phiên bản: ${{ env.NEW_VERSION }} (Build ${{ github.run_number }})
             Commit: ${{ github.sha }}
             Message: ${{ github.event.head_commit.message }}
             Branch: ${{ github.ref_name }}
+
+      - name: 12. Lưu và đẩy version mới lên GitHub
+        if: success()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json
+          git commit -m "chore(release): bump version to ${{ env.NEW_VERSION }} [skip ci]" || echo "No changes to commit"
+          git push origin main
