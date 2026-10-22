@@ -22,6 +22,22 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
+            <!-- Deep Linking: Custom URL Scheme (devblog://...) -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="devblog" />
+            </intent-filter>
+
+            <!-- Deep Linking: Web App Links (https://congphu97.github.io/dev-blog-client-2.0/...) -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="congphu97.github.io" android:pathPrefix="/dev-blog-client-2.0" />
+            </intent-filter>
+
         </activity>
 
         <provider
