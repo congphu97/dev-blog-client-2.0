@@ -1,5 +1,10 @@
 # 📱 Hướng Dẫn Tự Động Build APK & Phân Phối Firebase App Distribution Bằng CI/CD
 
+> 📚 **Tài liệu liên quan trong hệ thống CI/CD:**
+> - [🌐 CI/CD Web (Deploy GitHub Pages)](CI_CD_GITHUB_ACTIONS.md)
+> - [🤖 Build AAB & Xuất bản lên Google Play Console (CH Play)](CI_CD_GOOGLE_PLAY.md)
+> - [🍎 Build IPA & Xuất bản lên Apple App Store / TestFlight](CI_CD_APP_STORE.md)
+
 ---
 
 ## 📌 Mục Lục

@@ -68,3 +68,11 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+# Mobile Signing Keys & Keystores (Security)
+*.jks
+*.keystore
+*.p12
+*.p8
+*.mobileprovision
+release/

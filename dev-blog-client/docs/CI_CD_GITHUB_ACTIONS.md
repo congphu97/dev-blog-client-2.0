@@ -1,5 +1,10 @@
 # 🚀 Cẩm Nang Toàn Tập Về CI/CD Web Với GitHub Actions (Angular 22 + Ionic)
 
+> 📚 **Tài liệu liên quan trong hệ thống CI/CD:**
+> - [📱 Build APK & Phân phối lên Firebase App Distribution](CI_CD_FIREBASE_APK.md)
+> - [🤖 Build AAB & Xuất bản lên Google Play Console (CH Play)](CI_CD_GOOGLE_PLAY.md)
+> - [🍎 Build IPA & Xuất bản lên Apple App Store / TestFlight](CI_CD_APP_STORE.md)
+
 ---
 
 ## 📌 Mục Lục
