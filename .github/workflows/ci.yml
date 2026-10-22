@@ -23,6 +23,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: 'npm'
+          cache-dependency-path: './dev-blog-client/package-lock.json'
 
       - name: Cài đặt dependencies dev-blog-client
         run: npm ci --legacy-peer-deps
