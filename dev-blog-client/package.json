@@ -71,7 +71,11 @@
   },
   "description": "An Ionic project",
   "optionalDependencies": {
+    "@esbuild/linux-x64": "^0.28.2",
     "@oxc-parser/binding-linux-x64-gnu": "^0.150.0",
+    "@rolldown/binding-linux-x64-gnu": "^1.2.8",
+    "@rollup/rollup-linux-x64-gnu": "^4.34.9",
+    "lightningcss-linux-x64-gnu": "^1.33.0",
     "sass-embedded-linux-x64": "^1.104.1"
   }
 }
