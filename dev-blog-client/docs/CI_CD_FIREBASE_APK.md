@@ -96,17 +96,17 @@ Khi cần phát hành một bản cập nhật lớn (Major/Minor version):
 
 ```mermaid
 flowchart TD
-    Trigger{Cách kích hoạt Workflow}
+    Trigger{"Cách kích hoạt Workflow"}
     
-    Trigger -- Push commit có cờ --build --> AutoPatch[Tự động tăng patch: 0.0.1 ➡️ 0.0.2]
-    Trigger -- Bấm Run workflow thủ công --> CheckInput{Có nhập custom_version không?}
+    Trigger -->|Commit có cờ build| AutoPatch["Tự động tăng patch: 0.0.1 ➡️ 0.0.2"]
+    Trigger -->|Bấm Run workflow thủ công| CheckInput{"Có nhập custom_version không?"}
     
-    CheckInput -- Bỏ trống --> AutoPatch
-    CheckInput -- Nhập ví dụ 1.0.0 --> SetCustom[Đặt version thành 1.0.0]
+    CheckInput -->|Bỏ trống| AutoPatch
+    CheckInput -->|Nhập ví dụ 1.0.0| SetCustom["Đặt version thành 1.0.0"]
     
-    AutoPatch --> BuildApp[Biên dịch APK với versionName & versionCode chuẩn]
+    AutoPatch --> BuildApp["Biên dịch APK với versionName & versionCode chuẩn"]
     SetCustom --> BuildApp
-    BuildApp --> SaveGit[Commit & Push package.json mới lên GitHub với tag [skip ci]]
+    BuildApp --> SaveGit["Commit & Push package.json mới lên GitHub với tag [skip ci]"]
 ```
 
 ---

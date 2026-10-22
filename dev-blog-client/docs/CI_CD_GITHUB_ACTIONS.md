@@ -55,19 +55,19 @@ flowchart LR
 
 ```mermaid
 graph TD
-    A[Repository: Thư mục .github/workflows/] --> B[Workflow 1: ci.yml]
-    A --> C[Workflow 2: deploy.yml]
+    A["Repository: Thư mục .github/workflows/"] --> B["Workflow 1: ci.yml"]
+    A --> C["Workflow 2: deploy.yml"]
     
-    B --> D[Event: Push / PR / Manual Dispatch]
-    D --> E{Có chứa cờ --build?}
-    E -- Không --> F[Tự động Skip - Tiết kiệm thời gian]
-    E -- Có --> G[Job: validate - Runs on ubuntu-latest]
+    B --> D["Event: Push / PR / Manual Dispatch"]
+    D --> E{"Có chứa cờ build?"}
+    E -->|Không| F["Tự động Skip - Tiết kiệm thời gian"]
+    E -->|Có| G["Job: validate - Runs on ubuntu-latest"]
     
-    G --> H[Step 1: Checkout Code]
-    G --> I[Step 2: Setup Node.js 22 + NPM Cache]
-    G --> J[Step 3: npm ci --legacy-peer-deps]
-    G --> K[Step 4: npm run lint]
-    G --> L[Step 5: npm run build]
+    G --> H["Step 1: Checkout Code"]
+    G --> I["Step 2: Setup Node.js 22 + NPM Cache"]
+    G --> J["Step 3: npm ci --legacy-peer-deps"]
+    G --> K["Step 4: npm run lint"]
+    G --> L["Step 5: npm run build"]
 ```
 
 1. **Workflow (Quy trình)**: Là 1 file định dạng `.yml` nằm trong thư mục `.github/workflows/`.
@@ -85,23 +85,23 @@ graph TD
 
 ```mermaid
 flowchart TD
-    Start([🧑‍💻 Bạn gõ lệnh git commit & git push]) --> CheckCommit{Commit message có chứa cờ --build?}
+    Start(["🧑‍💻 Bạn gõ lệnh git commit & git push"]) --> CheckCommit{"Commit message có chứa cờ --build?"}
     
-    CheckCommit -- KHÔNG CÓ --> SkipState[⏭️ Trạng thái: SKIPPED]
-    SkipState --> EndSkip([Kết thúc tức thì trong 1 giây - Không tốn tài nguyên])
+    CheckCommit -->|KHÔNG CÓ| SkipState["⏭️ Trạng thái: SKIPPED"]
+    SkipState --> EndSkip(["Kết thúc tức thì trong 1 giây - Không tốn tài nguyên"])
     
-    CheckCommit -- CÓ CHỨA --build --> RunState[▶️ Kích hoạt máy ảo Ubuntu Runner]
+    CheckCommit -->|CÓ CHỨA CỜ| RunState["▶️ Kích hoạt máy ảo Ubuntu Runner"]
     
     subgraph Pipeline [Chu trình chạy tự động]
-        RunState --> Checkout[1. actions/checkout@v4]
-        Checkout --> SetupNode[2. actions/setup-node@v4 kèm Cache NPM]
-        SetupNode --> InstallDeps[3. npm ci --legacy-peer-deps]
-        InstallDeps --> LintCheck[4. npm run lint - Kiểm tra cú pháp]
-        LintCheck --> BuildAngular[5. npm run build --base-href /dev-blog-client-2.0/]
-        BuildAngular --> DeployPages[6. actions/deploy-pages@v4]
+        RunState --> Checkout["1. actions/checkout@v4"]
+        Checkout --> SetupNode["2. actions/setup-node@v4 kèm Cache NPM"]
+        SetupNode --> InstallDeps["3. npm ci --legacy-peer-deps"]
+        InstallDeps --> LintCheck["4. npm run lint - Kiểm tra cú pháp"]
+        LintCheck --> BuildAngular["5. npm run build --base-href /dev-blog-client-2.0/"]
+        BuildAngular --> DeployPages["6. actions/deploy-pages@v4"]
     end
     
-    DeployPages --> Success([🎉 Web công khai tại congphu97.github.io/dev-blog-client-2.0])
+    DeployPages --> Success(["🎉 Web công khai tại congphu97.github.io/dev-blog-client-2.0"])
 ```
 
 ### 💡 Ví dụ thực tế:
