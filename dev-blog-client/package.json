@@ -71,6 +71,7 @@
   },
   "description": "An Ionic project",
   "optionalDependencies": {
-    "@oxc-parser/binding-linux-x64-gnu": "^0.150.0"
+    "@oxc-parser/binding-linux-x64-gnu": "^0.150.0",
+    "sass-embedded-linux-x64": "^1.104.1"
   }
 }
