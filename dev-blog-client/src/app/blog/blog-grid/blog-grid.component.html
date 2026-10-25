@@ -1,6 +1,6 @@
 <div class="blog-grid">
   @for (post of posts(); track post.id) {
-    <ngc-card [borderRadius]="'10px'" [contentPaddingVertical]="'0px'" [contentPaddingHorizontal]="'0px'">
+    <ngc-card [borderRadius]="'10px'" [contentPaddingVertical]="'0px'" [contentPaddingHorizontal]="'0px'" (click)="navigationToDetail(post)">
       <div ngcCardHeader class="card-header">
         <ngc-tag 
           [label]="post.favorite ? 'Yêu thích' : 'Công nghệ'" 
