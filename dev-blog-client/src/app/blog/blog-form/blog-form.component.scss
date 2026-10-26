@@ -19,6 +19,9 @@
     display: flex;
     flex-direction: column;
     gap: 2px;
+    flex: 1;
+    min-width: 0;
+    margin-right: 12px;
 
     .modal-title {
       margin: 0;
@@ -26,12 +29,18 @@
       font-weight: 700;
       color: #09090b;
       letter-spacing: -0.015em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .modal-subtitle {
       margin: 0;
       font-size: 0.8rem;
       color: #71717a;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
   }
 

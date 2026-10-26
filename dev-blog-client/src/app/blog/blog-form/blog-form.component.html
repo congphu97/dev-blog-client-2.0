@@ -2,9 +2,9 @@
   <ion-toolbar class="form-toolbar">
     <div class="header-content">
       <div class="header-title-box">
-        <h2 class="modal-title">
+        <h2 class="modal-title" [title]="isEdit() ? (initialData?.title || 'Cập nhật bài viết') : ''">
           @if (isEdit()) {
-            ✏️ Cập nhật bài viết
+            ✏️ {{ initialData?.title || 'Cập nhật bài viết' }}
           } @else {
             @if (currentMode() === 'signal-form') {
               + Tạo bài viết (Signal Form ⚡)
@@ -17,7 +17,7 @@
         </h2>
         <p class="modal-subtitle">
           @if (isEdit()) {
-            Chỉnh sửa toàn bộ thông số của bài viết #{{ initialData?.id }} theo BlogPost model
+            Bài viết #{{ initialData?.id }} • {{ initialData?.category }} • Tác giả: {{ initialData?.author }}
           } @else {
             Điền đầy đủ thông tin chuẩn BlogPost model để xuất bản bài viết mới
           }
