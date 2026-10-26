@@ -10,6 +10,7 @@ import {
 } from '@ionic/angular/standalone';
 import { BlogPost } from '../blog.models';
 import { MarkdownPipe } from '../markdown.pipe';
+import { NgcButtonModule, NgcFormFieldModule, NgcCheckboxModule } from 'ngc-library';
 
 export interface BlogSubmitData {
   id?: number;
@@ -39,7 +40,10 @@ export type FormMode = 'reactive-form' | 'template-driven-form' | 'signal-form';
     IonToolbar,
     IonContent,
     IonFooter,
-    MarkdownPipe
+    MarkdownPipe,
+    NgcButtonModule,
+    NgcFormFieldModule,
+    NgcCheckboxModule
   ]
 })
 export class BlogFormComponent implements OnInit {

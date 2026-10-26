@@ -84,8 +84,15 @@
         </div>
 
         <div ngcCardFooter class="card-actions">
-          <span class="view-detail-hint">👁️ Xem chi tiết</span>
-          <button type="button" class="shadcn-btn shadcn-btn--sm shadcn-btn--outline" (click)="onChooseToEdit(post); $event.stopPropagation()">
+          <button 
+            type="button" 
+            ngcButton 
+            size="32px"
+            color="#ffffff" 
+            textColor="#18181b" 
+            borderColor="#e4e4e7" 
+            (click)="onChooseToEdit(post); $event.stopPropagation()"
+          >
             ✏️ Sửa bài
           </button>
         </div>

@@ -25,7 +25,13 @@
 
       <!-- Nút mở Modal Tạo bài viết -->
       <div class="create-actions-group">
-        <button type="button" class="shadcn-btn shadcn-btn--primary" (click)="openCreateModal()">
+        <button 
+          type="button" 
+          ngcButton 
+          color="#18181b" 
+          textColor="#ffffff" 
+          (click)="openCreateModal()"
+        >
           + Tạo bài viết
         </button>
       </div>
@@ -63,18 +69,22 @@
       <div class="view-mode-buttons">
         <button 
           type="button"
-          class="shadcn-btn shadcn-btn--sm"
-          [class.shadcn-btn--primary]="viewMode() === 'grid'"
-          [class.shadcn-btn--outline]="viewMode() !== 'grid'"
+          ngcButton
+          size="32px"
+          [color]="viewMode() === 'grid' ? '#18181b' : '#ffffff'"
+          [textColor]="viewMode() === 'grid' ? '#ffffff' : '#52525b'"
+          borderColor="#e4e4e7"
           (click)="viewMode.set('grid')"
         >
           🔲 Lưới (Grid)
         </button>
         <button 
           type="button"
-          class="shadcn-btn shadcn-btn--sm"
-          [class.shadcn-btn--primary]="viewMode() === 'list'"
-          [class.shadcn-btn--outline]="viewMode() !== 'list'"
+          ngcButton
+          size="32px"
+          [color]="viewMode() === 'list' ? '#18181b' : '#ffffff'"
+          [textColor]="viewMode() === 'list' ? '#ffffff' : '#52525b'"
+          borderColor="#e4e4e7"
           (click)="viewMode.set('list')"
         >
           📄 Danh sách (List)

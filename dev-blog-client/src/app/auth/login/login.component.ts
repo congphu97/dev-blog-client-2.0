@@ -4,12 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { IonContent } from '@ionic/angular/standalone';
 import { HeaderComponent } from '../../header/header.component';
+import { NgcButtonModule } from 'ngc-library';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
-  imports: [CommonModule, FormsModule, RouterLink, IonContent, HeaderComponent],
+  imports: [CommonModule, FormsModule, RouterLink, IonContent, HeaderComponent, NgcButtonModule],
 })
 export class LoginComponent {
   private router = inject(Router);

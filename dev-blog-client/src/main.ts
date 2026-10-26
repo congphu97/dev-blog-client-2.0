@@ -1,10 +1,11 @@
-import { isDevMode } from '@angular/core';
+import { isDevMode, importProvidersFrom } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { RouteReuseStrategy, provideRouter, withPreloading, PreloadAllModules } from '@angular/router';
 import { IonicRouteStrategy, provideIonicAngular } from '@ionic/angular/standalone';
 import { provideStore } from '@ngrx/store';
 import { provideEffects } from '@ngrx/effects';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
+import { I18nTranslateModule } from 'ngc-library';
 
 import { routes } from './app/app.routes';
 import { AppComponent } from './app/app.component';
@@ -17,6 +18,7 @@ bootstrapApplication(AppComponent, {
     provideStore(),
     provideEffects(),
     provideStoreDevtools({ maxAge: 25, logOnly: !isDevMode() }),
+    importProvidersFrom(I18nTranslateModule)
   ],
 });
 

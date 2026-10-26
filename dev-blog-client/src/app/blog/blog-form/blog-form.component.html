@@ -23,7 +23,15 @@
           }
         </p>
       </div>
-      <button type="button" class="close-icon-btn" (click)="cancel()" title="Đóng">✕</button>
+      <button 
+        type="button" 
+        ngcIconButton 
+        icon="close" 
+        size="32px" 
+        class="close-icon-btn" 
+        (click)="cancel()" 
+        title="Đóng"
+      ></button>
     </div>
   </ion-toolbar>
 </ion-header>
@@ -165,7 +173,7 @@
             <div class="field-label-row">
               <label class="field-label">Thẻ Tags (tags)</label>
               @if (!showCustomTagSignal()) {
-                <button type="button" class="tag-toggle-btn" (click)="showCustomTagSignal.set(true)">+ Nhập tùy chỉnh</button>
+                <button type="button" ngcButton size="26px" color="#f4f4f5" textColor="#3f3f46" borderColor="#e4e4e7" (click)="showCustomTagSignal.set(true)">+ Nhập tùy chỉnh</button>
               }
             </div>
 
@@ -235,15 +243,11 @@
 
           <div class="form-field checkbox-field-wrapper">
             <label class="field-label">Trạng thái (favorite)</label>
-            <label class="shadcn-checkbox-label">
-              <input 
-                type="checkbox" 
-                class="shadcn-checkbox"
-                [checked]="signalForm().favorite"
-                (change)="updateSignalField('favorite', $any($event.target).checked)"
-              />
-              <span class="checkbox-text">❤️ Yêu thích</span>
-            </label>
+            <ngc-checkbox 
+              [ngModel]="signalForm().favorite" 
+              (ngModelChange)="updateSignalField('favorite', $event)"
+              label="❤️ Yêu thích"
+            ></ngc-checkbox>
           </div>
         </div>
 
@@ -377,7 +381,7 @@
             <div class="field-label-row">
               <label class="field-label">Thẻ Tags (tags)</label>
               @if (!showCustomTagReactive()) {
-                <button type="button" class="tag-toggle-btn" (click)="showCustomTagReactive.set(true)">+ Nhập tùy chỉnh</button>
+                <button type="button" ngcButton size="26px" color="#f4f4f5" textColor="#3f3f46" borderColor="#e4e4e7" (click)="showCustomTagReactive.set(true)">+ Nhập tùy chỉnh</button>
               }
             </div>
 
@@ -444,14 +448,10 @@
 
           <div class="form-field checkbox-field-wrapper">
             <label class="field-label">Trạng thái (favorite)</label>
-            <label class="shadcn-checkbox-label">
-              <input 
-                type="checkbox" 
-                class="shadcn-checkbox"
-                formControlName="favorite"
-              />
-              <span class="checkbox-text">❤️ Yêu thích</span>
-            </label>
+            <ngc-checkbox 
+              formControlName="favorite"
+              label="❤️ Yêu thích"
+            ></ngc-checkbox>
           </div>
         </div>
 
@@ -549,7 +549,7 @@
             <div class="field-label-row">
               <label class="field-label">Thẻ Tags (tags)</label>
               @if (!showCustomTagTemplate()) {
-                <button type="button" class="tag-toggle-btn" (click)="showCustomTagTemplate.set(true)">+ Nhập tùy chỉnh</button>
+                <button type="button" ngcButton size="26px" color="#f4f4f5" textColor="#3f3f46" borderColor="#e4e4e7" (click)="showCustomTagTemplate.set(true)">+ Nhập tùy chỉnh</button>
               }
             </div>
 
@@ -619,15 +619,11 @@
 
           <div class="form-field checkbox-field-wrapper">
             <label class="field-label">Trạng thái (favorite)</label>
-            <label class="shadcn-checkbox-label">
-              <input 
-                type="checkbox" 
-                class="shadcn-checkbox"
-                name="favorite"
-                [(ngModel)]="templateModel.favorite"
-              />
-              <span class="checkbox-text">❤️ Yêu thích</span>
-            </label>
+            <ngc-checkbox 
+              [(ngModel)]="templateModel.favorite" 
+              name="favorite"
+              label="❤️ Yêu thích"
+            ></ngc-checkbox>
           </div>
         </div>
 
@@ -660,17 +656,26 @@
   </div>
 </ion-content>
 
-<!-- FOOTER THAO TÁC NÚT SHADCN -->
+<!-- FOOTER THAO TÁC NÚT NGC-BUTTON -->
 <ion-footer class="form-modal-footer">
   <div class="footer-actions">
-    <button type="button" class="shadcn-btn shadcn-btn--outline" (click)="cancel()">
+    <button 
+      type="button" 
+      ngcButton 
+      color="#ffffff" 
+      textColor="#18181b" 
+      borderColor="#e4e4e7" 
+      (click)="cancel()"
+    >
       Hủy bỏ
     </button>
 
     @if (currentMode() === 'signal-form') {
       <button 
         type="button" 
-        class="shadcn-btn shadcn-btn--primary" 
+        ngcButton 
+        color="#18181b" 
+        textColor="#ffffff" 
         (click)="submit()" 
         [disabled]="!isSignalFormValid()"
       >
@@ -679,7 +684,9 @@
     } @else if (currentMode() === 'reactive-form') {
       <button 
         type="button" 
-        class="shadcn-btn shadcn-btn--primary" 
+        ngcButton 
+        color="#18181b" 
+        textColor="#ffffff" 
         (click)="submit()" 
         [disabled]="blogForm.invalid"
       >
@@ -688,7 +695,9 @@
     } @else {
       <button 
         type="button" 
-        class="shadcn-btn shadcn-btn--primary" 
+        ngcButton 
+        color="#18181b" 
+        textColor="#ffffff" 
         (click)="submit()" 
         [disabled]="!templateModel.title.trim() || !templateModel.content.trim()"
       >

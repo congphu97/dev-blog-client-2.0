@@ -108,13 +108,15 @@
         <!-- Submit Button -->
         <button 
           type="submit" 
-          class="submit-login-btn"
+          ngcButton
+          color="#0f172a"
+          textColor="#ffffff"
+          size="42px"
+          [loading]="isLoading()"
           [disabled]="isLoading() || loginSuccess()"
+          style="width: 100%;"
         >
-          @if (isLoading()) {
-            <span class="spinner-icon">🔄</span>
-            <span>Đang xác thực...</span>
-          } @else if (loginSuccess()) {
+          @if (loginSuccess()) {
             <span>✓ Đã đăng nhập</span>
           } @else {
             <span>Đăng nhập ngay →</span>
