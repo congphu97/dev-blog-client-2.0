@@ -112,16 +112,24 @@ export class BlogFormComponent implements OnInit {
     viewCount: 0
   });
 
-  // Validation tự động bằng computed
+  // Validation tự động bằng computed: Tiêu đề >= 3 ký tự, có nội dung và tác giả (summary là tùy chọn, tự động trích xuất nếu để trống)
   public isSignalFormValid = computed(() => {
     const data = this.signalForm();
     return (
       data.title.trim().length >= 3 &&
-      data.summary.trim().length > 0 &&
       data.content.trim().length > 0 &&
       data.author.trim().length > 0
     );
   });
+
+  public getMissingSignalFields(): string {
+    const data = this.signalForm();
+    const missing: string[] = [];
+    if (data.title.trim().length < 3) missing.push('Tiêu đề (≥3 ký tự)');
+    if (!data.content.trim()) missing.push('Nội dung chi tiết');
+    if (!data.author.trim()) missing.push('Tác giả');
+    return missing.join(', ') || 'Đã hợp lệ';
+  }
 
   updateSignalField(field: string, value: any) {
     this.signalForm.update(prev => ({ ...prev, [field]: value }));
@@ -386,7 +394,7 @@ export class BlogFormComponent implements OnInit {
         customCategory: [customCat],
         author: [init.author || 'Phú Nguyễn', [Validators.required]],
         imageUrl: [init.imageUrl || ''],
-        summary: [init.summary || '', [Validators.required]],
+        summary: [init.summary || ''],
         content: [init.content || '', [Validators.required]],
         tags: [initialTags],
         favorite: [!!init.favorite],
@@ -402,7 +410,7 @@ export class BlogFormComponent implements OnInit {
         customCategory: [''],
         author: ['Phú Nguyễn', [Validators.required]],
         imageUrl: ['https://images.unsplash.com/photo-1618401471353-b98aedd04e11?w=800&auto=format&fit=crop&q=80'],
-        summary: ['', [Validators.required]],
+        summary: [''],
         content: ['', [Validators.required]],
         tags: ['Angular, DevOps, CI/CD'],
         favorite: [false],
@@ -442,7 +450,6 @@ export class BlogFormComponent implements OnInit {
     } else {
       if (
         !this.templateModel.title.trim() ||
-        !this.templateModel.summary.trim() ||
         !this.templateModel.content.trim() ||
         !this.templateModel.author.trim()
       ) {
@@ -468,13 +475,23 @@ export class BlogFormComponent implements OnInit {
       }
     }
 
+    // Tự động trích xuất tóm tắt ngắn từ content nếu người dùng để trống
+    let finalSummary = rawData.summary ? rawData.summary.trim() : '';
+    if (!finalSummary && rawData.content) {
+      finalSummary = rawData.content
+        .replace(/[#*`>\[\]\(\)\-_]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .substring(0, 160) + '...';
+    }
+
     const resultData: BlogSubmitData = {
       id: this.initialData ? this.initialData.id : undefined,
       title: rawData.title.trim(),
       category: finalCategory || 'Công nghệ',
       author: rawData.author.trim() || 'Admin',
       imageUrl: rawData.imageUrl.trim() || 'https://picsum.photos/400/250',
-      summary: rawData.summary.trim(),
+      summary: finalSummary,
       content: rawData.content.trim(),
       tags: tagArray,
       favorite: !!rawData.favorite,

@@ -249,7 +249,7 @@
 
         <!-- 5. Tóm tắt -->
         <div class="form-field">
-          <label class="field-label">Tóm tắt ngắn (summary) <span class="required">*</span></label>
+          <label class="field-label">Tóm tắt ngắn (summary) <span class="optional-hint">(Tùy chọn)</span></label>
           <textarea 
             class="shadcn-textarea"
             rows="2"
@@ -276,7 +276,7 @@
           <div class="preview-header">
             <span class="preview-title">⚡ Live Signal State:</span>
             <span class="preview-valid-badge" [class.is-valid]="isSignalFormValid()">
-              {{ isSignalFormValid() ? '✓ Đã đủ thông số' : '○ Chưa đủ điều kiện' }}
+              {{ isSignalFormValid() ? '✓ Đã đủ thông số (Sẵn sàng tạo)' : '○ Cần nhập: ' + getMissingSignalFields() }}
             </span>
           </div>
           <div class="preview-rows">
@@ -437,7 +437,7 @@
 
         <!-- 5. Tóm tắt -->
         <div class="form-field">
-          <label class="field-label">Tóm tắt ngắn (summary) <span class="required">*</span></label>
+          <label class="field-label">Tóm tắt ngắn (summary) <span class="optional-hint">(Tùy chọn)</span></label>
           <textarea 
             class="shadcn-textarea"
             rows="2"
@@ -613,13 +613,12 @@
 
         <!-- 5. Tóm tắt -->
         <div class="form-field">
-          <label class="field-label">Tóm tắt ngắn (summary) <span class="required">*</span></label>
+          <label class="field-label">Tóm tắt ngắn (summary) <span class="optional-hint">(Tùy chọn)</span></label>
           <textarea 
             class="shadcn-textarea"
             rows="2"
             name="summary"
             [(ngModel)]="templateModel.summary"
-            required
             placeholder="Nhập tóm tắt..."
           ></textarea>
         </div>
@@ -671,7 +670,7 @@
         type="button" 
         class="shadcn-btn shadcn-btn--primary" 
         (click)="submit()" 
-        [disabled]="!templateModel.title.trim() || !templateModel.summary.trim() || !templateModel.content.trim()"
+        [disabled]="!templateModel.title.trim() || !templateModel.content.trim()"
       >
         {{ isEdit() ? 'Lưu thay đổi' : 'Tạo bài viết' }}
       </button>

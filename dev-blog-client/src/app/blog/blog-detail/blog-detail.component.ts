@@ -59,12 +59,46 @@ export class BlogDetailComponent implements OnInit {
     });
   }
 
+  private setupMermaidZoomControls() {
+    if (typeof window !== 'undefined') {
+      (window as any).zoomMermaid = (btn: HTMLElement, delta: number) => {
+        const wrapper = btn.closest('.mermaid-block-wrapper');
+        if (!wrapper) return;
+        const svg = wrapper.querySelector('.mermaid-render-area svg') as SVGElement | null;
+        if (!svg) return;
+        const currentScale = parseFloat(svg.getAttribute('data-scale') || '1');
+        const newScale = Math.min(Math.max(currentScale + delta, 0.4), 2.5);
+        svg.setAttribute('data-scale', newScale.toString());
+        svg.style.transform = `scale(${newScale})`;
+        svg.style.transformOrigin = 'center top';
+        const span = wrapper.querySelector('.mermaid-zoom-btn:nth-child(2) span');
+        if (span) span.textContent = `${Math.round(newScale * 100)}%`;
+      };
+
+      (window as any).resetMermaid = (btn: HTMLElement) => {
+        const wrapper = btn.closest('.mermaid-block-wrapper');
+        if (!wrapper) return;
+        const svg = wrapper.querySelector('.mermaid-render-area svg') as SVGElement | null;
+        if (!svg) return;
+        svg.setAttribute('data-scale', '1');
+        svg.style.transform = 'scale(1)';
+        const span = wrapper.querySelector('.mermaid-zoom-btn:nth-child(2) span');
+        if (span) span.textContent = '100%';
+      };
+    }
+  }
+
   private async renderMermaidDiagrams() {
     try {
+      this.setupMermaidZoomControls();
       mermaid.initialize({
         startOnLoad: false,
         theme: 'default',
         securityLevel: 'loose',
+        flowchart: {
+          useMaxWidth: false,
+          htmlLabels: true
+        },
         fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
       });
       const nodes = this.el.nativeElement.querySelectorAll('.mermaid:not([data-processed="true"])');

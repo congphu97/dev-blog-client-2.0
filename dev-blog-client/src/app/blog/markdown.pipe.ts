@@ -17,6 +17,17 @@ const customRenderer: RendererObject = {
       return `<div class="mermaid-block-wrapper">
         <div class="mermaid-block-header">
           <span class="mermaid-tag">📊 Sơ đồ quy trình (Mermaid Diagram)</span>
+          <div class="mermaid-zoom-actions">
+            <button type="button" class="mermaid-zoom-btn" title="Thu nhỏ (-20%)" onclick="window.zoomMermaid && window.zoomMermaid(this, -0.2)">
+              <span>−</span>
+            </button>
+            <button type="button" class="mermaid-zoom-btn" title="Về 100%" onclick="window.resetMermaid && window.resetMermaid(this)">
+              <span>100%</span>
+            </button>
+            <button type="button" class="mermaid-zoom-btn" title="Phóng to (+20%)" onclick="window.zoomMermaid && window.zoomMermaid(this, 0.2)">
+              <span>+</span>
+            </button>
+          </div>
         </div>
         <div class="mermaid-render-area">
           <pre class="mermaid">${text}</pre>
