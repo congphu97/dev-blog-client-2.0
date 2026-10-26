@@ -9,6 +9,7 @@ import {
   ModalController
 } from '@ionic/angular/standalone';
 import { BlogPost } from '../blog.models';
+import { MarkdownPipe } from '../markdown.pipe';
 
 export interface BlogSubmitData {
   id?: number;
@@ -37,12 +38,19 @@ export type FormMode = 'reactive-form' | 'template-driven-form' | 'signal-form';
     IonHeader,
     IonToolbar,
     IonContent,
-    IonFooter
+    IonFooter,
+    MarkdownPipe
   ]
 })
 export class BlogFormComponent implements OnInit {
   private modalCtrl = inject(ModalController);
   private fb = inject(FormBuilder);
+
+  public showLiveContentPreview = signal<boolean>(true);
+
+  public toggleContentPreview() {
+    this.showLiveContentPreview.update(v => !v);
+  }
 
   // Input nhận vào kiểu FormMode qua Ionic componentProps
   @Input() mode: FormMode = 'signal-form';

@@ -1,0 +1,158 @@
+<app-header></app-header>
+
+<ion-content class="login-page-content">
+  <div class="login-wrapper">
+    <div class="login-card">
+      <!-- Card Header -->
+      <div class="login-card-header">
+        <div class="brand-badge-icon">
+          <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" class="badge-svg">
+            <rect width="32" height="32" rx="8" fill="url(#loginGrad)" />
+            <path d="M10 11L5 16L10 21" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M22 11L27 16L22 21" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M18 9L14 23" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round" />
+            <defs>
+              <linearGradient id="loginGrad" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#09090b" />
+                <stop offset="1" stop-color="#27272a" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <h1 class="login-title">Đăng Nhập Dev Blog</h1>
+        <p class="login-subtitle">Chào mừng bạn trở lại! Nhập thông tin để quản lý bài viết</p>
+      </div>
+
+      <!-- Quick Fill Demo Accounts -->
+      <div class="quick-demo-accounts">
+        <span class="demo-label">⚡ Tài khoản mẫu:</span>
+        <div class="demo-buttons">
+          <button type="button" class="demo-chip" (click)="fillDemoAccount('admin')">
+            👑 Admin (Phú Cường)
+          </button>
+          <button type="button" class="demo-chip" (click)="fillDemoAccount('guest')">
+            👤 Khách (Reader)
+          </button>
+        </div>
+      </div>
+
+      <!-- Error Alert Message -->
+      @if (errorMessage()) {
+        <div class="login-alert error-alert">
+          <span class="alert-icon">⚠️</span>
+          <span class="alert-text">{{ errorMessage() }}</span>
+        </div>
+      }
+
+      <!-- Success Alert Message -->
+      @if (loginSuccess()) {
+        <div class="login-alert success-alert">
+          <span class="alert-icon">🎉</span>
+          <span class="alert-text">Đăng nhập thành công! Đang chuyển hướng về trang bài viết...</span>
+        </div>
+      }
+
+      <!-- Login Form -->
+      <form class="login-form" (submit)="onLogin($event)">
+        <!-- Field 1: Email / Username -->
+        <div class="form-group">
+          <label class="form-label">Email hoặc Tên tài khoản</label>
+          <div class="input-wrapper">
+            <span class="input-icon">✉️</span>
+            <input 
+              type="text" 
+              class="form-input" 
+              placeholder="name@example.com"
+              [value]="email()"
+              (input)="email.set($any($event.target).value)"
+              required
+            />
+          </div>
+        </div>
+
+        <!-- Field 2: Password -->
+        <div class="form-group">
+          <div class="label-row">
+            <label class="form-label">Mật khẩu</label>
+            <a href="javascript:void(0)" class="forgot-link">Quên mật khẩu?</a>
+          </div>
+          <div class="input-wrapper">
+            <span class="input-icon">🔒</span>
+            <input 
+              [type]="showPassword() ? 'text' : 'password'" 
+              class="form-input" 
+              placeholder="Nhập ít nhất 6 ký tự..."
+              [value]="password()"
+              (input)="password.set($any($event.target).value)"
+              required
+            />
+            <button type="button" class="password-toggle-btn" (click)="togglePasswordVisibility()" title="Ẩn/Hiện mật khẩu">
+              {{ showPassword() ? '🙈' : '👁️' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Checkbox: Remember me -->
+        <div class="form-checkbox-row">
+          <label class="checkbox-label">
+            <input 
+              type="checkbox" 
+              class="custom-checkbox" 
+              [checked]="rememberMe()"
+              (change)="rememberMe.set($any($event.target).checked)"
+            />
+            <span>Ghi nhớ đăng nhập trên thiết bị này</span>
+          </label>
+        </div>
+
+        <!-- Submit Button -->
+        <button 
+          type="submit" 
+          class="submit-login-btn"
+          [disabled]="isLoading() || loginSuccess()"
+        >
+          @if (isLoading()) {
+            <span class="spinner-icon">🔄</span>
+            <span>Đang xác thực...</span>
+          } @else if (loginSuccess()) {
+            <span>✓ Đã đăng nhập</span>
+          } @else {
+            <span>Đăng nhập ngay →</span>
+          }
+        </button>
+      </form>
+
+      <!-- Divider -->
+      <div class="form-divider">
+        <span>hoặc tiếp tục với</span>
+      </div>
+
+      <!-- Social Logins -->
+      <div class="social-actions">
+        <button type="button" class="social-btn" (click)="fillDemoAccount('admin')">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
+          <span>GitHub</span>
+        </button>
+
+        <button type="button" class="social-btn" (click)="fillDemoAccount('admin')">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
+            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
+          </svg>
+          <span>Google</span>
+        </button>
+      </div>
+
+      <!-- Back Link -->
+      <div class="card-footer-nav">
+        <a routerLink="/blog" class="back-link">
+          ← Quay lại danh sách bài viết
+        </a>
+      </div>
+    </div>
+  </div>
+</ion-content>

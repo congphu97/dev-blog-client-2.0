@@ -1,12 +1,13 @@
-import { Component, OnInit } from '@angular/core';
-import { IonHeader, IonToolbar, IonTitle, IonButtons } from '@ionic/angular/standalone';
+import { Component } from '@angular/core';
+import { RouterLink, RouterLinkActive } from '@angular/router';
+import { IonHeader, IonToolbar, IonButtons } from '@ionic/angular/standalone';
 import { NgcAvatarModule } from 'ngc-library';
 
 @Component({
   selector: 'app-header',
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss'],
-  imports: [IonHeader, IonToolbar, IonTitle, IonButtons, NgcAvatarModule],
+  imports: [IonHeader, IonToolbar, IonButtons, NgcAvatarModule, RouterLink, RouterLinkActive],
 })
 export class HeaderComponent {
   constructor() { }

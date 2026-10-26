@@ -283,8 +283,28 @@
             <p><strong>Tiêu đề:</strong> {{ signalForm().title || '(Chưa nhập)' }}</p>
             <p><strong>Chuyên mục:</strong> {{ signalForm().category }} • <strong>Tác giả:</strong> {{ signalForm().author }}</p>
             <p><strong>Lượt xem:</strong> {{ signalForm().viewCount }} • <strong>Ngày:</strong> {{ signalForm().publishedAt }} • <strong>Yêu thích:</strong> {{ signalForm().favorite ? 'Có ❤️' : 'Không 🤍' }}</p>
-            <p><strong>Độ dài nội dung:</strong> {{ signalForm().content.length }} ký tự</p>
+            <p><strong>Độ dài nội dung:</strong> {{ signalForm().content.length | number }} ký tự</p>
           </div>
+
+          <!-- Xem trước nội dung Markdown đang copy/nhập trực tiếp -->
+          @if (signalForm().content.trim()) {
+            <div class="live-content-preview-container">
+              <div class="preview-content-header" (click)="toggleContentPreview()">
+                <div class="preview-content-title">
+                  <span class="preview-icon">👁️</span>
+                  <span class="preview-heading">Xem trước nội dung (Live Markdown Preview)</span>
+                  <span class="preview-count-tag">{{ signalForm().content.length | number }} ký tự</span>
+                </div>
+                <button type="button" class="preview-toggle-btn">
+                  {{ showLiveContentPreview() ? 'Thu gọn ▲' : 'Mở rộng ▼' }}
+                </button>
+              </div>
+
+              @if (showLiveContentPreview()) {
+                <div class="live-markdown-render markdown-body" [innerHTML]="signalForm().content | markdown"></div>
+              }
+            </div>
+          }
         </div>
       </div>
     }
