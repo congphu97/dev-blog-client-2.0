@@ -13,6 +13,17 @@ const alertConfig: Record<string, { title: string; icon: string; className: stri
 
 const customRenderer: RendererObject = {
   code({ text, lang }: { text: string; lang?: string }) {
+    if (lang === 'mermaid') {
+      return `<div class="mermaid-block-wrapper">
+        <div class="mermaid-block-header">
+          <span class="mermaid-tag">📊 Sơ đồ quy trình (Mermaid Diagram)</span>
+        </div>
+        <div class="mermaid-render-area">
+          <pre class="mermaid">${text}</pre>
+        </div>
+      </div>`;
+    }
+
     const validLang = lang && hljs.getLanguage(lang) ? lang : undefined;
     const highlighted = validLang
       ? hljs.highlight(text, { language: validLang }).value

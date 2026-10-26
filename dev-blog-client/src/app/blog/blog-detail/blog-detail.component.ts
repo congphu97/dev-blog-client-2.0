@@ -1,4 +1,4 @@
-import { Component, ElementRef, inject, Input, OnInit, signal } from '@angular/core';
+import { Component, ElementRef, inject, Input, OnInit, signal, effect } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IonHeader, IonToolbar, IonTitle, IonButtons, IonContent } from '@ionic/angular/standalone';
@@ -14,6 +14,7 @@ import { BlogPost } from '../blog.models';
 import { BlogService } from '../blog.service';
 import { ModalController } from '@ionic/angular/standalone';
 import { MarkdownPipe } from '../markdown.pipe';
+import mermaid from 'mermaid';
 
 @Component({
   selector: 'app-blog-detail',
@@ -46,6 +47,36 @@ export class BlogDetailComponent implements OnInit {
   public blogPost = signal<BlogPost | null>(null);
   public isFavorite = signal<boolean>(false);
   public isFullScreen = signal<boolean>(false);
+
+  constructor() {
+    effect(() => {
+      const post = this.blogPost();
+      if (post && post.content) {
+        setTimeout(() => {
+          this.renderMermaidDiagrams();
+        }, 150);
+      }
+    });
+  }
+
+  private async renderMermaidDiagrams() {
+    try {
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: 'default',
+        securityLevel: 'loose',
+        fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+      });
+      const nodes = this.el.nativeElement.querySelectorAll('.mermaid:not([data-processed="true"])');
+      if (nodes && nodes.length > 0) {
+        await mermaid.run({
+          nodes: Array.from(nodes)
+        });
+      }
+    } catch (err) {
+      console.warn('Mermaid render error:', err);
+    }
+  }
 
   // Nhận post từ Ionic Modal componentProps hoặc Angular property binding
   @Input()
