@@ -1,0 +1,17 @@
+node_modules
+npm-debug.log
+.git
+.gitignore
+.angular
+.vscode
+.idea
+www
+dist
+coverage
+android
+ios
+platforms
+plugins
+*.md
+*.log
+release

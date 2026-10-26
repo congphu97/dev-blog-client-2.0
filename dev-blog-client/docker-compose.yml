@@ -1,0 +1,11 @@
+services:
+  dev-blog-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dev-blog-web-container
+    restart: always
+    ports:
+      - "8080:80"
+    environment:
+      - NODE_ENV=production
