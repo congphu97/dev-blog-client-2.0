@@ -12,9 +12,11 @@
    - [2.2. Sơ đồ luồng Login bằng JWT](#22-sơ-đồ-luồng-login-bằng-jwt)
    - [2.3. Code mẫu đơn giản (Backend & Angular Frontend)](#23-code-mẫu-đơn-giản-backend--angular-frontend)
 3. [Phần 2: OAuth 2.0 - Giao thức ủy quyền chuẩn quốc tế](#3-phần-2-oauth-20---giao-thức-ủy-quyền-chuẩn-quốc-tế)
-   - [3.1. Bản chất của OAuth 2.0](#31-bản-chất-của-oauth-20)
+   - [3.1. Bản chất của OAuth 2.0: Ví dụ đời thực dễ hiểu](#31-bản-chất-của-oauth-20-ví-dụ-đời-thực-dễ-hiểu)
    - [3.2. 4 Vai trò chính trong OAuth 2.0](#32-4-vai-trò-chính-trong-oauth-20)
-   - [3.3. Luồng Authorization Code Flow with PKCE (Chuẩn cho Angular SPA)](#33-luồng-authorization-code-flow-with-pkce-chuẩn-cho-angular-spa)
+   - [3.3. Cơ chế PKCE là gì? Ví dụ trò chơi Câu đố mật](#33-cơ-chế-pkce-là-gì-ví-dụ-trò-chơi-câu-đố-mật)
+   - [3.4. Dòng thời gian 6 bước chi tiết (Flow Timeline từng ly từng tí)](#34-dòng-thời-gian-6-bước-chi-tiết-flow-timeline-từng-ly-từng-tí)
+   - [3.5. Bảng giải mã từ điển thuật ngữ thực tế (Cheat Sheet)](#35-bảng-giải-mã-từ-điển-thuật-ngữ-thực-tế-cheat-sheet)
 4. [Phần 3: Auth0 - Nền tảng Identity-as-a-Service (IDaaS)](#4-phần-3-auth0---nền-tảng-identity-as-a-service-idaas)
    - [4.1. Auth0 là gì?](#41-auth0-là-gì)
    - [4.2. Sơ đồ luồng đăng nhập với Auth0 Universal Login](#42-sơ-đồ-luồng-đăng-nhập-với-auth0-universal-login)
@@ -172,53 +174,188 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
 ## 3. Phần 2: OAuth 2.0 - Giao thức ủy quyền chuẩn quốc tế
 
-### 3.1. Bản chất của OAuth 2.0
-OAuth 2.0 sinh ra để giải quyết bài toán: **Làm sao để ứng dụng của bạn (App đọc Blog) có thể xem ảnh của User trên Google Drive mà User KHÔNG PHẢI ĐƯA PASSWORD Google cho App?**
+### 3.1. Bản chất của OAuth 2.0: Ví dụ đời thực dễ hiểu
 
-> **Tương tự thẻ phòng khách sạn:** Bạn đến lễ tân (Authorization Server), lễ tân xác nhận bạn là ai rồi đưa cho bạn một chiếc **Thẻ từ (Access Token)**. Bạn dùng thẻ từ này để mở cửa phòng (Resource Server). Khách sạn không cần giao chìa khóa vạn năng cho bạn!
+OAuth 2.0 sinh ra để giải quyết bài toán cốt lõi: **Làm sao để ứng dụng bên thứ 3 (như Dev Blog) có thể nhận dạng người dùng hoặc lấy dữ liệu mà người dùng KHÔNG CẦN PHẢI GIAO MẬT KHẨU GỐC cho ứng dụng?**
 
-### 3.2. 4 Vai trò chính trong OAuth 2.0:
-1. **Resource Owner (Chủ tài nguyên):** Chính là Người dùng (End User).
-2. **Client (Ứng dụng cần quyền):** Ứng dụng Angular của bạn (`dev-blog-client`).
-3. **Authorization Server (Máy chủ cấp quyền):** Google Accounts, GitHub, Facebook,...
-4. **Resource Server (Máy chủ chứa tài nguyên):** Google Drive API, GitHub Repos API,...
+> [!TIP]
+> **Ví dụ Khách sạn & Chiếc chìa khóa nhà:**
+> - **Cách cũ (Đăng nhập mật khẩu truyền thống):** Bạn giao luôn chùm chìa khóa nhà của bạn cho nhân viên lễ tân. Nếu khách sạn bị trộm, kẻ gian có chìa khóa vào mở toàn bộ nhà bạn (Gmail, Drive, Facebook, Ngân hàng).
+> - **Cách mới (OAuth 2.0):** Bạn đến quầy lễ tân Google, Google cấp cho ứng dụng Dev Blog một chiếc **Thẻ từ quẹt cửa tạm thời (Access Token)**. Chiếc thẻ từ này:
+>   1. Chỉ mở được đúng 1 cánh cửa cho phép: *"Xem tên và email"*.
+>   2. Không bao giờ mở được két sắt (không đọc tin nhắn, không đổi được mật khẩu).
+>   3. Tự động hết hạn sau 1 tiếng. Hết giờ thẻ thành vô dụng!
 
 ---
 
-### 3.3. Luồng Authorization Code Flow with PKCE (Chuẩn cho Angular SPA)
+### 3.2. 4 Vai trò chính trong OAuth 2.0
 
-Trước đây với web truyền thống có backend server, người ta dùng `Authorization Code Flow` kèm `Client Secret`.  
-Tuy nhiên với Single Page Application (Angular/React), **code chạy hoàn toàn trên trình duyệt của người dùng nên không thể giấu Client Secret** (F12 là lộ).  
-Vì vậy, chuẩn thế giới bắt buộc dùng biến thể: **PKCE (Proof Key for Code Exchange - phát âm là "pixie")**.
+Để dễ nhớ, hãy hình dung 4 nhân vật trong một buổi tiệc:
+
+| Thuật ngữ OAuth 2.0 | Tên đời thực | Vai trò trong hệ thống |
+| :--- | :--- | :--- |
+| **1. Resource Owner** | **Chủ sở hữu** (Chính là Bạn / End User) | Người sở hữu tài khoản Google, có quyền quyết định *"Cho phép"* hay *"Từ chối"* cấp quyền. |
+| **2. Client** | **Ứng dụng xin quyền** (Angular Dev Blog) | Ứng dụng chạy trên trình duyệt của bạn, muốn biết bạn là ai để cho phép viết bài. |
+| **3. Authorization Server** | **Máy chủ cấp phép** (Google Accounts / Auth0) | Nơi lưu giữ mật khẩu thật, hiển thị màn hình đăng nhập, xác thực 2FA và cấp thẻ Token. |
+| **4. Resource Server** | **Máy chủ tài nguyên** (Backend API / Firebase) | Nơi cất giữ bài viết, danh sách user. Chỉ phục vụ khi nhận được Thẻ từ hợp lệ. |
+
+---
+
+### 3.3. Cơ chế PKCE là gì? Ví dụ trò chơi Câu đố mật
+
+Trước đây, các ứng dụng web truyền thống có Server backend riêng sẽ giữ một mã bí mật gọi là `Client Secret`.  
+Tuy nhiên, với ứng dụng **Single Page Application (Angular / React / Vue)** hoặc **Mobile App (Ionic / Capacitor)**, mã nguồn chạy hoàn toàn ở phía thiết bị người dùng:
+- Mọi người đều có thể mở F12 Developer Tools hoặc decompile file `.apk` để đọc lén mã bí mật.
+- Do đó, **tuyệt đối không được lưu Client Secret ở Frontend**.
+
+Để giải quyết vấn đề này, chuẩn bảo mật quốc tế sinh ra **PKCE (Proof Key for Code Exchange - phát âm là "pixie")**.
+
+> [!IMPORTANT]
+> **Hình dung PKCE qua "Trò chơi câu đố mật":**
+> 1. **Đáp án bí mật (`code_verifier`):** Khi bạn bấm nút đăng nhập, Angular App tự nghĩ ra một từ khóa bí mật ngẫu nhiên trong bộ nhớ (ví dụ: `"cho_xanh_khat_bia"`). App cất kỹ từ này vào túi, không gửi ra ngoài.
+> 2. **Câu đố mã hóa (`code_challenge`):** App dùng thuật toán băm 1 chiều (SHA-256) biến `"cho_xanh_khat_bia"` thành một chuỗi mã hóa loằng ngoằng `"9a8f...bc"`. App gửi câu đố này cho Google giữ trước.
+> 3. **Nhận vé tạm thời (`Authorization Code`):** Sau khi bạn đăng nhập xong, Google trả về một chiếc vé bốc số qua URL.
+> 4. **Kẻ trộm cướp vé thì sao?** Giả sử có mã độc trên máy cướp được chiếc vé này đem sang Google đòi đổi Token. Google sẽ hỏi: *"Đâu, đáp án gốc của câu đố ban đầu là gì?"*. Kẻ trộm **chịu thua** vì không biết đáp án trong túi của App!
+> 5. **Chính chủ nhận thẻ:** Chỉ có Angular App của bạn mới giữ đáp án gốc `"cho_xanh_khat_bia"`. App gửi cả Vé + Đáp án gốc lên. Google băm lại thấy đúng `"9a8f...bc"` ➔ Xác nhận chính chủ và cấp Token!
+
+---
+
+### 3.4. Dòng thời gian 6 bước chi tiết (Flow Timeline từng ly từng tí)
+
+```
+[1. User Bấm Nút] ──► [2. Màn Hình Google] ──► [3. Trả Về Vé Tạm]
+        ▲                                              │
+        │                                              ▼
+[6. Gọi API Blog] ◄── [5. Đăng Nhập Xong] ◄── [4. Đổi Token Ngầm]
+```
+
+#### Sơ đồ trình tự chi tiết (Mermaid Sequence):
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor User as Người dùng
-    participant Browser as Angular App (Client)
-    participant AuthServer as OAuth Server (Google / Auth0)
-    participant API as Backend API
+    actor User as 👤 Người dùng
+    participant App as 💻 Angular App (Client)
+    participant Google as 🛡️ Google Auth Server
+    participant API as 🚀 Backend API (Resource)
 
-    Note over Browser: 1. Tạo chuỗi ngẫu nhiên Code Verifier<br/>và băm mã SHA-256 thành Code Challenge
+    Note over App: BƯỚC 1: CHUẨN BỊ MẬT MÃ<br/>- Sinh code_verifier (Bí mật)<br/>- Băm SHA256 ra code_challenge<br/>- Sinh state chống CSRF
+    User->>App: 1. Bấm nút "Đăng nhập với Google"
+    App->>Google: 2. Redirect sang Google kèm:<br/>clientId, redirectUri, scope, code_challenge, state
 
-    User->>Browser: Bấm "Đăng nhập bằng Google"
-    Browser->>AuthServer: Chuyển hướng trình duyệt tới Google Auth<br/>(kèm ClientId, RedirectURI, code_challenge)
-    
-    AuthServer->>User: Hiển thị màn hình đăng nhập Google & Hỏi cấp quyền
-    User->>AuthServer: Đồng ý đăng nhập & cấp quyền
-    
-    AuthServer-->>Browser: Chuyển hướng về Angular kèm mã tạm: ?code=ABC123XYZ
-    
-    Note over Browser: 2. Trao đổi Code lấy Token an toàn
-    Browser->>AuthServer: POST /oauth/token <br/>(Gửi mã ?code=ABC123XYZ + code_verifier gốc)
-    
-    Note over AuthServer: AuthServer băm code_verifier gửi lên<br/>so sánh với code_challenge đã lưu ban đầu.<br/>Nếu khớp -> Chứng minh đúng là Client gốc!
-    
-    AuthServer-->>Browser: Trả về { id_token, access_token, refresh_token }
-    
-    Browser->>API: Gọi API kèm access_token
-    API-->>Browser: Trả về dữ liệu!
+    Note over Google: BƯỚC 2: XÁC THỰC NGƯỜI DÙNG
+    Google->>User: 3. Hiển thị form login Google & Màn hình Consent
+    User->>Google: 4. Nhập mật khẩu Google & bấm "Cho phép"
+
+    Note over Google: BƯỚC 3: CẤP VÉ TẠM
+    Google-->>App: 5. Redirect về redirectUri kèm:<br/>?code=AUTH_CODE_XYZ&state=...
+
+    Note over App: BƯỚC 4: ĐỔI TOKEN NGẦM (PKCE)<br/>App so khớp state hợp lệ,<br/>gửi code + code_verifier gốc
+    App->>Google: 6. POST /oauth/token<br/>(code + code_verifier + clientId)
+    Note over Google: Google băm code_verifier,<br/>khớp với code_challenge -> HỢP LỆ!
+    Google-->>App: 7. Trả về Token Bundle:<br/>{ access_token, id_token, refresh_token }
+
+    Note over App: BƯỚC 5: HOÀN TẤT ĐĂNG NHẬP<br/>- Lưu token vào LocalStorage/Signals<br/>- Lấy info từ id_token (Tên, Avatar)<br/>- Chuyển hướng vào trang /blog
+    App-->>User: 8. Hiển thị Avatar & Tên User trên Header
+
+    Note over App,API: BƯỚC 6: SỬ DỤNG TOKEN GỌI DỮ LIỆU
+    App->>API: 9. Gọi API kèm Header:<br/>Authorization: Bearer <access_token>
+    API-->>App: 10. Trả về dữ liệu bài viết an toàn!
 ```
+
+---
+
+#### Diễn giải chi tiết từng bước:
+
+#### Bước 1: Chuẩn bị & Chuyển hướng (App của bạn)
+* **Hành động của Bạn:** Bấm nút **"Đăng nhập với Google"** trên giao diện Blog.
+* **App làm gì ở hậu trường:**
+  1. Tạo 1 mật khẩu bí mật: `code_verifier` (giữ lại trong máy).
+  2. Mã hóa nó thành câu đố: `code_challenge`.
+  3. Mở trình duyệt chuyển sang trang Google bằng đường link có kèm thông tin:
+     ```http
+     https://accounts.google.com/o/oauth2/v2/auth?
+        client_id=devblog.apps.google.com   <-- Tên App của bạn
+        &redirect_uri=http://localhost:4200/auth/callback <-- Chỗ quay về
+        &scope=email profile                <-- Quyền muốn xin
+        &code_challenge=abc123xyz           <-- Gửi câu đố cho Google giữ
+        &state=random_anti_csrf             <-- Mã chống lừa đảo
+     ```
+
+#### Bước 2: Đăng nhập & Cấp quyền (Tại trang của Google)
+* **Trình duyệt lúc này:** Đang ở trên máy chủ của Google (`accounts.google.com`).
+* **Hành động của Bạn:**
+  1. Nhập email & mật khẩu tài khoản Google. (App Blog **không hề biết** mật khẩu này).
+  2. Màn hình hiện lên: *"Ứng dụng Dev Blog muốn xem tên và email của bạn. Bạn có đồng ý không?"*
+  3. Bạn bấm: **"Cho phép / Đồng ý"**.
+
+#### Bước 3: Google gửi "Vé tạm" quay về App
+* Sau khi bạn bấm "Đồng ý", Google biết đã xong việc. Google lập tức **redirect (chuyển hướng)** trình duyệt quay trở lại địa chỉ `redirect_uri` của Blog kèm theo một cái mã tạm gọi là `code`:
+  ```http
+  http://localhost:4200/auth/callback?code=4/0AY0e-g...&state=random_anti_csrf
+  ```
+* **App của bạn làm gì:**
+  - Bắt lấy cái URL này.
+  - So sánh `state` xem có đúng là phiên do chính mình gửi đi lúc nãy không (nếu đúng thì đi tiếp, nếu không thì cảnh báo có kẻ đang giả mạo).
+  - Rút lấy cái mã tạm `code=4/0AY0e-g...`.
+
+#### Bước 4: Đổi Vé Tạm lấy Token Thật (Giai đoạn PKCE cốt lõi)
+* Lúc này App vẫn **chưa** có thông tin đăng nhập. Cái `code` ở Bước 3 chỉ là vé tạm thời (sống được khoảng 30 - 60 giây).
+* **App âm thầm gửi 1 request POST** ngầm từ phía sau (User không nhìn thấy) lên máy chủ Google:
+  ```http
+  POST https://oauth2.googleapis.com/token
+  Dữ liệu gửi lên:
+    - code: "4/0AY0e-g..."              (Vé tạm vừa nhận)
+    - code_verifier: "mat_khau_bi_mat"   (Đáp án bí mật app giữ từ Bước 1)
+    - client_id: "devblog.apps.google.com"
+  ```
+* **Google kiểm tra:**
+  1. Cái vé `code` này có đúng do Google vừa phát ra không? 👉 Đúng.
+  2. Lấy `code_verifier` đem hash lại xem có ra đúng câu đố `code_challenge` gửi từ Bước 1 không? 👉 Đúng chính chủ App gửi!
+  3. Google lập tức trả về gói dữ liệu gồm:
+     - **`access_token`**: Chìa khóa vào cửa (chuỗi JWT).
+     - **`id_token`**: Chứa thông tin của bạn (Tên: Phú Cường, Email: phu.cuong@gmail.com, Avatar...).
+     - **`refresh_token`**: Chìa khóa dùng để gia hạn khi `access_token` hết hạn.
+
+#### Bước 5: Hoàn tất đăng nhập trên App
+* App nhận được gói Token từ Google:
+  - Bóc tách `id_token` để lấy: Tên, Email, Ảnh avatar.
+  - Cập nhật giao diện: Header hiện *"Chào Phú Cường"*, ẩn nút Đăng nhập, hiện nút Đăng xuất.
+  - Lưu `access_token` vào bộ nhớ an toàn (`localStorage` / `sessionStorage`).
+  - Chuyển hướng người dùng vào trang chủ `/blog`.
+
+#### Bước 6: Sử dụng Token để gọi API (Hậu OAuth)
+Sau khi đã có `access_token`, mỗi lần bạn bấm "Tạo bài viết mới" hoặc "Đọc bài viết VIP", App chỉ cần gửi kèm token vào Header:
+```http
+GET https://api.devblog.com/posts
+Header:
+   Authorization: Bearer <access_token_vừa_lấy_ở_bước_4>
+```
+Server của bạn nhìn thấy Header này:
+* Nhận diện: *"À, token hợp lệ của Phú Cường!"* ➔ Cho phép xem và lưu bài viết.
+
+> [!NOTE]
+> **Tóm tắt trong 1 câu:**  
+> **OAuth 2.0 PKCE** là quy trình: Bạn sang Google đăng nhập ➔ Google phát cho bạn 1 cái **vé tạm** đưa về App ➔ App dùng vé tạm kèm **đáp án mật** để đổi lấy **Thẻ Token thật** ➔ Dùng Thẻ Token đó để hoạt động trong suốt quá trình dùng App mà **không bao giờ để lộ mật khẩu Google**.
+
+---
+
+### 3.5. Bảng giải mã từ điển thuật ngữ thực tế (Cheat Sheet)
+
+Khi đọc tài liệu hoặc code OAuth 2.0, bạn sẽ gặp các từ khóa sau:
+
+| Thuật ngữ | Ý nghĩa kỹ thuật | Ví dụ giá trị thực tế |
+| :--- | :--- | :--- |
+| **`client_id`** | Mã định danh duy nhất của App đăng ký trên Google/Auth0. | `83921948123-devblog.apps.googleusercontent.com` |
+| **`redirect_uri`** | Địa chỉ đường link Google sẽ đưa người dùng quay về sau khi đăng nhập xong. | `http://localhost:4200/auth/callback` |
+| **`scope`** | Danh sách các quyền mà App muốn xin từ người dùng. | `openid profile email` (Xin định danh OIDC, họ tên, email) |
+| **`state`** | Chuỗi ngẫu nhiên sinh ra để chống tấn công giả mạo CSRF (Request Forgery). | `c9afb4e293104c758c34151b6dcc22dd` |
+| **`code_verifier`** | Chuỗi bí mật gốc ngẫu nhiên sinh ra bởi trình duyệt (chỉ Client biết). | `dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk` |
+| **`code_challenge`** | Chuỗi băm SHA-256 từ `code_verifier` (câu đố gửi trước cho Auth Server). | `E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM` |
+| **`authorization_code`** | Mã vé tạm thời sống 30-60 giây do Auth Server cấp để đổi lấy Token. | `4/0AY0e-g7Qx_8p9Lq91A...` |
+| **`access_token`** | Chiếc thẻ từ quyền năng (Bearer Token) dùng kẹp vào Header gọi API. | `eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...` |
+| **`id_token`** | Thẻ căn cước chứa thông tin người dùng (Họ tên, Email, Avatar) chuẩn OpenID Connect. | `eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...` |
+| **`refresh_token`** | Chìa khóa dự phòng dài hạn dùng để lấy `access_token` mới khi token cũ hết hạn 1 tiếng. | `rt_98ab710ef67cd890...` |
 
 ---
 
