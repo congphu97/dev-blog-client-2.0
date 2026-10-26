@@ -14,8 +14,16 @@ export class BlogFormTemplateComponent implements OnInit {
   public blogForm: BlogPost = {
     id: 0,
     title: '',
+    content: '',
     summary: '',
-    imageUrl: 'https://picsum.photos/400/250'
+    imageUrl: 'https://picsum.photos/400/250',
+    publishedAt: new Date().toISOString(),
+    viewCount: 0,
+    createAt: new Date().toISOString(),
+    updateAt: new Date().toISOString(),
+    author: '',
+    category: '',
+    tags: []
   };
 
   ngOnInit() {

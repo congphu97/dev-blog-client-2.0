@@ -1,13 +1,15 @@
 import { Component, computed, debounced, effect, inject, linkedSignal, OnInit, signal } from '@angular/core';
-import { IonContent, IonButton, IonIcon, ModalController } from '@ionic/angular/standalone';
+import { IonContent, ModalController } from '@ionic/angular/standalone';
 import { HeaderComponent } from 'src/app/header/header.component';
 import { arrayEqualByKey } from 'src/app/shared/signal-utils';
-import { BlogFormComponent, NewBlogData } from '../blog-form/blog-form.component';
+import { BlogFormComponent, BlogSubmitData } from '../blog-form/blog-form.component';
 import { BlogPost } from '../blog.models';
 import { BlogGridComponent } from '../blog-grid/blog-grid.component';
 import { BlogListComponent } from '../blog-list/blog-list.component';
 
-import { NgcBadgeModule, NgcButtonModule, NgcTagModule, NgcAvatarModule } from 'ngc-library';
+import { NgcBadgeModule, NgcButtonModule, NgcTagModule, NgcAvatarModule, NgcCardModule } from 'ngc-library';
+
+import { BlogService } from '../blog.service';
 
 @Component({
   selector: 'app-blog-container',
@@ -16,17 +18,21 @@ import { NgcBadgeModule, NgcButtonModule, NgcTagModule, NgcAvatarModule } from '
   imports: [
     HeaderComponent, 
     IonContent, 
-    IonButton, 
     BlogGridComponent, 
     BlogListComponent,
     NgcBadgeModule,
     NgcButtonModule,
     NgcTagModule,
-    NgcAvatarModule
+    NgcAvatarModule,
+    NgcCardModule
   ],
 })
-export class BlogContainerComponent {
+export class BlogContainerComponent implements OnInit {
   private modalCtrl = inject(ModalController);
+  private blogService = inject(BlogService);
+
+  // Trạng thái loading toàn cục khi tải từ Firebase
+  public isLoading = signal<boolean>(true);
 
   // Chế độ hiển thị: 'grid' hoặc 'list' bằng Signal
   public viewMode = signal<'grid' | 'list'>('grid');
@@ -42,43 +48,304 @@ export class BlogContainerComponent {
   // Trì hoãn 400ms sau khi người dùng dừng gõ mới cập nhật
   public debouncedKeyword = debounced(this.keyword, 400);
 
+  // Bộ lọc danh mục Category
+  public selectedCategory = signal<string>('all');
+  public readonly categories = [
+    { id: 'all', label: 'Tất cả' },
+    { id: 'CI/CD & DevOps', label: 'CI/CD & DevOps' },
+    { id: 'Android & Firebase', label: 'Android & Firebase' },
+    { id: 'Google Play', label: 'Google Play' },
+    { id: 'iOS & App Store', label: 'iOS & App Store' }
+  ];
+
+  selectCategory(catId: string) {
+    this.selectedCategory.set(catId);
+  }
+
   public isFavorite = signal(false);
   public blogPosts = signal<BlogPost[]>([
     {
       id: 1,
-      title: 'Tìm hiểu Angular Signals',
-      summary: 'Angular Signals là một cách quản lý trạng thái hiệu quả trong Angular 16.',
-      imageUrl: 'https://picsum.photos/id/1011/400/250',
-      favorite: false
+      title: 'Cẩm Nang Toàn Tập Về CI/CD Web Với GitHub Actions (Angular 22 + Ionic)',
+      content: `## 🚀 Tổng quan về Pipeline CI/CD với GitHub Actions
+
+Tự động hóa toàn bộ quy trình từ khâu kiểm tra mã nguồn (Linting, Unit Test) đến khâu đóng gói sản phẩm (Production Build) và phát hành trực tiếp lên **GitHub Pages**.
+
+> [!NOTE]
+> Để pipeline deploy lên GitHub Pages thành công, bạn cần vào **Settings > Pages > Build and deployment** và chọn nguồn là **GitHub Actions**.
+
+---
+
+### 📋 Tính năng nổi bật của Pipeline
+
+- [x] Tối ưu Cache \`npm\` / \`node_modules\` giúp giảm thời gian build từ 4 phút xuống **45 giây**.
+- [x] Tự động kiểm tra chất lượng mã bằng \`ng lint\` và \`prettier\`.
+- [x] Build bản phát hành Angular 22 với chuẩn ES2022 và Service Worker PWA.
+- [x] Tự động cập nhật \`base-href\` tương ứng với repository GitHub Pages.
+
+---
+
+### 💻 Cấu hình GitHub Actions Workflow (\`.github/workflows/deploy.yml\`)
+
+Dưới đây là file workflow hoàn chỉnh để tự động deploy:
+
+\`\`\`yaml
+name: Deploy Angular 22 + Ionic to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: 'pages'
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    environment:
+      name: github-pages
+      url: \${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout mã nguồn
+        uses: actions/checkout@v4
+
+      - name: Cài đặt Node.js 22.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Cài đặt dependencies
+        run: npm ci
+
+      - name: Build ứng dụng Angular
+        run: npm run build -- --configuration production
+
+      - name: Cấu hình GitHub Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './www'
+
+      - name: Xuất bản lên GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+\`\`\`
+
+> [!TIP]
+> Sử dụng lệnh \`npm ci\` thay vì \`npm install\` trên CI/CD để đảm bảo đúng 100% phiên bản dependencies được ghi nhận trong file \`package-lock.json\`.
+
+---
+
+### 📊 So sánh hiệu năng Build
+
+| Chỉ số (Metrics) | Build truyền thống | Pipeline tối ưu Cache | Mức cải thiện |
+| :--- | :---: | :---: | :---: |
+| Thời gian cài dependencies | 180s | 25s | **Giảm 86%** |
+| Thời gian biên dịch (Build) | 90s | 45s | **Giảm 50%** |
+| Dung lượng Artifact gzip | 1.8 MB | 1.2 MB | **Giảm 33%** |
+| Tỷ lệ thành công Pipeline | 92% | **99.9%** | Tăng độ tin cậy |
+
+> [!IMPORTANT]
+> Đối với Single Page Application (SPA), hãy đảm bảo cấu hình URL rewrite hoặc copy \`index.html\` thành \`404.html\` để tránh lỗi khi người dùng F5 tải lại trang.`,
+      summary: 'Hướng dẫn toàn diện về CI/CD tự động hóa kiểm tra cú pháp, tối ưu build Linux runner và deploy lên GitHub Pages cho Angular 22 & Ionic.',
+      imageUrl: 'https://images.unsplash.com/photo-1618401471353-b98afee0b2eb?w=800&auto=format&fit=crop&q=80',
+      publishedAt: '2026-10-24T08:00:00Z',
+      viewCount: 3240,
+      createAt: '2026-10-24T07:30:00Z',
+      updateAt: '2026-10-26T10:15:00Z',
+      author: 'Phú Nguyễn',
+      category: 'CI/CD & DevOps',
+      tags: ['CI/CD', 'GitHub Actions', 'Angular 22', 'Ionic', 'GitHub Pages'],
+      favorite: true
     },
     {
       id: 2,
-      title: 'Standalone Components trong Angular',
-      summary: 'Hướng dẫn tạo và sử dụng standalone components để giảm phức tạp module.',
-      imageUrl: 'https://picsum.photos/id/1012/400/250',
+      title: 'Hướng Dẫn Tự Động Build APK & Phân Phối Firebase App Distribution Bằng CI/CD',
+      content: `## 📱 Tự Động Build APK & Phân Phối Qua Firebase App Distribution
+
+Quy trình tự động hóa đóng gói ứng dụng di động Android (Capacitor 7 + Angular 22) và gửi file APK thử nghiệm đến hòm thư của toàn bộ Tester chỉ sau một lệnh \`git push\`.
+
+> [!TIP]
+> Bạn có thể tạo nhóm tester chuyên biệt trên Firebase Console (ví dụ: \`qa-team\`, \`internal-beta\`) để tự động phân quyền truy cập bản build mới.
+
+---
+
+### 🛠️ Các bước thực hiện chính
+
+1. Cài đặt môi trường **Java 21 (Temurin)** và **Android SDK 34**.
+2. Đồng bộ mã nguồn Web sang thư mục Android bằng lệnh \`npx cap sync android\`.
+3. Biên dịch bản APK Release bằng Gradle wrapper \`./gradlew assembleRelease\`.
+4. Ký mã APK bằng Keystore bảo mật lưu trữ trong GitHub Secrets.
+5. Upload APK lên **Firebase App Distribution** qua Firebase CLI action.
+
+---
+
+### 💻 Đoạn mã GitHub Actions Workflow mẫu
+
+\`\`\`yaml
+name: Build Android APK & Distribute to Firebase
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Cài đặt Node.js & Dependencies
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - run: npm ci
+      - run: npm run build
+      - run: npx cap sync android
+
+      - name: Build APK với Gradle
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleRelease
+
+      - name: Upload APK lên Firebase App Distribution
+        uses: w9jds/firebase-action@master
+        with:
+          args: appdistribution:distribute android/app/build/outputs/apk/release/app-release.apk --app \${{ secrets.FIREBASE_APP_ID }} --groups qa-testers
+        env:
+          FIREBASE_TOKEN: \${{ secrets.FIREBASE_TOKEN }}
+\`\`\`
+
+> [!WARNING]
+> Tuyệt đối không commit file Keystore hoặc mật khẩu Key Store vào Git public. Luôn sử dụng GitHub Encrypted Secrets!`,
+      summary: 'Quy trình tự động tăng version, biên dịch file APK Android với Java 21 và gửi tự động cho nhóm testers qua Firebase App Distribution.',
+      imageUrl: 'https://images.unsplash.com/photo-1551650975-87deedd944c3?w=800&auto=format&fit=crop&q=80',
+      publishedAt: '2026-10-25T09:30:00Z',
+      viewCount: 2850,
+      createAt: '2026-10-25T08:45:00Z',
+      updateAt: '2026-10-26T11:00:00Z',
+      author: 'Phú Nguyễn',
+      category: 'Android & Firebase',
+      tags: ['Firebase', 'Android', 'APK', 'Capacitor 7', 'CI/CD'],
       favorite: false
     },
     {
       id: 3,
-      title: 'Lazy Loading Router trong Angular',
-      summary: 'Kỹ thuật lazy loading giúp tối ưu hiệu suất ứng dụng Angular.',
-      imageUrl: 'https://picsum.photos/id/1013/400/250',
-      favorite: false
+      title: 'Hướng Dẫn Tự Động Build AAB & Upload Lên Google Play Console (CH Play)',
+      content: `## 📦 Xuất Bản Android App Bundle (AAB) Lên Google Play Console
+
+Hướng dẫn thiết lập pipeline CI/CD tự động xuất xưởng gói phát hành chính thức (.aab) và tải lên các đường đua (Tracks) như Internal Testing hoặc Closed Testing trên **Google Play Console**.
+
+> [!IMPORTANT]
+> Google Play bắt buộc tất cả ứng dụng mới phải xuất bản dưới dạng **Android App Bundle (.aab)** thay vì file .apk truyền thống để tối ưu dung lượng tải về cho người dùng.
+
+---
+
+### 🔑 Các Secret cần chuẩn bị trong GitHub Repository
+
+| Tên Secret | Mục đích sử dụng |
+| :--- | :--- |
+| \`ANDROID_KEYSTORE_BASE64\` | Chuỗi mã hóa Base64 của file .keystore hoặc .jks ký mã |
+| \`ANDROID_KEY_ALIAS\` | Tên Alias dùng khi tạo Key |
+| \`ANDROID_KEY_PASSWORD\` | Mật khẩu của Key Alias |
+| \`PLAY_CONSOLE_SERVICE_ACCOUNT_JSON\` | JSON Service Account API cấp quyền từ Google Cloud |
+
+---
+
+### 📜 Lệnh sinh Android App Bundle
+
+\`\`\`bash
+# Di chuyển vào thư mục android và build bundle release
+cd android
+./gradlew bundleRelease
+
+# Kiểm tra file đầu ra
+ls -lh app/build/outputs/bundle/release/app-release.aab
+\`\`\`
+
+> [!CAUTION]
+> Đảm bảo mỗi lần xuất bản lên Google Play, giá trị \`versionCode\` trong file \`android/app/build.gradle\` phải luôn lớn hơn số phiên bản trước đó.`,
+      summary: 'Từng bước tạo Keystore ký mã, cấu hình Service Account API và tự động xuất bản Android App Bundle (.aab) lên Google Play Console bằng GitHub Actions.',
+      imageUrl: 'https://images.unsplash.com/photo-1607252650355-f7fd0460ccdb?w=800&auto=format&fit=crop&q=80',
+      publishedAt: '2026-10-25T14:00:00Z',
+      viewCount: 2190,
+      createAt: '2026-10-25T13:15:00Z',
+      updateAt: '2026-10-26T12:00:00Z',
+      author: 'Phú Nguyễn',
+      category: 'Google Play',
+      tags: ['Google Play', 'Android', 'AAB', 'Release', 'Capacitor'],
+      favorite: true
     },
     {
       id: 4,
-      title: 'Angular và RxJS',
-      summary: 'Sử dụng RxJS trong Angular để quản lý dữ liệu bất đồng bộ hiệu quả.',
-      imageUrl: 'https://picsum.photos/id/1014/400/250',
-      favorite: true
-    },
-    {
-      id: 5,
-      title: 'Testing trong Angular',
-      summary: 'Các phương pháp viết test unit và e2e trong Angular.',
-      imageUrl: 'https://picsum.photos/id/1015/400/250',
-      favorite: true
+      title: 'Hướng Dẫn Tự Động Build IPA & Upload Lên Apple App Store / TestFlight (iOS)',
+      content: `## 🍏 Tự Động Build & Phân Phối TestFlight / App Store (iOS)
 
+Thiết lập pipeline CI/CD chạy trên macOS runner để ký mã với Apple Distribution Certificate, tự động tạo IPA và upload lên TestFlight qua App Store Connect API.
+
+> [!NOTE]
+> GitHub Actions hỗ trợ runner \`macos-latest\` (Apple Silicon M1/M2) giúp thời gian archive dự án Xcode nhanh hơn gấp 3 lần so với runner Intel trước đây.
+
+---
+
+### 🛠️ Công nghệ & Công cụ sử dụng
+
+- **Fastlane**: Tự động hóa các bước match provisioning profile, build và upload.
+- **App Store Connect API Key (.p8)**: Xác thực không cần tài khoản 2FA.
+- **Xcode Archive & Export**: Đóng gói file .ipa hoàn chỉnh.
+
+\`\`\`ruby
+# fastlane/Fastfile
+default_platform(:ios)
+
+platform :ios do
+  desc "Push a new beta build to TestFlight"
+  lane :beta do
+    setup_ci
+    api_key = app_store_connect_api_key(
+      key_id: ENV["APP_STORE_KEY_ID"],
+      issuer_id: ENV["APP_STORE_ISSUER_ID"],
+      key_content: ENV["APP_STORE_KEY_P8"]
+    )
+    build_app(workspace: "App.xcworkspace", scheme: "App")
+    upload_to_testflight(api_key: api_key)
+  end
+end
+\`\`\`
+
+> [!TIP]
+> Sử dụng Fastlane Match để lưu trữ chứng chỉ trong một Git repository riêng tư có mã hóa AES-256.`,
+      summary: 'Giải thích hệ thống Apple Code Signing (.p12, provisioning profile), API Key .p8 và pipeline build IPA với Xcode archive trên runner macOS.',
+      imageUrl: 'https://images.unsplash.com/photo-1563206767-5b18f218e8de?w=800&auto=format&fit=crop&q=80',
+      publishedAt: '2026-10-26T08:00:00Z',
+      viewCount: 1940,
+      createAt: '2026-10-26T07:00:00Z',
+      updateAt: '2026-10-26T13:45:00Z',
+      author: 'Phú Nguyễn',
+      category: 'iOS & App Store',
+      tags: ['iOS', 'App Store', 'TestFlight', 'Xcode', 'IPA'],
+      favorite: false
     }
   ]);
 
@@ -90,13 +357,20 @@ export class BlogContainerComponent {
     equal: arrayEqualByKey('id')
   });
 
-  // =========================================================================
-  // BÀI TOÁN THỰC TẾ: "Form Chỉnh Sửa Tiêu Đề Bài Viết"
-  // 1. selectedBlog: Bài viết đang được chọn (Signal gốc)
-  // 2. editTitle: linkedSignal bám theo selectedBlog().title làm mặc định
-  //    - User gõ vào input => editTitle.set() cho phép sửa thoải mái.
-  //    - User bấm chọn sang bài khác => editTitle TỰ ĐỘNG RESET về tiêu đề bài mới!
-  // =========================================================================
+  // 4. computed lọc bài viết theo search và danh mục
+  public filteredBlogPosts = computed(() => {
+    const search = (this.debouncedKeyword.value() ?? '').trim().toLowerCase();
+    const cat = this.selectedCategory();
+    return this.blogPosts().filter(post => {
+      const matchSearch = !search || 
+        post.title.toLowerCase().includes(search) || 
+        post.category.toLowerCase().includes(search) ||
+        (post.summary && post.summary.toLowerCase().includes(search));
+      const matchCat = cat === 'all' || post.category === cat;
+      return matchSearch && matchCat;
+    });
+  });
+
   public selectedBlog = signal<BlogPost>(this.blogPosts()[0]);
   public editTitle = linkedSignal(() => this.selectedBlog().title);
 
@@ -107,49 +381,117 @@ export class BlogContainerComponent {
     });
   }
 
-  // Chọn bài khác để sửa
-  chooseBlogToEdit(blog: BlogPost) {
-    this.selectedBlog.set(blog);
+  async ngOnInit() {
+    this.isLoading.set(true);
+    try {
+      const posts = await this.blogService.getBlogs();
+      if (posts && posts.length > 0) {
+        this.blogPosts.set(posts);
+        this.selectedBlog.set(posts[0]);
+      }
+    } catch (err) {
+      console.error('Không thể tải bài viết từ Firebase:', err);
+    } finally {
+      this.isLoading.set(false);
+    }
   }
 
-  // Lưu tiêu đề mới vào danh sách blogPosts
+  // Chọn bài khác để sửa và mở form cập nhật đầy đủ field
+  chooseBlogToEdit(blog: BlogPost) {
+    this.selectedBlog.set(blog);
+    this.openEditModal(blog);
+  }
+
+  // Lưu nhanh tiêu đề từ LinkedSignal
   saveTitle() {
     this.blogPosts.update(posts =>
       posts.map(p => p.id === this.selectedBlog().id ? { ...p, title: this.editTitle() } : p)
     );
   }
 
-
   onSearch(event: Event) {
     this.keyword.set((event.target as HTMLInputElement).value);
   }
 
   // ==========================================
-  // Mở Ionic Modal chứa BlogFormComponent theo từng mode
+  // Mở Modal Tạo bài viết với đầy đủ thông số model
   // ==========================================
   async openCreateModal(mode: 'signal-form' | 'reactive-form' | 'template-driven-form' = 'signal-form') {
     const modal = await this.modalCtrl.create({
       component: BlogFormComponent,
+      cssClass: 'blog-form-modal',
       componentProps: {
-        mode: mode // Truyền vào signal input mode của BlogFormComponent
+        mode: mode,
+        initialData: null
       }
     });
     await modal.present();
 
-    const { data, role } = await modal.onWillDismiss<NewBlogData>();
+    const { data, role } = await modal.onWillDismiss<BlogSubmitData>();
 
     if (role === 'confirm' && data) {
-      // Dùng Signal .update() để thêm bài viết mới vào đầu danh sách
       const newPost: BlogPost = {
         id: Date.now(),
         title: data.title,
+        category: data.category,
+        author: data.author,
+        imageUrl: data.imageUrl,
         summary: data.summary,
-        imageUrl: data.imageUrl || 'https://picsum.photos/400/250',
-        favorite: false
+        content: data.content,
+        tags: data.tags,
+        publishedAt: data.publishedAt || new Date().toISOString(),
+        viewCount: data.viewCount ?? 0,
+        createAt: new Date().toISOString(),
+        updateAt: new Date().toISOString(),
+        favorite: !!data.favorite
       };
 
       this.blogPosts.update(posts => [newPost, ...posts]);
-      console.log('Đã tạo bài viết mới bằng Signal:', newPost);
+      this.selectedBlog.set(newPost);
+      console.log('✅ Đã tạo bài viết mới đầy đủ model:', newPost);
+    }
+  }
+
+  // ==========================================
+  // Mở Modal Cập nhật bài viết với đầy đủ thông số model
+  // ==========================================
+  async openEditModal(blog: BlogPost, mode: 'signal-form' | 'reactive-form' | 'template-driven-form' = 'signal-form') {
+    const modal = await this.modalCtrl.create({
+      component: BlogFormComponent,
+      cssClass: 'blog-form-modal',
+      componentProps: {
+        mode: mode,
+        initialData: blog
+      }
+    });
+    await modal.present();
+
+    const { data, role } = await modal.onWillDismiss<BlogSubmitData>();
+
+    if (role === 'confirm' && data) {
+      const updatedPost: BlogPost = {
+        ...blog,
+        title: data.title,
+        category: data.category,
+        author: data.author,
+        imageUrl: data.imageUrl,
+        summary: data.summary,
+        content: data.content,
+        tags: data.tags,
+        favorite: !!data.favorite,
+        publishedAt: data.publishedAt || blog.publishedAt,
+        viewCount: data.viewCount ?? blog.viewCount,
+        updateAt: new Date().toISOString()
+      };
+
+      this.blogPosts.update(posts =>
+        posts.map(p => p.id === blog.id ? updatedPost : p)
+      );
+
+      if (this.selectedBlog().id === blog.id) {
+        this.selectedBlog.set(updatedPost);
+      }
+      console.log('✅ Đã cập nhật bài viết đầy đủ model:', updatedPost);
     }
   }
 

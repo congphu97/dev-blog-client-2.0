@@ -1,13 +1,13 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>
+<ion-header [translucent]="true" class="app-main-header">
+  <ion-toolbar class="header-toolbar">
+    <ion-title class="header-title">
       Dev Blog
     </ion-title>
-    <ion-buttons slot="end" style="display: flex; align-items: center; gap: 8px; margin-right: 12px;">
+    <ion-buttons slot="end" class="header-user-actions">
       <ngc-avatar label="Phú Cường" size="small"></ngc-avatar>
-      <ion-button>
+      <button type="button" class="shadcn-btn shadcn-btn--sm shadcn-btn--outline">
         Login
-      </ion-button>
+      </button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>

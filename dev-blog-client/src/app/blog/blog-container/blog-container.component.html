@@ -1,105 +1,130 @@
 <app-header></app-header>
-<ion-content>
-  <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 12px 0;">
-    <div style="display: flex; align-items: center; gap: 8px;">
-      <input 
-        style="padding: 8px 12px; border: 1px solid #ccc; border-radius: 6px; width: 250px;" 
-        [value]="keyword()" 
-        (input)="onSearch($event)" 
-        placeholder="Gõ từ khóa tìm kiếm..." 
+<ion-content class="blog-container-page">
+  <div class="main-content-wrapper">
+
+    <!-- ============================================== -->
+    <!-- TOP TOOLBAR: SEARCH & CREATE BUTTONS -->
+    <!-- ============================================== -->
+    <div class="top-action-bar">
+      <!-- Search Input với debounced indicator -->
+      <div class="search-box-wrapper">
+        <span class="search-icon">🔍</span>
+        <input 
+          class="search-input"
+          [value]="keyword()" 
+          (input)="onSearch($event)" 
+          placeholder="Tìm kiếm bài viết, công nghệ, tác giả..." 
+        />
+        @if (keyword()) {
+          <button class="clear-search-btn" (click)="keyword.set('')">✕</button>
+        }
+        @if (debouncedKeyword.status() === 'loading') {
+          <span class="debounce-indicator">⏳ Đang tìm...</span>
+        }
+      </div>
+
+      <!-- Nút mở Modal Tạo bài viết -->
+      <div class="create-actions-group">
+        <button type="button" class="shadcn-btn shadcn-btn--primary" (click)="openCreateModal()">
+          + Tạo bài viết
+        </button>
+      </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- CATEGORY FILTER CHIPS -->
+    <!-- ============================================== -->
+    <div class="category-chips-row">
+      <span class="category-label">Chuyên mục:</span>
+      <div class="chips-container">
+        @for (cat of categories; track cat.id) {
+          <button 
+            type="button"
+            class="chip-button"
+            [class.chip-button--active]="selectedCategory() === cat.id"
+            (click)="selectCategory(cat.id)"
+          >
+            {{ cat.label }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- TOOLBAR CHUYỂN ĐỔI CHẾ ĐỘ HIỂN THỊ: GRID VS LIST -->
+    <!-- ============================================== -->
+    <div class="view-switch-toolbar">
+      <div class="toolbar-title-group">
+        <h2 class="section-title">
+          Khám phá bài viết <span class="count-number">({{ filteredBlogPosts().length }})</span>
+        </h2>
+      </div>
+
+      <div class="view-mode-buttons">
+        <button 
+          type="button"
+          class="shadcn-btn shadcn-btn--sm"
+          [class.shadcn-btn--primary]="viewMode() === 'grid'"
+          [class.shadcn-btn--outline]="viewMode() !== 'grid'"
+          (click)="viewMode.set('grid')"
+        >
+          🔲 Lưới (Grid)
+        </button>
+        <button 
+          type="button"
+          class="shadcn-btn shadcn-btn--sm"
+          [class.shadcn-btn--primary]="viewMode() === 'list'"
+          [class.shadcn-btn--outline]="viewMode() !== 'list'"
+          (click)="viewMode.set('list')"
+        >
+          📄 Danh sách (List)
+        </button>
+      </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- RENDER 2 COMPONENT CON VỚI SIGNAL INPUT / OUTPUT -->
+    <!-- ============================================== -->
+    @if (viewMode() === 'grid') {
+      <app-blog-grid 
+        [posts]="filteredBlogPosts()"
+        [isLoading]="isLoading()"
+        (toggleFavorite)="toggleFavorite($event)"
+        (chooseToEdit)="chooseBlogToEdit($event)"
       />
-      @if (debouncedKeyword.status() === 'loading') {
-        <span style="color: #e0ac08; font-weight: bold;">⏳ Đang chờ dừng gõ 400ms...</span>
-      }
+    } @else {
+      <app-blog-list 
+        [posts]="filteredBlogPosts()"
+        (toggleFavorite)="toggleFavorite($event)"
+        (chooseToEdit)="chooseBlogToEdit($event)"
+      />
+    }
+
+    <!-- ============================================== -->
+    <!-- DANH SÁCH BÀI VIẾT YÊU THÍCH SỬ DỤNG NGC-LIBRARY -->
+    <!-- ============================================== -->
+    <div class="favorite-section">
+      <div class="favorite-header">
+        <h3 class="favorite-title">
+          ❤️ Bài viết yêu thích <span class="count-number">({{ favoriteBlogs().length }})</span>
+        </h3>
+      </div>
+
+      <div class="favorite-grid">
+        @for (item of favoriteBlogs(); track item.id) {
+          <div class="favorite-item-card">
+            <ngc-avatar [label]="item.title" [avatar]="{ photo: item.imageUrl, mode: 'photo' }" size="small"></ngc-avatar>
+            <div class="favorite-item-body">
+              <span class="favorite-item-title">{{ item.title }}</span>
+              <span class="favorite-item-cat">{{ item.category }}</span>
+            </div>
+            <button class="favorite-remove-btn" (click)="toggleFavorite(item.id)" title="Bỏ thích">✕</button>
+          </div>
+        } @empty {
+          <p class="empty-favorite-text">Chưa có bài viết yêu thích nào được chọn.</p>
+        }
+      </div>
     </div>
 
-    <!-- Nút mở Ionic Modal với 3 chế độ -->
-    <div style="display: flex; gap: 8px;">
-      <ion-button color="success" (click)="openCreateModal('signal-form')">
-        ⚡ Tạo (Signal Form)
-      </ion-button>
-      <ion-button color="primary" fill="outline" (click)="openCreateModal('reactive-form')">
-        Tạo (Reactive)
-      </ion-button>
-      <ion-button color="medium" fill="outline" (click)="openCreateModal('template-driven-form')">
-        Tạo (Template)
-      </ion-button>
-    </div>
   </div>
-
-  <!-- ============================================== -->
-  <!-- DEMO LINKEDSIGNAL: FORM CHỈNH SỬA TIÊU ĐỀ BÀI VIẾT -->
-  <!-- ============================================== -->
-  <div style="margin: 16px 0; padding: 16px; background: #f4f5f8; border-radius: 8px; border: 2px solid #3880ff;">
-    <h3>✏️ Form chỉnh sửa bài viết (LinkedSignal Demo):</h3>
-    <p>Đang chọn sửa bài: <strong>{{ selectedBlog().title }}</strong> (ID: {{ selectedBlog().id }})</p>
-    
-    <label>Tiêu đề bài viết: </label>
-    <input 
-      style="padding: 6px; width: 60%; margin-right: 8px;"
-      [value]="editTitle()" 
-      (input)="editTitle.set($any($event.target).value)" 
-      placeholder="Nhập tiêu đề mới..." 
-    />
-    <button ngcButton color="#3880ff" textColor="#ffffff" (click)="saveTitle()">
-      💾 Lưu tiêu đề
-    </button>
-  </div>
-  <!-- ============================================== -->
-  <!-- TOOLBAR CHUYỂN ĐỔI CHẾ ĐỘ HIỂN THỊ: GRID VS LIST -->
-  <!-- ============================================== -->
-  <div style="display: flex; justify-content: space-between; align-items: center; margin: 16px 0; padding-bottom: 8px; border-bottom: 1px solid #e2e8f0;">
-    <div style="display: flex; align-items: center; gap: 8px;">
-      <h2 style="margin: 0; font-size: 1.2rem; color: #1e293b;">
-        Danh sách bài viết
-      </h2>
-      <ngc-badge [count]="blogPosts().length + ''" color="#3880ff"></ngc-badge>
-    </div>
-
-    <button ngcButton color="#f1f5f9" textColor="#0f172a" borderColor="#cbd5e1" (click)="toggleViewMode()">
-      @if (viewMode() === 'grid') {
-        <span>📄 Chuyển sang dạng Danh sách (List)</span>
-      } @else {
-        <span>🔲 Chuyển sang dạng Lưới (Grid 6 cột)</span>
-      }
-    </button>
-  </div>
-
-  <!-- ============================================== -->
-  <!-- RENDER 2 COMPONENT CON VỚI SIGNAL INPUT / OUTPUT -->
-  <!-- ============================================== -->
-  @if (viewMode() === 'grid') {
-    <app-blog-grid 
-      [posts]="blogPosts()"
-      (toggleFavorite)="toggleFavorite($event)"
-      (chooseToEdit)="chooseBlogToEdit($event)"
-    />
-  } @else {
-    <app-blog-list 
-      [posts]="blogPosts()"
-      (toggleFavorite)="toggleFavorite($event)"
-      (chooseToEdit)="chooseBlogToEdit($event)"
-    />
-  }
-
-  <!-- ============================================== -->
-  <!-- DANH SÁCH BÀI VIẾT YÊU THÍCH SỬ DỤNG NGC-LIBRARY -->
-  <!-- ============================================== -->
-  <div style="margin-top: 32px; padding-top: 16px; border-top: 2px solid #e2e8f0;">
-    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
-      <h2 style="margin: 0; font-size: 1.2rem; color: #1e293b;">❤️ Bài viết yêu thích</h2>
-      <ngc-badge [count]="favoriteBlogs().length + ''" color="#ef4444"></ngc-badge>
-    </div>
-
-    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-      @for (item of favoriteBlogs(); track item.id) {
-        <div style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-          <ngc-avatar [label]="item.title" [avatar]="{ photo: item.imageUrl, mode: 'photo' }" size="small"></ngc-avatar>
-          <span style="font-weight: 500; font-size: 0.9rem;">{{ item.title }}</span>
-          <ngc-tag label="Đã thích" color="#ef4444"></ngc-tag>
-        </div>
-      }
-    </div>
-  </div>
-
 </ion-content>

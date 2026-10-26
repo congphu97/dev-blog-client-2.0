@@ -1,89 +1,290 @@
-<ion-header>
-  <ion-toolbar color="primary">
-    <ion-title>
-      @if (mode === 'signal-form') {
-        Tạo bài (Signal Form ⚡)
-      } @else if (mode === 'reactive-form') {
-        Tạo bài (Reactive Form)
-      } @else {
-        Tạo bài (Template Form)
-      }
-    </ion-title>
-    <ion-buttons slot="start">
-      <ion-button (click)="cancel()">Hủy</ion-button>
-    </ion-buttons>
-    <ion-buttons slot="end">
-      <!-- Nút submit theo từng mode -->
-      @if (mode === 'signal-form') {
-        <ion-button [strong]="true" (click)="submit()" [disabled]="!isSignalFormValid()">
-          Tạo
-        </ion-button>
-      } @else if (mode === 'reactive-form') {
-        <ion-button [strong]="true" (click)="submit()" [disabled]="blogForm.invalid">
-          Tạo
-        </ion-button>
-      } @else {
-        <ion-button [strong]="true" (click)="submit()" [disabled]="!templateModel.title.trim() || !templateModel.summary.trim()">
-          Tạo
-        </ion-button>
-      }
-    </ion-buttons>
+<ion-header class="form-modal-header">
+  <ion-toolbar class="form-toolbar">
+    <div class="header-content">
+      <div class="header-title-box">
+        <h2 class="modal-title">
+          @if (isEdit()) {
+            ✏️ Cập nhật bài viết
+          } @else {
+            @if (currentMode() === 'signal-form') {
+              + Tạo bài viết (Signal Form ⚡)
+            } @else if (currentMode() === 'reactive-form') {
+              + Tạo bài viết (Reactive Form 📋)
+            } @else {
+              + Tạo bài viết (Template Form 📝)
+            }
+          }
+        </h2>
+        <p class="modal-subtitle">
+          @if (isEdit()) {
+            Chỉnh sửa toàn bộ thông số của bài viết #{{ initialData?.id }} theo BlogPost model
+          } @else {
+            Điền đầy đủ thông tin chuẩn BlogPost model để xuất bản bài viết mới
+          }
+        </p>
+      </div>
+      <button type="button" class="close-icon-btn" (click)="cancel()" title="Đóng">✕</button>
+    </div>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
-  <div class="form-container">
-    
-    <!-- Badge hiển thị chế độ hiện tại -->
-    <div style="padding: 8px 12px; background: #e0f2fe; color: #0369a1; border-radius: 6px; font-weight: 500; font-size: 0.9rem;">
-      Đang chạy chế độ: <strong>{{ mode }}</strong>
+<ion-content class="form-modal-content">
+  <div class="form-body">
+    <!-- BỘ CHỌN CHẾ ĐỘ FORM (MODE SWITCHER) -->
+    <div class="form-mode-selector-wrapper">
+      <div class="mode-selector-header">
+        <label class="mode-selector-label">Chọn kiểu xử lý Form (Form Architecture):</label>
+        <span class="mode-active-indicator">
+          {{ isEdit() ? '• [Cập nhật bài viết]' : '• [Tạo bài mới]' }}
+        </span>
+      </div>
+      <div class="mode-segmented-control">
+        <button 
+          type="button" 
+          class="mode-segment-btn" 
+          [class.active]="currentMode() === 'signal-form'"
+          (click)="setMode('signal-form')"
+        >
+          <span class="mode-icon">⚡</span>
+          <div class="mode-text-box">
+            <span class="mode-name">Signal Form</span>
+            <span class="mode-desc">Signals & Computed</span>
+          </div>
+        </button>
+
+        <button 
+          type="button" 
+          class="mode-segment-btn" 
+          [class.active]="currentMode() === 'reactive-form'"
+          (click)="setMode('reactive-form')"
+        >
+          <span class="mode-icon">📋</span>
+          <div class="mode-text-box">
+            <span class="mode-name">Reactive Form</span>
+            <span class="mode-desc">FormGroup & Control</span>
+          </div>
+        </button>
+
+        <button 
+          type="button" 
+          class="mode-segment-btn" 
+          [class.active]="currentMode() === 'template-driven-form'"
+          (click)="setMode('template-driven-form')"
+        >
+          <span class="mode-icon">📝</span>
+          <div class="mode-text-box">
+            <span class="mode-name">Template Form</span>
+            <span class="mode-desc">[(ngModel)] Binding</span>
+          </div>
+        </button>
+      </div>
     </div>
 
+    <!-- Thông tin Meta chỉ đọc khi Edit -->
+    @if (isEdit() && initialData) {
+      <div class="edit-meta-info">
+        <span class="meta-item">📌 <strong>ID:</strong> #{{ initialData.id }}</span>
+        <span class="meta-item">📅 <strong>Tạo lúc:</strong> {{ initialData.createAt | date:'dd/MM/yyyy HH:mm' }}</span>
+        <span class="meta-item">🕒 <strong>Sửa gần nhất:</strong> {{ initialData.updateAt | date:'dd/MM/yyyy HH:mm' }}</span>
+      </div>
+    }
+
     <!-- ======================================================== -->
-    <!-- CHẾ ĐỘ 1: SIGNAL FORM ([value]="signal", (ionInput))     -->
+    <!-- CHẾ ĐỘ 1: SIGNAL FORM ([value]="signal", (input))        -->
     <!-- ======================================================== -->
-    @if (mode === 'signal-form') {
-      <div style="display: flex; flex-direction: column; gap: 12px;">
-        <ion-item lines="full">
-          <ion-input
-            label="Tiêu đề (Signal) *"
-            labelPlacement="floating"
-            placeholder="Nhập tiêu đề (tối thiểu 3 ký tự)"
+    @if (currentMode() === 'signal-form') {
+      <div class="fields-group">
+        <!-- 1. Tiêu đề -->
+        <div class="form-field">
+          <label class="field-label">Tiêu đề bài viết (title) <span class="required">*</span></label>
+          <input 
+            type="text"
+            class="shadcn-input"
+            [class.has-error]="signalForm().title.length > 0 && signalForm().title.length < 3"
+            placeholder="Nhập tiêu đề (tối thiểu 3 ký tự)..."
             [value]="signalForm().title"
-            (ionInput)="updateSignalField('title', $any($event).detail.value)"
-          ></ion-input>
-        </ion-item>
-        @if (signalForm().title.length > 0 && signalForm().title.length < 3) {
-          <p style="color: red; font-size: 0.8rem; margin: 0 16px;">Tiêu đề phải từ 3 ký tự trở lên.</p>
-        }
+            (input)="updateSignalField('title', $any($event.target).value)"
+          />
+          @if (signalForm().title.length > 0 && signalForm().title.length < 3) {
+            <span class="field-error">Tiêu đề phải từ 3 ký tự trở lên.</span>
+          }
+        </div>
 
-        <ion-item lines="full">
-          <ion-textarea
-            label="Tóm tắt (Signal) *"
-            labelPlacement="floating"
-            placeholder="Nhập nội dung tóm tắt"
-            [autoGrow]="true"
-            rows="3"
+        <!-- 2. Hàng đôi: Chuyên mục & Tác giả -->
+        <div class="two-cols-row">
+          <div class="form-field">
+            <label class="field-label">Chuyên mục (category) <span class="required">*</span></label>
+            <select 
+              class="shadcn-select"
+              [value]="signalForm().category"
+              (change)="updateSignalField('category', $any($event.target).value)"
+            >
+              @for (cat of categoryList; track cat) {
+                <option [value]="cat">{{ cat }}</option>
+              }
+            </select>
+            @if (signalForm().category === 'Khác') {
+              <div class="custom-input-box animate-fade-in">
+                <input 
+                  type="text"
+                  class="shadcn-input custom-input"
+                  placeholder="Nhập tên chuyên mục khác..."
+                  [value]="customCategorySignal()"
+                  (input)="customCategorySignal.set($any($event.target).value)"
+                />
+              </div>
+            }
+          </div>
+
+          <div class="form-field">
+            <label class="field-label">Tác giả (author) <span class="required">*</span></label>
+            <input 
+              type="text"
+              class="shadcn-input"
+              placeholder="Tên tác giả..."
+              [value]="signalForm().author"
+              (input)="updateSignalField('author', $any($event.target).value)"
+            />
+          </div>
+        </div>
+
+        <!-- 3. Hàng đôi: Ảnh bìa & Thẻ Tags -->
+        <div class="two-cols-row">
+          <div class="form-field">
+            <label class="field-label">Ảnh bìa (imageUrl)</label>
+            <input 
+              type="text"
+              class="shadcn-input"
+              placeholder="https://images.unsplash.com/..."
+              [value]="signalForm().imageUrl"
+              (input)="updateSignalField('imageUrl', $any($event.target).value)"
+            />
+          </div>
+
+          <div class="form-field">
+            <div class="field-label-row">
+              <label class="field-label">Thẻ Tags (tags)</label>
+              @if (!showCustomTagSignal()) {
+                <button type="button" class="tag-toggle-btn" (click)="showCustomTagSignal.set(true)">+ Nhập tùy chỉnh</button>
+              }
+            </div>
+
+            <!-- Dropdown chọn Tag hoặc chọn Khác -->
+            <div class="tag-selector-wrapper">
+              <select 
+                class="shadcn-select tag-select"
+                (change)="onTagSelectChange($any($event.target).value, 'signal'); $any($event.target).value = ''"
+              >
+                <option value="">-- Chọn tag gợi ý hoặc Khác --</option>
+                @for (tag of tagOptions; track tag) {
+                  <option [value]="tag">{{ tag === 'Khác' ? '🏷️ Khác (tự nhập thẻ)...' : '+ ' + tag }}</option>
+                }
+              </select>
+            </div>
+
+            <!-- Input nhập tag tùy chỉnh khi chọn Khác -->
+            @if (showCustomTagSignal()) {
+              <div class="custom-input-box animate-fade-in">
+                <input 
+                  type="text"
+                  class="shadcn-input custom-input"
+                  placeholder="Nhập các thẻ tags (cách nhau bằng dấu phẩy)..."
+                  [value]="signalForm().tags"
+                  (input)="updateSignalField('tags', $any($event.target).value)"
+                />
+              </div>
+            }
+
+            <!-- Badges hiển thị danh sách tag đã chọn -->
+            @if (getTagBadges('signal').length > 0) {
+              <div class="tags-badge-list">
+                @for (t of getTagBadges('signal'); track t) {
+                  <span class="tag-badge-pill">
+                    {{ t }}
+                    <button type="button" class="remove-tag-btn" (click)="removeTag(t, 'signal')" title="Xóa thẻ tag">✕</button>
+                  </span>
+                }
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- 4. Hàng ba: Ngày xuất bản, Lượt xem, Đánh dấu Yêu thích -->
+        <div class="three-cols-row">
+          <div class="form-field">
+            <label class="field-label">Ngày xuất bản (publishedAt)</label>
+            <input 
+              type="date"
+              class="shadcn-input"
+              [value]="signalForm().publishedAt"
+              (input)="updateSignalField('publishedAt', $any($event.target).value)"
+            />
+          </div>
+
+          <div class="form-field">
+            <label class="field-label">Lượt xem (viewCount)</label>
+            <input 
+              type="number"
+              min="0"
+              class="shadcn-input"
+              placeholder="0"
+              [value]="signalForm().viewCount"
+              (input)="updateSignalField('viewCount', +$any($event.target).value)"
+            />
+          </div>
+
+          <div class="form-field checkbox-field-wrapper">
+            <label class="field-label">Trạng thái (favorite)</label>
+            <label class="shadcn-checkbox-label">
+              <input 
+                type="checkbox" 
+                class="shadcn-checkbox"
+                [checked]="signalForm().favorite"
+                (change)="updateSignalField('favorite', $any($event.target).checked)"
+              />
+              <span class="checkbox-text">❤️ Yêu thích</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- 5. Tóm tắt -->
+        <div class="form-field">
+          <label class="field-label">Tóm tắt ngắn (summary) <span class="required">*</span></label>
+          <textarea 
+            class="shadcn-textarea"
+            rows="2"
+            placeholder="Tóm tắt ngắn gọn bài viết để hiển thị trên danh sách card..."
             [value]="signalForm().summary"
-            (ionInput)="updateSignalField('summary', $any($event).detail.value)"
-          ></ion-textarea>
-        </ion-item>
+            (input)="updateSignalField('summary', $any($event.target).value)"
+          ></textarea>
+        </div>
 
-        <ion-item lines="full">
-          <ion-input
-            label="Link ảnh (Signal)"
-            labelPlacement="floating"
-            [value]="signalForm().imageUrl"
-            (ionInput)="updateSignalField('imageUrl', $any($event).detail.value)"
-          ></ion-input>
-        </ion-item>
+        <!-- 6. Nội dung chi tiết (Markdown) -->
+        <div class="form-field">
+          <label class="field-label">Nội dung chi tiết (content - Markdown) <span class="required">*</span></label>
+          <textarea 
+            class="shadcn-textarea markdown-textarea"
+            rows="6"
+            placeholder="Nhập nội dung Markdown chi tiết (# Tiêu đề, **in đậm**, ```code```, danh sách -)..."
+            [value]="signalForm().content"
+            (input)="updateSignalField('content', $any($event.target).value)"
+          ></textarea>
+        </div>
 
         <!-- Preview dữ liệu Signal tức thời -->
-        <div style="margin-top: 8px; padding: 12px; background: #fef9c3; border-radius: 8px; border: 1px dashed #ca8a04;">
-          <h4 style="margin: 0 0 6px; color: #854d0e;">⚡ Live Signal Preview:</h4>
-          <p style="margin: 2px 0;"><strong>Tiêu đề:</strong> {{ signalForm().title || '(Chưa nhập)' }}</p>
-          <p style="margin: 2px 0;"><strong>Tóm tắt:</strong> {{ signalForm().summary || '(Chưa nhập)' }}</p>
-          <p style="margin: 2px 0;"><strong>Hợp lệ:</strong> {{ isSignalFormValid() ? '✅ Có' : '❌ Chưa đủ điều kiện' }}</p>
+        <div class="signal-preview-box">
+          <div class="preview-header">
+            <span class="preview-title">⚡ Live Signal State:</span>
+            <span class="preview-valid-badge" [class.is-valid]="isSignalFormValid()">
+              {{ isSignalFormValid() ? '✓ Đã đủ thông số' : '○ Chưa đủ điều kiện' }}
+            </span>
+          </div>
+          <div class="preview-rows">
+            <p><strong>Tiêu đề:</strong> {{ signalForm().title || '(Chưa nhập)' }}</p>
+            <p><strong>Chuyên mục:</strong> {{ signalForm().category }} • <strong>Tác giả:</strong> {{ signalForm().author }}</p>
+            <p><strong>Lượt xem:</strong> {{ signalForm().viewCount }} • <strong>Ngày:</strong> {{ signalForm().publishedAt }} • <strong>Yêu thích:</strong> {{ signalForm().favorite ? 'Có ❤️' : 'Không 🤍' }}</p>
+            <p><strong>Độ dài nội dung:</strong> {{ signalForm().content.length }} ký tự</p>
+          </div>
         </div>
       </div>
     }
@@ -91,80 +292,389 @@
     <!-- ======================================================== -->
     <!-- CHẾ ĐỘ 2: REACTIVE FORM ([formGroup], formControlName)   -->
     <!-- ======================================================== -->
-    @if (mode === 'reactive-form') {
-      <form [formGroup]="blogForm">
-        <ion-item lines="full">
-          <ion-input
+    @if (currentMode() === 'reactive-form') {
+      <form [formGroup]="blogForm" class="fields-group">
+        <!-- 1. Tiêu đề -->
+        <div class="form-field">
+          <label class="field-label">Tiêu đề bài viết (title) <span class="required">*</span></label>
+          <input 
+            type="text"
+            class="shadcn-input"
+            [class.has-error]="blogForm.get('title')?.touched && blogForm.get('title')?.invalid"
             formControlName="title"
-            label="Tiêu đề *"
-            labelPlacement="floating"
-            placeholder="Nhập tiêu đề (tối thiểu 3 ký tự)"
-          ></ion-input>
-        </ion-item>
-        @if (blogForm.get('title')?.touched && blogForm.get('title')?.invalid) {
-          <p style="color: red; font-size: 0.8rem; margin: 4px 16px;">Tiêu đề bắt buộc và tối thiểu 3 ký tự.</p>
-        }
+            placeholder="Nhập tiêu đề (tối thiểu 3 ký tự)..."
+          />
+          @if (blogForm.get('title')?.touched && blogForm.get('title')?.invalid) {
+            <span class="field-error">Tiêu đề bắt buộc và tối thiểu 3 ký tự.</span>
+          }
+        </div>
 
-        <ion-item lines="full">
-          <ion-textarea
+        <!-- 2. Hàng đôi: Chuyên mục & Tác giả -->
+        <div class="two-cols-row">
+          <div class="form-field">
+            <label class="field-label">Chuyên mục (category) <span class="required">*</span></label>
+            <select class="shadcn-select" formControlName="category">
+              @for (cat of categoryList; track cat) {
+                <option [value]="cat">{{ cat }}</option>
+              }
+            </select>
+            @if (blogForm.get('category')?.value === 'Khác') {
+              <div class="custom-input-box animate-fade-in">
+                <input 
+                  type="text"
+                  class="shadcn-input custom-input"
+                  formControlName="customCategory"
+                  placeholder="Nhập tên chuyên mục khác..."
+                />
+              </div>
+            }
+          </div>
+
+          <div class="form-field">
+            <label class="field-label">Tác giả (author) <span class="required">*</span></label>
+            <input 
+              type="text"
+              class="shadcn-input"
+              formControlName="author"
+              placeholder="Tên tác giả..."
+            />
+          </div>
+        </div>
+
+        <!-- 3. Hàng đôi: Ảnh bìa & Thẻ Tags -->
+        <div class="two-cols-row">
+          <div class="form-field">
+            <label class="field-label">Ảnh bìa (imageUrl)</label>
+            <input 
+              type="text"
+              class="shadcn-input"
+              formControlName="imageUrl"
+              placeholder="https://images.unsplash.com/..."
+            />
+          </div>
+
+          <div class="form-field">
+            <div class="field-label-row">
+              <label class="field-label">Thẻ Tags (tags)</label>
+              @if (!showCustomTagReactive()) {
+                <button type="button" class="tag-toggle-btn" (click)="showCustomTagReactive.set(true)">+ Nhập tùy chỉnh</button>
+              }
+            </div>
+
+            <!-- Dropdown chọn Tag hoặc chọn Khác -->
+            <div class="tag-selector-wrapper">
+              <select 
+                class="shadcn-select tag-select"
+                (change)="onTagSelectChange($any($event.target).value, 'reactive'); $any($event.target).value = ''"
+              >
+                <option value="">-- Chọn tag gợi ý hoặc Khác --</option>
+                @for (tag of tagOptions; track tag) {
+                  <option [value]="tag">{{ tag === 'Khác' ? '🏷️ Khác (tự nhập thẻ)...' : '+ ' + tag }}</option>
+                }
+              </select>
+            </div>
+
+            <!-- Input nhập tag tùy chỉnh khi chọn Khác -->
+            @if (showCustomTagReactive()) {
+              <div class="custom-input-box animate-fade-in">
+                <input 
+                  type="text"
+                  class="shadcn-input custom-input"
+                  formControlName="tags"
+                  placeholder="Nhập các thẻ tags (cách nhau bằng dấu phẩy)..."
+                />
+              </div>
+            }
+
+            <!-- Badges hiển thị danh sách tag đã chọn -->
+            @if (getTagBadges('reactive').length > 0) {
+              <div class="tags-badge-list">
+                @for (t of getTagBadges('reactive'); track t) {
+                  <span class="tag-badge-pill">
+                    {{ t }}
+                    <button type="button" class="remove-tag-btn" (click)="removeTag(t, 'reactive')" title="Xóa thẻ tag">✕</button>
+                  </span>
+                }
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- 4. Hàng ba: Ngày xuất bản, Lượt xem, Đánh dấu Yêu thích -->
+        <div class="three-cols-row">
+          <div class="form-field">
+            <label class="field-label">Ngày xuất bản (publishedAt)</label>
+            <input 
+              type="date"
+              class="shadcn-input"
+              formControlName="publishedAt"
+            />
+          </div>
+
+          <div class="form-field">
+            <label class="field-label">Lượt xem (viewCount)</label>
+            <input 
+              type="number"
+              min="0"
+              class="shadcn-input"
+              formControlName="viewCount"
+              placeholder="0"
+            />
+          </div>
+
+          <div class="form-field checkbox-field-wrapper">
+            <label class="field-label">Trạng thái (favorite)</label>
+            <label class="shadcn-checkbox-label">
+              <input 
+                type="checkbox" 
+                class="shadcn-checkbox"
+                formControlName="favorite"
+              />
+              <span class="checkbox-text">❤️ Yêu thích</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- 5. Tóm tắt -->
+        <div class="form-field">
+          <label class="field-label">Tóm tắt ngắn (summary) <span class="required">*</span></label>
+          <textarea 
+            class="shadcn-textarea"
+            rows="2"
             formControlName="summary"
-            label="Tóm tắt nội dung *"
-            labelPlacement="floating"
-            placeholder="Nhập nội dung tóm tắt"
-            [autoGrow]="true"
-            rows="3"
-          ></ion-textarea>
-        </ion-item>
+            placeholder="Nhập tóm tắt bài viết..."
+          ></textarea>
+        </div>
 
-        <ion-item lines="full">
-          <ion-input
-            formControlName="imageUrl"
-            label="Link ảnh"
-            labelPlacement="floating"
-          ></ion-input>
-        </ion-item>
+        <!-- 6. Nội dung chi tiết (Markdown) -->
+        <div class="form-field">
+          <label class="field-label">Nội dung chi tiết (content - Markdown) <span class="required">*</span></label>
+          <textarea 
+            class="shadcn-textarea markdown-textarea"
+            rows="6"
+            formControlName="content"
+            placeholder="Nhập nội dung Markdown chi tiết..."
+          ></textarea>
+        </div>
       </form>
     }
 
     <!-- ======================================================== -->
     <!-- CHẾ ĐỘ 3: TEMPLATE-DRIVEN FORM ([(ngModel)], name)        -->
     <!-- ======================================================== -->
-    @if (mode === 'template-driven-form') {
-      <form #f="ngForm">
-        <ion-item lines="full">
-          <ion-input
+    @if (currentMode() === 'template-driven-form') {
+      <form #f="ngForm" class="fields-group">
+        <!-- 1. Tiêu đề -->
+        <div class="form-field">
+          <label class="field-label">Tiêu đề bài viết (title) <span class="required">*</span></label>
+          <input 
+            type="text"
+            class="shadcn-input"
             name="title"
             [(ngModel)]="templateModel.title"
             required
-            label="Tiêu đề (Template) *"
-            labelPlacement="floating"
-            placeholder="Nhập tiêu đề"
-          ></ion-input>
-        </ion-item>
+            placeholder="Nhập tiêu đề bài viết..."
+          />
+        </div>
 
-        <ion-item lines="full">
-          <ion-textarea
+        <!-- 2. Hàng đôi: Chuyên mục & Tác giả -->
+        <div class="two-cols-row">
+          <div class="form-field">
+            <label class="field-label">Chuyên mục (category) <span class="required">*</span></label>
+            <select class="shadcn-select" name="category" [(ngModel)]="templateModel.category">
+              @for (cat of categoryList; track cat) {
+                <option [value]="cat">{{ cat }}</option>
+              }
+            </select>
+            @if (templateModel.category === 'Khác') {
+              <div class="custom-input-box animate-fade-in">
+                <input 
+                  type="text"
+                  class="shadcn-input custom-input"
+                  name="customCategory"
+                  [(ngModel)]="templateModel.customCategory"
+                  placeholder="Nhập tên chuyên mục khác..."
+                />
+              </div>
+            }
+          </div>
+
+          <div class="form-field">
+            <label class="field-label">Tác giả (author) <span class="required">*</span></label>
+            <input 
+              type="text"
+              class="shadcn-input"
+              name="author"
+              [(ngModel)]="templateModel.author"
+              required
+              placeholder="Tên tác giả..."
+            />
+          </div>
+        </div>
+
+        <!-- 3. Hàng đôi: Ảnh bìa & Thẻ Tags -->
+        <div class="two-cols-row">
+          <div class="form-field">
+            <label class="field-label">Ảnh bìa (imageUrl)</label>
+            <input 
+              type="text"
+              class="shadcn-input"
+              name="imageUrl"
+              [(ngModel)]="templateModel.imageUrl"
+              placeholder="https://..."
+            />
+          </div>
+
+          <div class="form-field">
+            <div class="field-label-row">
+              <label class="field-label">Thẻ Tags (tags)</label>
+              @if (!showCustomTagTemplate()) {
+                <button type="button" class="tag-toggle-btn" (click)="showCustomTagTemplate.set(true)">+ Nhập tùy chỉnh</button>
+              }
+            </div>
+
+            <!-- Dropdown chọn Tag hoặc chọn Khác -->
+            <div class="tag-selector-wrapper">
+              <select 
+                class="shadcn-select tag-select"
+                (change)="onTagSelectChange($any($event.target).value, 'template'); $any($event.target).value = ''"
+              >
+                <option value="">-- Chọn tag gợi ý hoặc Khác --</option>
+                @for (tag of tagOptions; track tag) {
+                  <option [value]="tag">{{ tag === 'Khác' ? '🏷️ Khác (tự nhập thẻ)...' : '+ ' + tag }}</option>
+                }
+              </select>
+            </div>
+
+            <!-- Input nhập tag tùy chỉnh khi chọn Khác -->
+            @if (showCustomTagTemplate()) {
+              <div class="custom-input-box animate-fade-in">
+                <input 
+                  type="text"
+                  class="shadcn-input custom-input"
+                  name="tags"
+                  [(ngModel)]="templateModel.tags"
+                  placeholder="Nhập các thẻ tags (cách nhau bằng dấu phẩy)..."
+                />
+              </div>
+            }
+
+            <!-- Badges hiển thị danh sách tag đã chọn -->
+            @if (getTagBadges('template').length > 0) {
+              <div class="tags-badge-list">
+                @for (t of getTagBadges('template'); track t) {
+                  <span class="tag-badge-pill">
+                    {{ t }}
+                    <button type="button" class="remove-tag-btn" (click)="removeTag(t, 'template')" title="Xóa thẻ tag">✕</button>
+                  </span>
+                }
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- 4. Hàng ba: Ngày xuất bản, Lượt xem, Đánh dấu Yêu thích -->
+        <div class="three-cols-row">
+          <div class="form-field">
+            <label class="field-label">Ngày xuất bản (publishedAt)</label>
+            <input 
+              type="date"
+              class="shadcn-input"
+              name="publishedAt"
+              [(ngModel)]="templateModel.publishedAt"
+            />
+          </div>
+
+          <div class="form-field">
+            <label class="field-label">Lượt xem (viewCount)</label>
+            <input 
+              type="number"
+              min="0"
+              class="shadcn-input"
+              name="viewCount"
+              [(ngModel)]="templateModel.viewCount"
+              placeholder="0"
+            />
+          </div>
+
+          <div class="form-field checkbox-field-wrapper">
+            <label class="field-label">Trạng thái (favorite)</label>
+            <label class="shadcn-checkbox-label">
+              <input 
+                type="checkbox" 
+                class="shadcn-checkbox"
+                name="favorite"
+                [(ngModel)]="templateModel.favorite"
+              />
+              <span class="checkbox-text">❤️ Yêu thích</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- 5. Tóm tắt -->
+        <div class="form-field">
+          <label class="field-label">Tóm tắt ngắn (summary) <span class="required">*</span></label>
+          <textarea 
+            class="shadcn-textarea"
+            rows="2"
             name="summary"
             [(ngModel)]="templateModel.summary"
             required
-            label="Tóm tắt nội dung (Template) *"
-            labelPlacement="floating"
-            placeholder="Nhập nội dung tóm tắt"
-            [autoGrow]="true"
-            rows="3"
-          ></ion-textarea>
-        </ion-item>
+            placeholder="Nhập tóm tắt..."
+          ></textarea>
+        </div>
 
-        <ion-item lines="full">
-          <ion-input
-            name="imageUrl"
-            [(ngModel)]="templateModel.imageUrl"
-            label="Link ảnh"
-            labelPlacement="floating"
-          ></ion-input>
-        </ion-item>
+        <!-- 6. Nội dung chi tiết (Markdown) -->
+        <div class="form-field">
+          <label class="field-label">Nội dung chi tiết (content - Markdown) <span class="required">*</span></label>
+          <textarea 
+            class="shadcn-textarea markdown-textarea"
+            rows="6"
+            name="content"
+            [(ngModel)]="templateModel.content"
+            required
+            placeholder="Nhập nội dung Markdown chi tiết..."
+          ></textarea>
+        </div>
       </form>
     }
-
   </div>
 </ion-content>
+
+<!-- FOOTER THAO TÁC NÚT SHADCN -->
+<ion-footer class="form-modal-footer">
+  <div class="footer-actions">
+    <button type="button" class="shadcn-btn shadcn-btn--outline" (click)="cancel()">
+      Hủy bỏ
+    </button>
+
+    @if (currentMode() === 'signal-form') {
+      <button 
+        type="button" 
+        class="shadcn-btn shadcn-btn--primary" 
+        (click)="submit()" 
+        [disabled]="!isSignalFormValid()"
+      >
+        {{ isEdit() ? 'Lưu thay đổi' : 'Tạo bài viết' }}
+      </button>
+    } @else if (currentMode() === 'reactive-form') {
+      <button 
+        type="button" 
+        class="shadcn-btn shadcn-btn--primary" 
+        (click)="submit()" 
+        [disabled]="blogForm.invalid"
+      >
+        {{ isEdit() ? 'Lưu thay đổi' : 'Tạo bài viết' }}
+      </button>
+    } @else {
+      <button 
+        type="button" 
+        class="shadcn-btn shadcn-btn--primary" 
+        (click)="submit()" 
+        [disabled]="!templateModel.title.trim() || !templateModel.summary.trim() || !templateModel.content.trim()"
+      >
+        {{ isEdit() ? 'Lưu thay đổi' : 'Tạo bài viết' }}
+      </button>
+    }
+  </div>
+</ion-footer>

@@ -1,48 +1,99 @@
-<div class="blog-grid">
-  @for (post of posts(); track post.id) {
-    <ngc-card [borderRadius]="'10px'" [contentPaddingVertical]="'0px'" [contentPaddingHorizontal]="'0px'" (click)="navigationToDetail(post)">
-      <div ngcCardHeader class="card-header">
-        <ngc-tag 
-          [label]="post.favorite ? 'Yêu thích' : 'Công nghệ'" 
-          [color]="post.favorite ? '#ef4444' : '#3b82f6'" 
-          [minimize]="false"
-        ></ngc-tag>
-
-        <button class="favorite-btn" (click)="onToggleFavorite(post.id)">
-          @if (post.favorite) {
-            <span>❤️</span>
-          } @else {
-            <span>🤍</span>
-          }
-        </button>
-      </div>
-
-      <div ngcCardContent class="card-main-content">
-        <div class="card-image">
-          <img [src]="post.imageUrl" [alt]="post.title" />
+@if (isLoading()) {
+  <div class="blog-grid">
+    @for (card of skeletonCards; track $index) {
+      <ngc-card [borderRadius]="'12px'" borderColor="#e2e8f0" [contentPaddingVertical]="'0px'" [contentPaddingHorizontal]="'0px'">
+        <div ngcCardHeader class="skeleton-header">
+          <ngc-skeleton width="80px" height="20px" borderRadius="10px"></ngc-skeleton>
+          <ngc-skeleton width="24px" height="24px" [circle]="true"></ngc-skeleton>
         </div>
-
-        <div class="card-body">
-          <div class="author-row">
-            <ngc-avatar 
-              [label]="'Phú'" 
-              [avatar]="{ photo: post.imageUrl, mode: 'photo' }" 
-              size="small"
-            ></ngc-avatar>
-            <span class="author-name">Tác giả</span>
-          </div>
-
-          <div class="card-title">
-            {{ post.title }}
+        <div ngcCardContent class="skeleton-content">
+          <ngc-skeleton width="100%" height="150px" borderRadius="0px"></ngc-skeleton>
+          <div class="skeleton-body">
+            <div class="skeleton-author-row">
+              <ngc-skeleton width="28px" height="28px" [circle]="true"></ngc-skeleton>
+              <ngc-skeleton width="90px" height="14px" borderRadius="4px"></ngc-skeleton>
+            </div>
+            <ngc-skeleton width="95%" height="18px" borderRadius="4px"></ngc-skeleton>
+            <ngc-skeleton width="70%" height="18px" borderRadius="4px"></ngc-skeleton>
+            <ngc-skeleton width="100%" height="12px" borderRadius="4px"></ngc-skeleton>
           </div>
         </div>
-      </div>
+        <div ngcCardFooter class="skeleton-footer">
+          <ngc-skeleton width="90px" height="28px" borderRadius="6px"></ngc-skeleton>
+        </div>
+      </ngc-card>
+    }
+  </div>
+} @else {
+  <div class="blog-grid">
+    @for (post of posts(); track post.id) {
+      <ngc-card 
+        class="post-card"
+        [borderRadius]="'12px'" 
+        borderColor="#e2e8f0" 
+        [contentPaddingVertical]="'0px'" 
+        [contentPaddingHorizontal]="'0px'" 
+        (click)="navigationToDetail(post)"
+      >
+        <div ngcCardHeader class="card-header">
+          <ngc-tag 
+            [label]="post.category || 'Công nghệ'" 
+            color="#18181b" 
+            [minimize]="false"
+          ></ngc-tag>
 
-      <div ngcCardFooter class="card-actions">
-        <button ngcButton color="#3880ff" textColor="#ffffff" size="small" (click)="onChooseToEdit(post)">
-          ✏️ Sửa bài này
-        </button>
+          <button 
+            class="favorite-btn" 
+            (click)="onToggleFavorite(post.id); $event.stopPropagation()"
+            [title]="post.favorite ? 'Bỏ thích' : 'Thêm vào yêu thích'"
+          >
+            @if (post.favorite) {
+              <span>❤️</span>
+            } @else {
+              <span>🤍</span>
+            }
+          </button>
+        </div>
+
+        <div ngcCardContent class="card-main-content">
+          <div class="card-image-wrapper">
+            <img [src]="post.imageUrl" [alt]="post.title" loading="lazy" />
+          </div>
+
+          <div class="card-body">
+            <div class="author-row">
+              <ngc-avatar 
+                [label]="post.author || 'Tác giả'" 
+                [avatar]="{ photo: post.imageUrl, mode: 'photo' }" 
+                size="small"
+              ></ngc-avatar>
+              <span class="author-name">{{ post.author || 'Tác giả' }}</span>
+              @if (post.publishedAt) {
+                <span class="post-date">{{ post.publishedAt | date:'dd/MM' }}</span>
+              }
+            </div>
+
+            <h3 class="card-title" [title]="post.title">
+              {{ post.title }}
+            </h3>
+
+            @if (post.summary) {
+              <p class="card-summary">{{ post.summary }}</p>
+            }
+          </div>
+        </div>
+
+        <div ngcCardFooter class="card-actions">
+          <span class="view-detail-hint">👁️ Xem chi tiết</span>
+          <button type="button" class="shadcn-btn shadcn-btn--sm shadcn-btn--outline" (click)="onChooseToEdit(post); $event.stopPropagation()">
+            ✏️ Sửa bài
+          </button>
+        </div>
+      </ngc-card>
+    } @empty {
+      <div class="empty-grid-state">
+        <p>🔍 Không tìm thấy bài viết nào phù hợp.</p>
       </div>
-    </ngc-card>
-  }
-</div>
+    }
+  </div>
+}

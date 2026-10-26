@@ -3,7 +3,11 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-  production: false
+  production: false,
+  firebase: {
+    projectId: 'blog-dev-33836',
+    databaseURL: 'https://blog-dev-33836-default-rtdb.asia-southeast1.firebasedatabase.app'
+  }
 };
 
 /*

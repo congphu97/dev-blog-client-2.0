@@ -1,48 +1,165 @@
 <div class="blog-vertical-list">
-  @for (post of posts(); track post.id) {
-    <ngc-card [borderRadius]="'12px'" [contentPaddingVertical]="'0px'" [contentPaddingHorizontal]="'0px'">
-      <div ngcCardContent class="list-item">
-        <div class="item-image">
-          <img [src]="post.imageUrl" [alt]="post.title" />
-        </div>
+  <!-- THANH CÔNG CỤ ĐIỀU KHIỂN SIGNAL RESOURCE -->
+  <div class="resource-control-bar">
+    <!-- params(): Đổi limit để kích hoạt fetch mới tự động -->
+    <div class="limit-selector">
+      <span class="limit-label">Số lượng hiển thị:</span>
+      <div class="limit-buttons">
+        <button 
+          type="button"
+          class="shadcn-btn shadcn-btn--sm"
+          [class.shadcn-btn--primary]="limit() === 3"
+          [class.shadcn-btn--outline]="limit() !== 3"
+          (click)="changeLimit(3)"
+        >Top 3</button>
+        <button 
+          type="button"
+          class="shadcn-btn shadcn-btn--sm"
+          [class.shadcn-btn--primary]="limit() === 5"
+          [class.shadcn-btn--outline]="limit() !== 5"
+          (click)="changeLimit(5)"
+        >Top 5</button>
+        <button 
+          type="button"
+          class="shadcn-btn shadcn-btn--sm"
+          [class.shadcn-btn--primary]="limit() === 10"
+          [class.shadcn-btn--outline]="limit() !== 10"
+          (click)="changeLimit(10)"
+        >Top 10</button>
+      </div>
+    </div>
 
-        <div class="item-content">
-          <div class="item-header">
-            <div class="header-left">
-              <ngc-avatar 
-                [label]="'Phú'" 
-                [avatar]="{ photo: post.imageUrl, mode: 'photo' }" 
-                size="medium"
-              ></ngc-avatar>
-              <div class="title-group">
-                <div class="title-row">
-                  <h3 class="item-title">{{ post.title }}</h3>
-                  <ngc-tag 
-                    [label]="post.favorite ? 'Yêu thích' : 'Bài viết'" 
-                    [color]="post.favorite ? '#ef4444' : '#10b981'"
-                  ></ngc-tag>
-                </div>
+    <div class="resource-actions">
+      <!-- 1. reload(): Tải lại dữ liệu hiện tại -->
+      <button type="button" class="shadcn-btn shadcn-btn--sm shadcn-btn--outline" (click)="blogResource.reload()">
+        🔄 Reload
+      </button>
+
+      <!-- 9. value.set(): Gán dữ liệu ảo thủ công -->
+      <button type="button" class="shadcn-btn shadcn-btn--sm shadcn-btn--secondary" (click)="setManualData()">
+        🪄 Gán data ảo (set)
+      </button>
+
+      <!-- 2. destroy(): Hủy resource và ngắt request dở -->
+      <button type="button" class="shadcn-btn shadcn-btn--sm shadcn-btn--destructive" (click)="blogResource.destroy()">
+        🛑 Destroy
+      </button>
+    </div>
+  </div>
+
+  <!-- 3. status(): Hiển thị ResourceStatus chi tiết -->
+  <div class="resource-status-bar">
+    <div class="status-left">
+      <span class="status-indicator-dot"></span>
+      <span class="status-title">Trạng thái Resource:</span>
+      <strong class="status-value">{{ getStatusLabel() }}</strong>
+    </div>
+    @if (blogResource.hasValue()) {
+      <span class="count-number">({{ blogResource.value().length }} bài)</span>
+    }
+  </div>
+
+  <!-- 4. SKELETON LOADING KHI RESOURCE ĐANG TẢI -->
+  @if (blogResource.isLoading()) {
+    <div class="skeleton-list">
+      @for (item of skeletonItems; track $index) {
+        <ngc-card [borderRadius]="'12px'" borderColor="#e2e8f0" [contentPaddingVertical]="'0px'" [contentPaddingHorizontal]="'0px'">
+          <div ngcCardContent class="skeleton-list-item">
+            <ngc-skeleton width="220px" height="150px" borderRadius="0px"></ngc-skeleton>
+            <div class="skeleton-item-body">
+              <div class="skeleton-item-header">
+                <ngc-skeleton width="32px" height="32px" [circle]="true"></ngc-skeleton>
+                <ngc-skeleton width="120px" height="16px" borderRadius="4px"></ngc-skeleton>
+                <ngc-skeleton width="70px" height="22px" borderRadius="10px" style="margin-left: auto;"></ngc-skeleton>
+              </div>
+              <ngc-skeleton width="85%" height="20px" borderRadius="4px"></ngc-skeleton>
+              <ngc-skeleton width="100%" height="14px" borderRadius="4px"></ngc-skeleton>
+              <div class="skeleton-item-actions">
+                <ngc-skeleton width="90px" height="28px" borderRadius="6px"></ngc-skeleton>
+                <ngc-skeleton width="110px" height="28px" borderRadius="6px"></ngc-skeleton>
               </div>
             </div>
+          </div>
+        </ngc-card>
+      }
+    </div>
+  }
 
-            <button class="favorite-btn" (click)="onToggleFavorite(post.id)">
-              @if (post.favorite) {
-                <span>❤️</span>
-              } @else {
-                <span>🤍</span>
-              }
-            </button>
+  <!-- 5. error(): Kiểm tra và hiển thị lỗi -->
+  @if (blogResource.error(); as err) {
+    <div class="error-banner">
+      <p class="error-text">❌ Lỗi: {{ err }}</p>
+      <button type="button" class="shadcn-btn shadcn-btn--sm shadcn-btn--outline" (click)="blogResource.reload()">Thử lại</button>
+    </div>
+  }
+
+  <!-- 6. hasValue(): Type guard an toàn trước khi đọc value -->
+  @if (blogResource.hasValue()) {
+    @for (post of blogResource.value(); track post.id) {
+      <ngc-card 
+        class="list-post-card"
+        [borderRadius]="'8px'" 
+        borderColor="#e4e4e7"
+        [contentPaddingVertical]="'0px'" 
+        [contentPaddingHorizontal]="'0px'"
+      >
+        <div ngcCardContent class="list-item">
+          <div class="item-image" (click)="navigationToDetail(post)">
+            <img [src]="post.imageUrl" [alt]="post.title" loading="lazy" />
           </div>
 
-          <p class="item-summary">{{ post.summary }}</p>
+          <div class="item-content">
+            <div class="item-header">
+              <div class="header-left">
+                <ngc-avatar 
+                  [label]="post.author || 'Tác giả'" 
+                  [avatar]="{ photo: post.imageUrl, mode: 'photo' }" 
+                  size="small"
+                ></ngc-avatar>
+                <span class="author-label">{{ post.author || 'Tác giả' }}</span>
+                <ngc-tag 
+                  [label]="post.favorite ? 'Yêu thích' : (post.category || 'Bài viết')" 
+                  [color]="post.favorite ? '#18181b' : '#27272a'"
+                ></ngc-tag>
+              </div>
 
-          <div class="item-actions">
-            <button ngcButton color="#3880ff" textColor="#ffffff" size="small" (click)="onChooseToEdit(post)">
-              ✏️ Sửa bài này
-            </button>
+              <!-- 8. value.update(): Optimistic UI Toggle Favorite -->
+              <button 
+                class="favorite-btn" 
+                (click)="onToggleFavorite(post.id); $event.stopPropagation()"
+                [title]="post.favorite ? 'Bỏ thích' : 'Yêu thích'"
+              >
+                @if (post.favorite) {
+                  <span>❤️</span>
+                } @else {
+                  <span>🤍</span>
+                }
+              </button>
+            </div>
+
+            <h3 class="item-title" (click)="navigationToDetail(post)" [title]="post.title">
+              [{{ post.id }}] {{ post.title }}
+            </h3>
+
+            <p class="item-summary">{{ post.summary }}</p>
+
+            <div class="item-actions">
+              <button type="button" class="shadcn-btn shadcn-btn--sm shadcn-btn--outline" (click)="onChooseToEdit(post)">
+                ✏️ Sửa bài này
+              </button>
+              <button type="button" class="shadcn-btn shadcn-btn--sm shadcn-btn--primary" (click)="navigationToDetail(post)">
+                👁️ Xem chi tiết
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    </ngc-card>
+      </ngc-card>
+    } @empty {
+      @if (!blogResource.isLoading()) {
+        <p class="empty-list-text">Không có bài viết nào trong danh sách.</p>
+      }
+    }
   }
 </div>
+
+

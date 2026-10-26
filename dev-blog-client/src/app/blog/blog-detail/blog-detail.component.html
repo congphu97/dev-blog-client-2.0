@@ -1,1 +1,146 @@
-<div>{{post | json}}</div>
+<ion-header class="detail-modal-header">
+  <ion-toolbar class="detail-toolbar">
+    <ion-title class="detail-header-title" [title]="blogPost()?.title || 'Chi tiết bài viết'">
+      {{ blogPost()?.title || 'Chi tiết bài viết' }}
+    </ion-title>
+    <ion-buttons slot="end" class="detail-header-actions">
+      <!-- Nút Phóng to / Thu nhỏ full màn hình -->
+      <button 
+        type="button" 
+        class="header-action-icon-btn" 
+        [class.is-active]="isFullScreen()"
+        (click)="toggleFullScreen()" 
+        [title]="isFullScreen() ? 'Thu nhỏ cửa sổ' : 'Phóng to toàn màn hình'"
+      >
+        @if (!isFullScreen()) {
+          <!-- Icon Phóng to toàn màn hình -->
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+          </svg>
+        } @else {
+          <!-- Icon Thu nhỏ cửa sổ -->
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/>
+          </svg>
+        }
+      </button>
+
+      <!-- Nút Đóng modal -->
+      <button class="modal-close-icon-btn" (click)="dismiss()" title="Đóng">
+        ✕
+      </button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="blog-detail-wrapper">
+  @if (blogPost(); as item) {
+    <div class="detail-container" [class.is-fullscreen]="isFullScreen()">
+      <ngc-card 
+        class="detail-card"
+        [borderRadius]="'12px'" 
+        [borderWidth]="'1px'" 
+        borderColor="#e4e4e7" 
+        [contentPaddingVertical]="'20px'" 
+        [contentPaddingHorizontal]="'24px'"
+      >
+        <!-- HEADER CỦA NGC-CARD: Category, Favorite tag, View count & Date -->
+        <div ngcCardHeader class="detail-card-header">
+          <div class="header-left-tags">
+            <ngc-tag 
+              [label]="item.category || 'Công nghệ'" 
+              color="#18181b" 
+              [minimize]="false"
+            ></ngc-tag>
+
+            <ngc-tag 
+              [label]="isFavorite() ? '❤️ Đã thích' : '🤍 Chưa thích'" 
+              [color]="isFavorite() ? '#18181b' : '#71717a'" 
+              [minimize]="false"
+              (click)="toggleFavorite()"
+              style="cursor: pointer;"
+            ></ngc-tag>
+          </div>
+
+          <div class="header-right-meta">
+            <span class="meta-stat">👁️ {{ (item.viewCount || 0) | number }} lượt xem</span>
+            @if (item.publishedAt) {
+              <span class="meta-stat">📅 {{ item.publishedAt | date:'dd/MM/yyyy' }}</span>
+            }
+          </div>
+        </div>
+
+        <!-- CONTENT CỦA NGC-CARD: Ảnh bìa, Tác giả, Tiêu đề, Tóm tắt, Nội dung -->
+        <div ngcCardContent class="detail-card-content">
+          <!-- Ảnh bìa -->
+          @if (item.imageUrl) {
+            <div class="detail-cover-image">
+              <img [src]="item.imageUrl" [alt]="item.title" />
+            </div>
+          }
+
+          <!-- Tiêu đề bài viết -->
+          <h1 class="detail-title">{{ item.title }}</h1>
+
+          <!-- Thông tin tác giả & Thao tác thích -->
+          <div class="author-section">
+            <div class="author-info">
+              <ngc-avatar 
+                [label]="item.author || 'Tác giả'" 
+                [avatar]="{ photo: item.imageUrl, mode: 'photo' }" 
+                size="medium"
+              ></ngc-avatar>
+              <div class="author-text">
+                <span class="author-name">{{ item.author || 'Tác giả dev' }}</span>
+                <span class="update-time">Cập nhật: {{ item.updateAt | date:'dd/MM/yyyy' }}</span>
+              </div>
+            </div>
+
+            <button 
+              type="button"
+              class="shadcn-btn shadcn-btn--sm shadcn-btn--outline"
+              (click)="toggleFavorite()"
+            >
+              {{ isFavorite() ? '❤️ Đã thích' : '🤍 Yêu thích' }}
+            </button>
+          </div>
+
+          <ngc-divider></ngc-divider>
+
+          <!-- Tóm tắt bài viết -->
+          @if (item.summary) {
+            <div class="summary-box">
+              <span class="summary-icon">📌</span>
+              <div class="summary-body">
+                <strong>Tóm tắt:</strong>
+                <p class="summary-text">{{ item.summary }}</p>
+              </div>
+            </div>
+          }
+
+          <!-- Nội dung chi tiết bài viết (Render Markdown chuẩn GitHub) -->
+          <div class="article-markdown-body markdown-body" [innerHTML]="item.content | markdown"></div>
+        </div>
+
+        <!-- FOOTER CỦA NGC-CARD: Chỉ giữ lại Tags (Đã xóa nút đóng footer theo yêu cầu) -->
+        <div ngcCardFooter class="detail-card-footer">
+          <div class="tags-group">
+            <span class="tags-label">Thẻ:</span>
+            <div class="tags-list">
+              @for (tag of item.tags; track tag) {
+                <ngc-tag [label]="tag" color="#27272a" [minimize]="false"></ngc-tag>
+              }
+            </div>
+          </div>
+        </div>
+      </ngc-card>
+    </div>
+  } @else {
+    <div class="empty-state">
+      <p>⚠️ Đang tải hoặc không tìm thấy thông tin bài viết.</p>
+      <button class="shadcn-btn shadcn-btn--outline" (click)="dismiss()">Quay lại</button>
+    </div>
+  }
+</ion-content>
+
+
