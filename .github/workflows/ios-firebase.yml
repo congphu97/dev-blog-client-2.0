@@ -94,19 +94,37 @@ jobs:
           retention-days: 14
 
       - name: 11. Phân phối IPA lên Firebase App Distribution
-        uses: wzieba/Firebase-Distribution-Github-Action@v1
-        continue-on-error: true
-        with:
-          appId: ${{ secrets.FIREBASE_IOS_APP_ID || secrets.FIREBASE_APP_ID }}
-          token: ${{ secrets.FIREBASE_TOKEN }}
-          serviceCredentialsFileContent: ${{ secrets.FIREBASE_CREDENTIAL_JSON }}
-          groups: ${{ secrets.FIREBASE_TESTER_GROUPS || 'dev-team' }}
-          file: ./dev-blog-client/release/ios/dev-blog-client-adhoc.ipa
-          releaseNotes: |
-            📱 iOS Build: ${{ github.run_number }}
-            Branch: ${{ github.ref_name }}
-            Commit: ${{ github.sha }}
-            Notes: ${{ github.event.inputs.release_notes || github.event.head_commit.message }}
+        env:
+          FIREBASE_IOS_APP_ID: ${{ secrets.FIREBASE_IOS_APP_ID }}
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          FIREBASE_TESTER_GROUPS: ${{ secrets.FIREBASE_TESTER_GROUPS || 'dev-team' }}
+        run: |
+          TARGET_APP_ID="${FIREBASE_IOS_APP_ID:-$FIREBASE_APP_ID}"
+          echo "============================================="
+          echo "🚀 BẮT ĐẦU PHÂN PHỐI LÊN FIREBASE"
+          echo "Target App ID: $TARGET_APP_ID"
+          echo "Tester Groups: $FIREBASE_TESTER_GROUPS"
+          echo "============================================="
+
+          if [ -z "$TARGET_APP_ID" ]; then
+            echo "❌ LỖI: Chưa cấu hình secret FIREBASE_IOS_APP_ID (hoặc FIREBASE_APP_ID) trên GitHub!"
+            echo "👉 Vui lòng vào GitHub Settings -> Secrets -> Thêm secret FIREBASE_IOS_APP_ID."
+            exit 1
+          fi
+
+          if [[ "$TARGET_APP_ID" =~ :android: ]]; then
+            echo "⚠️ CẢNH BÁO: App ID '$TARGET_APP_ID' là của Android, không phải của iOS!"
+            echo "👉 File .ipa bắt buộc phải đẩy vào App ID của iOS (dạng 1:xxx:ios:xxx) trên Firebase!"
+            echo "👉 Vào Firebase Console -> Project Settings -> Add app -> iOS để lấy App ID của iOS."
+            exit 1
+          fi
+
+          npx -y firebase-tools appdistribution:distribute release/ios/dev-blog-client-adhoc.ipa \
+            --app "$TARGET_APP_ID" \
+            --groups "$FIREBASE_TESTER_GROUPS" \
+            --token "$FIREBASE_TOKEN" \
+            --release-notes "📱 iOS Build ${{ github.run_number }} (${{ github.sha }})"
 
       - name: 12. Dọn dẹp Keychain Runner
         if: always()
