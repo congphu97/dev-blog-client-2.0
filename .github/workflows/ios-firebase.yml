@@ -94,43 +94,18 @@ jobs:
           retention-days: 14
 
       - name: 11. Phân phối IPA lên Firebase App Distribution
-        env:
-          FIREBASE_IOS_APP_ID: ${{ secrets.FIREBASE_IOS_APP_ID }}
-          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-          FIREBASE_TESTER_GROUPS: ${{ secrets.FIREBASE_TESTER_GROUPS || 'dev-team' }}
-        run: |
-          TARGET_APP_ID="${FIREBASE_IOS_APP_ID}"
-
-          # Tự động đọc từ GoogleService-Info.plist nếu chưa set secret
-          if [ -z "$TARGET_APP_ID" ] && [ -f "ios/App/App/GoogleService-Info.plist" ]; then
-            PLIST_APP_ID=$(grep -A1 "<key>GOOGLE_APP_ID</key>" ios/App/App/GoogleService-Info.plist | tail -n1 | sed -e 's/<[^>]*>//g' | xargs)
-            if [ -n "$PLIST_APP_ID" ]; then
-              echo "📋 Tự động lấy được App ID từ GoogleService-Info.plist: $PLIST_APP_ID"
-              TARGET_APP_ID="$PLIST_APP_ID"
-            fi
-          fi
-
-          if [ -z "$TARGET_APP_ID" ]; then
-            TARGET_APP_ID="${FIREBASE_APP_ID}"
-          fi
-
-          echo "============================================="
-          echo "🚀 BẮT ĐẦU PHÂN PHỐI LÊN FIREBASE"
-          echo "Target App ID: $TARGET_APP_ID"
-          echo "Tester Groups: $FIREBASE_TESTER_GROUPS"
-          echo "============================================="
-
-          if [ -z "$TARGET_APP_ID" ]; then
-            echo "❌ LỖI: Không tìm thấy Firebase iOS App ID!"
-            exit 1
-          fi
-
-          npx -y firebase-tools appdistribution:distribute release/ios/dev-blog-client-adhoc.ipa \
-            --app "$TARGET_APP_ID" \
-            --groups "$FIREBASE_TESTER_GROUPS" \
-            --token "$FIREBASE_TOKEN" \
-            --release-notes "📱 iOS Build ${{ github.run_number }} (${{ github.sha }})"
+        uses: wzieba/Firebase-Distribution-Github-Action@v1
+        with:
+          appId: ${{ secrets.FIREBASE_IOS_APP_ID || '1:885936311589:ios:f10210dfadc9af87939ecc' }}
+          token: ${{ secrets.FIREBASE_TOKEN }}
+          serviceCredentialsFileContent: ${{ secrets.FIREBASE_CREDENTIAL_JSON }}
+          groups: ${{ secrets.FIREBASE_TESTER_GROUPS || 'dev-team' }}
+          file: ./dev-blog-client/release/ios/dev-blog-client-adhoc.ipa
+          releaseNotes: |
+            📱 iOS Build: ${{ github.run_number }}
+            Branch: ${{ github.ref_name }}
+            Commit: ${{ github.sha }}
+            Notes: ${{ github.event.inputs.release_notes || github.event.head_commit.message }}
 
       - name: 12. Dọn dẹp Keychain Runner
         if: always()
