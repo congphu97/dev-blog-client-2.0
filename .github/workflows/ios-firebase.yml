@@ -1,30 +1,27 @@
-name: 🍏 iOS Build IPA & Deploy to Firebase App Distribution
+name: 🍏 Build & Distribute iOS IPA to Firebase (Fastlane)
 
 on:
+  push:
+    branches: [ main ]
   workflow_dispatch:
     inputs:
       release_notes:
-        description: "Ghi chú phiên bản phát hành (Release Notes)"
+        description: 'Ghi chú phiên bản phát hành (Release Notes)'
         required: false
-        default: "Manual trigger iOS build from GitHub Actions"
-  push:
-    branches:
-      - main
-    paths:
-      - "src/**"
-      - "ios/**"
-      - "capacitor.config.ts"
-      - "package.json"
-      - ".github/workflows/ios-firebase.yml"
+        default: 'Manual trigger iOS build from GitHub Actions'
 
-concurrency:
-  group: ios-build-${{ github.ref }}
-  cancel-in-progress: true
+permissions:
+  contents: write
 
 jobs:
   build-and-distribute-ios:
-    name: 📦 Build IPA (Fastlane) & Distribute to Firebase
+    name: Build IPA & Upload Firebase
+    if: contains(github.event.head_commit.message, '--build') || contains(github.event.head_commit.message, '--ios') || github.event_name == 'workflow_dispatch'
     runs-on: macos-14
+
+    defaults:
+      run:
+        working-directory: ./dev-blog-client
 
     steps:
       - name: 1. Checkout mã nguồn
@@ -36,12 +33,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: "npm"
+          cache: 'npm'
+          cache-dependency-path: './dev-blog-client/package-lock.json'
 
       - name: 3. Thiết lập Ruby cho Fastlane & CocoaPods
         uses: actions/setup-ruby@v1
         with:
-          ruby-version: "3.3"
+          ruby-version: '3.3'
 
       - name: 4. Cài đặt Dependencies NPM
         run: npm ci --legacy-peer-deps
@@ -52,32 +50,28 @@ jobs:
           gem install cocoapods -N
 
       - name: 6. Cài đặt Chứng chỉ Apple (.p12) & Provisioning Profile vào Keychain
+        if: env.BUILD_CERTIFICATE_BASE64 != ''
         env:
           BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
           P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
           BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}
         run: |
-          # 1. Tạo các biến đường dẫn tạm
           CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
           PP_PATH=$RUNNER_TEMP/build_pp.mobileprovision
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
           KEYCHAIN_PASSWORD=$(openssl rand -base64 12)
 
-          # 2. Giải mã Base64 sang file nhị phân
           echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
           echo -n "$BUILD_PROVISION_PROFILE_BASE64" | base64 --decode -o $PP_PATH
 
-          # 3. Tạo và mở khóa Keychain tạm thời
           security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
           security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
           security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
 
-          # 4. Import chứng chỉ p12 vào Keychain
           security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
           security list-keychain -d user -s $KEYCHAIN_PATH
           security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
 
-          # 5. Cài đặt Provisioning Profile vào thư mục hệ thống Xcode
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/
 
@@ -89,17 +83,18 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dev-blog-client-ios-build-${{ github.run_number }}
-          path: release/ios/dev-blog-client-adhoc.ipa
+          path: ./dev-blog-client/release/ios/dev-blog-client-adhoc.ipa
           retention-days: 14
 
       - name: 9. Phân phối IPA lên Firebase App Distribution
         uses: wzieba/Firebase-Distribution-Github-Action@v1
+        continue-on-error: true
         with:
           appId: ${{ secrets.FIREBASE_IOS_APP_ID }}
           token: ${{ secrets.FIREBASE_TOKEN }}
           serviceCredentialsFileContent: ${{ secrets.FIREBASE_CREDENTIAL_JSON }}
           groups: ${{ secrets.FIREBASE_TESTER_GROUPS || 'dev-team' }}
-          file: release/ios/dev-blog-client-adhoc.ipa
+          file: ./dev-blog-client/release/ios/dev-blog-client-adhoc.ipa
           releaseNotes: |
             📱 iOS Build: ${{ github.run_number }}
             Branch: ${{ github.ref_name }}
