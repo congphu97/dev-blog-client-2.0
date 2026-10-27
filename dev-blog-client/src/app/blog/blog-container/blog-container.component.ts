@@ -403,10 +403,16 @@ end
   }
 
   // Lưu nhanh tiêu đề từ LinkedSignal
-  saveTitle() {
+  async saveTitle() {
     this.blogPosts.update(posts =>
       posts.map(p => p.id === this.selectedBlog().id ? { ...p, title: this.editTitle() } : p)
     );
+    try {
+      await this.blogService.saveBlogs(this.blogPosts());
+      console.log('🔥 Đã đồng bộ tiêu đề mới lên Firebase RTDB!');
+    } catch (err) {
+      console.error('❌ Lỗi lưu tiêu đề lên Firebase:', err);
+    }
   }
 
   onSearch(event: Event) {
@@ -449,6 +455,14 @@ end
       this.blogPosts.update(posts => [newPost, ...posts]);
       this.selectedBlog.set(newPost);
       console.log('✅ Đã tạo bài viết mới đầy đủ model:', newPost);
+
+      // Đồng bộ trực tiếp lên Firebase Realtime Database
+      try {
+        await this.blogService.saveBlogs(this.blogPosts());
+        console.log('🔥 Đã lưu bài viết mới lên Firebase RTDB!');
+      } catch (err) {
+        console.error('❌ Lỗi khi lưu bài mới lên Firebase:', err);
+      }
     }
   }
 
@@ -492,24 +506,28 @@ end
         this.selectedBlog.set(updatedPost);
       }
       console.log('✅ Đã cập nhật bài viết đầy đủ model:', updatedPost);
+
+      // Đồng bộ trực tiếp lên Firebase Realtime Database
+      try {
+        await this.blogService.saveBlogs(this.blogPosts());
+        console.log('🔥 Đã lưu thành công bài viết cập nhật lên Firebase RTDB!');
+      } catch (err) {
+        console.error('❌ Lỗi khi lưu cập nhật lên Firebase:', err);
+      }
     }
   }
 
-  toggleFavorite(id: number) {
-    const posts = this.blogPosts();
-    // const index = posts.findIndex(p => p.id === id);
-    // if (index > -1) {
-    //   // copy mảng để trigger change
-    //   const newPosts = [...posts];
-    //   newPosts[index] = { ...newPosts[index], favorite: !newPosts[index].favorite };
-    //   this.blogPosts.set(newPosts);
-    // }
-
+  async toggleFavorite(id: number) {
     this.blogPosts.update(posts =>
       posts.map(post =>
         post.id === id ? { ...post, favorite: !post.favorite } : post
       )
     );
+    try {
+      await this.blogService.saveBlogs(this.blogPosts());
+    } catch (err) {
+      console.error('❌ Lỗi lưu favorite lên Firebase:', err);
+    }
   }
 
 }
