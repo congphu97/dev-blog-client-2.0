@@ -10,6 +10,7 @@ platform :ios do
   end
 
   project_root = File.expand_path("../../..", __dir__)
+  app_dir = File.expand_path("..", __dir__)
   release_dir = File.expand_path("../../../release/ios", __dir__)
 
   desc "Build Angular app and sync web assets to Capacitor iOS"
@@ -24,10 +25,12 @@ platform :ios do
   desc "Install CocoaPods dependencies"
   lane :install_pods do
     UI.header("Step: Installing CocoaPods dependencies")
-    cocoapods(
-      clean_install: false,
-      podfile: "./Podfile"
-    )
+    Dir.chdir(app_dir) do
+      cocoapods(
+        clean_install: false,
+        podfile: "./Podfile"
+      )
+    end
   end
 
   desc "Build Ad-Hoc IPA (for Diawi, Firebase App Distribution, registered devices)"
@@ -40,44 +43,44 @@ platform :ios do
 
     UI.header("Step: Building Ad-Hoc IPA")
 
-    # Check if a valid codesigning identity exists in Keychain
-    identities_check = `security find-identity -p codesigning -v 2>&1`
-    has_valid_identity = !identities_check.include?("0 valid identities found")
+    # Check if a custom certificate was imported in CI or if signed build is explicitly requested
+    has_cert_env = !ENV['BUILD_CERTIFICATE_BASE64'].to_s.empty?
 
-    if has_valid_identity
-      UI.message("✅ Found valid Apple code signing identity in Keychain. Building signed IPA...")
-      build_app(
-        workspace: "App.xcworkspace",
-        scheme: "App",
-        clean: true,
-        configuration: "Release",
-        export_method: "ad-hoc",
-        output_directory: release_dir,
-        output_name: "dev-blog-client-adhoc.ipa",
-        export_xcargs: "-allowProvisioningUpdates",
-        export_options: {
-          compileBitcode: false
-        }
-      )
-    else
-      UI.important("⚠️ No valid Apple signing identity found in Keychain.")
-      UI.message("Building unsigned/adhoc IPA package for CI & Distribution...")
-
-      # Build without codesigning requirement
-      sh("xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY='' PROVISIONING_PROFILE_SPECIFIER='' DEVELOPMENT_TEAM='' clean build -derivedDataPath build")
-
-      app_path = File.expand_path("build/Build/Products/Release-iphoneos/App.app", __dir__)
-      UI.message("Packaging App.app from #{app_path} into IPA...")
-
-      payload_dir = File.expand_path("Payload", __dir__)
-      FileUtils.rm_rf(payload_dir)
-      FileUtils.mkdir_p(payload_dir)
-      FileUtils.cp_r(app_path, payload_dir)
-
-      Dir.chdir(__dir__) do
-        sh("zip -qr '#{ipa_dest}' Payload")
+    if has_cert_env
+      UI.message("✅ Apple signing certificate provided via environment. Building signed IPA with gym...")
+      Dir.chdir(app_dir) do
+        build_app(
+          workspace: "App.xcworkspace",
+          scheme: "App",
+          clean: true,
+          configuration: "Release",
+          export_method: "ad-hoc",
+          output_directory: release_dir,
+          output_name: "dev-blog-client-adhoc.ipa",
+          export_xcargs: "-allowProvisioningUpdates",
+          export_options: {
+            compileBitcode: false
+          }
+        )
       end
-      FileUtils.rm_rf(payload_dir)
+    else
+      UI.important("⚠️ No Apple signing certificate secret provided (BUILD_CERTIFICATE_BASE64 is empty).")
+      UI.message("Building unsigned Ad-Hoc IPA package for CI / Firebase Distribution...")
+
+      Dir.chdir(app_dir) do
+        sh("xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY='' PROVISIONING_PROFILE_SPECIFIER='' DEVELOPMENT_TEAM='' clean build -derivedDataPath build")
+
+        app_path = File.expand_path("build/Build/Products/Release-iphoneos/App.app", app_dir)
+        UI.message("Packaging App.app from #{app_path} into IPA...")
+
+        payload_dir = File.expand_path("Payload", app_dir)
+        FileUtils.rm_rf(payload_dir)
+        FileUtils.mkdir_p(payload_dir)
+        FileUtils.cp_r(app_path, payload_dir)
+
+        sh("zip -qr '#{ipa_dest}' Payload")
+        FileUtils.rm_rf(payload_dir)
+      end
     end
 
     UI.success("🎉 Ad-Hoc IPA generated successfully at #{ipa_dest}")
@@ -93,20 +96,22 @@ platform :ios do
     skip_sync = options[:skip_sync] || false
     sync_cap unless skip_sync
 
-    build_app(
-      workspace: "App.xcworkspace",
-      scheme: "App",
-      clean: true,
-      configuration: "Release",
-      export_method: "app-store",
-      output_directory: release_dir,
-      output_name: "dev-blog-client-appstore.ipa",
-      export_xcargs: "-allowProvisioningUpdates",
-      export_options: {
-        compileBitcode: false,
-        uploadBitcode: false
-      }
-    )
+    Dir.chdir(app_dir) do
+      build_app(
+        workspace: "App.xcworkspace",
+        scheme: "App",
+        clean: true,
+        configuration: "Release",
+        export_method: "app-store",
+        output_directory: release_dir,
+        output_name: "dev-blog-client-appstore.ipa",
+        export_xcargs: "-allowProvisioningUpdates",
+        export_options: {
+          compileBitcode: false,
+          uploadBitcode: false
+        }
+      )
+    end
   end
 
   desc "Build and upload to TestFlight"
