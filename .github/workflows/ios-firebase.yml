@@ -49,7 +49,13 @@ jobs:
           gem install fastlane -N
           gem install cocoapods -N
 
-      - name: 6. Cài đặt Chứng chỉ Apple (.p12) & Provisioning Profile vào Keychain
+      - name: 6. Build mã nguồn Web (Angular www)
+        run: npm run build
+
+      - name: 7. Đồng bộ sang iOS Native (Capacitor Sync)
+        run: npx cap sync ios
+
+      - name: 8. Cài đặt Chứng chỉ Apple (.p12) & Provisioning Profile vào Keychain
         if: env.BUILD_CERTIFICATE_BASE64 != ''
         env:
           BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
@@ -75,18 +81,19 @@ jobs:
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/
 
-      - name: 7. Đóng gói file IPA bằng Fastlane (Ad-Hoc)
+      - name: 9. Đóng gói file IPA bằng Fastlane (Ad-Hoc)
         run: |
-          npm run fastlane:adhoc
+          cd ios/App
+          fastlane build_adhoc skip_sync:true
 
-      - name: 8. Lưu trữ Artifact IPA lên GitHub Actions (Tải dự phòng)
+      - name: 10. Lưu trữ Artifact IPA lên GitHub Actions (Tải dự phòng)
         uses: actions/upload-artifact@v4
         with:
           name: dev-blog-client-ios-build-${{ github.run_number }}
           path: ./dev-blog-client/release/ios/dev-blog-client-adhoc.ipa
           retention-days: 14
 
-      - name: 9. Phân phối IPA lên Firebase App Distribution
+      - name: 11. Phân phối IPA lên Firebase App Distribution
         uses: wzieba/Firebase-Distribution-Github-Action@v1
         continue-on-error: true
         with:
@@ -101,7 +108,7 @@ jobs:
             Commit: ${{ github.sha }}
             Notes: ${{ github.event.inputs.release_notes || github.event.head_commit.message }}
 
-      - name: 10. Dọn dẹp Keychain Runner
+      - name: 12. Dọn dẹp Keychain Runner
         if: always()
         run: |
           security delete-keychain $RUNNER_TEMP/app-signing.keychain-db || true
