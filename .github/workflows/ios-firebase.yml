@@ -100,7 +100,21 @@ jobs:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
           FIREBASE_TESTER_GROUPS: ${{ secrets.FIREBASE_TESTER_GROUPS || 'dev-team' }}
         run: |
-          TARGET_APP_ID="${FIREBASE_IOS_APP_ID:-$FIREBASE_APP_ID}"
+          TARGET_APP_ID="${FIREBASE_IOS_APP_ID}"
+
+          # Tự động đọc từ GoogleService-Info.plist nếu chưa set secret
+          if [ -z "$TARGET_APP_ID" ] && [ -f "ios/App/App/GoogleService-Info.plist" ]; then
+            PLIST_APP_ID=$(grep -A1 "<key>GOOGLE_APP_ID</key>" ios/App/App/GoogleService-Info.plist | tail -n1 | sed -e 's/<[^>]*>//g' | xargs)
+            if [ -n "$PLIST_APP_ID" ]; then
+              echo "📋 Tự động lấy được App ID từ GoogleService-Info.plist: $PLIST_APP_ID"
+              TARGET_APP_ID="$PLIST_APP_ID"
+            fi
+          fi
+
+          if [ -z "$TARGET_APP_ID" ]; then
+            TARGET_APP_ID="${FIREBASE_APP_ID}"
+          fi
+
           echo "============================================="
           echo "🚀 BẮT ĐẦU PHÂN PHỐI LÊN FIREBASE"
           echo "Target App ID: $TARGET_APP_ID"
@@ -108,15 +122,7 @@ jobs:
           echo "============================================="
 
           if [ -z "$TARGET_APP_ID" ]; then
-            echo "❌ LỖI: Chưa cấu hình secret FIREBASE_IOS_APP_ID (hoặc FIREBASE_APP_ID) trên GitHub!"
-            echo "👉 Vui lòng vào GitHub Settings -> Secrets -> Thêm secret FIREBASE_IOS_APP_ID."
-            exit 1
-          fi
-
-          if [[ "$TARGET_APP_ID" =~ :android: ]]; then
-            echo "⚠️ CẢNH BÁO: App ID '$TARGET_APP_ID' là của Android, không phải của iOS!"
-            echo "👉 File .ipa bắt buộc phải đẩy vào App ID của iOS (dạng 1:xxx:ios:xxx) trên Firebase!"
-            echo "👉 Vào Firebase Console -> Project Settings -> Add app -> iOS để lấy App ID của iOS."
+            echo "❌ LỖI: Không tìm thấy Firebase iOS App ID!"
             exit 1
           fi
 
