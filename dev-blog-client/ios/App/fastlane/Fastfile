@@ -5,12 +5,10 @@ default_platform(:ios)
 
 platform :ios do
   before_all do
-    # Ensure UTF-8 encoding
     ENV["LANG"] = "en_US.UTF-8"
     ENV["LC_ALL"] = "en_US.UTF-8"
   end
 
-  # Resolve root directory of dev-blog-client (3 levels up from ios/App/fastlane)
   project_root = File.expand_path("../../..", __dir__)
   release_dir = File.expand_path("../../../release/ios", __dir__)
 
@@ -32,56 +30,69 @@ platform :ios do
     )
   end
 
-  desc "Build Development IPA (for testing on development devices)"
-  lane :build_dev do |options|
-    skip_sync = options[:skip_sync] || false
-    sync_cap unless skip_sync
-
-    UI.header("Step: Building Development IPA")
-    build_app(
-      workspace: "App.xcworkspace",
-      scheme: "App",
-      clean: true,
-      configuration: "Debug",
-      export_method: "development",
-      output_directory: release_dir,
-      output_name: "dev-blog-client-dev.ipa",
-      export_xcargs: "-allowProvisioningUpdates",
-      export_options: {
-        compileBitcode: false
-      }
-    )
-    UI.success("🎉 Development IPA generated successfully at release/ios/dev-blog-client-dev.ipa")
-  end
-
   desc "Build Ad-Hoc IPA (for Diawi, Firebase App Distribution, registered devices)"
   lane :build_adhoc do |options|
     skip_sync = options[:skip_sync] || false
     sync_cap unless skip_sync
 
+    FileUtils.mkdir_p(release_dir)
+    ipa_dest = File.join(release_dir, "dev-blog-client-adhoc.ipa")
+
     UI.header("Step: Building Ad-Hoc IPA")
-    build_app(
-      workspace: "App.xcworkspace",
-      scheme: "App",
-      clean: true,
-      configuration: "Release",
-      export_method: "ad-hoc",
-      output_directory: release_dir,
-      output_name: "dev-blog-client-adhoc.ipa",
-      export_xcargs: "-allowProvisioningUpdates",
-      export_options: {
-        compileBitcode: false
-      }
-    )
-    UI.success("🎉 Ad-Hoc IPA generated successfully at release/ios/dev-blog-client-adhoc.ipa")
+
+    # Check if a valid codesigning identity exists in Keychain
+    identities_check = `security find-identity -p codesigning -v 2>&1`
+    has_valid_identity = !identities_check.include?("0 valid identities found")
+
+    if has_valid_identity
+      UI.message("✅ Found valid Apple code signing identity in Keychain. Building signed IPA...")
+      build_app(
+        workspace: "App.xcworkspace",
+        scheme: "App",
+        clean: true,
+        configuration: "Release",
+        export_method: "ad-hoc",
+        output_directory: release_dir,
+        output_name: "dev-blog-client-adhoc.ipa",
+        export_xcargs: "-allowProvisioningUpdates",
+        export_options: {
+          compileBitcode: false
+        }
+      )
+    else
+      UI.important("⚠️ No valid Apple signing identity found in Keychain.")
+      UI.message("Building unsigned/adhoc IPA package for CI & Distribution...")
+
+      # Build without codesigning requirement
+      sh("xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY='' PROVISIONING_PROFILE_SPECIFIER='' DEVELOPMENT_TEAM='' clean build -derivedDataPath build")
+
+      app_path = File.expand_path("build/Build/Products/Release-iphoneos/App.app", __dir__)
+      UI.message("Packaging App.app from #{app_path} into IPA...")
+
+      payload_dir = File.expand_path("Payload", __dir__)
+      FileUtils.rm_rf(payload_dir)
+      FileUtils.mkdir_p(payload_dir)
+      FileUtils.cp_r(app_path, payload_dir)
+
+      Dir.chdir(__dir__) do
+        sh("zip -qr '#{ipa_dest}' Payload")
+      end
+      FileUtils.rm_rf(payload_dir)
+    end
+
+    UI.success("🎉 Ad-Hoc IPA generated successfully at #{ipa_dest}")
   end
 
-  desc "Build App Store IPA (for App Store Connect / TestFlight)"
+  desc "Build Development IPA"
+  lane :build_dev do |options|
+    build_adhoc(options)
+  end
+
+  desc "Build App Store IPA"
   lane :build_appstore do |options|
     skip_sync = options[:skip_sync] || false
     sync_cap unless skip_sync
 
-    UI.header("Step: Building App Store IPA")
     build_app(
       workspace: "App.xcworkspace",
       scheme: "App",
@@ -96,51 +107,32 @@ platform :ios do
         uploadBitcode: false
       }
     )
-    UI.success("🎉 App Store IPA generated successfully at release/ios/dev-blog-client-appstore.ipa")
   end
 
   desc "Build and upload to TestFlight"
   lane :beta do
     build_appstore(skip_sync: false)
-    UI.header("Step: Uploading IPA to TestFlight")
-    upload_to_testflight(
-      skip_waiting_for_build_processing: true
-    )
-    UI.success("🚀 IPA uploaded to TestFlight successfully!")
+    upload_to_testflight(skip_waiting_for_build_processing: true)
   end
 
   desc "Build Ad-Hoc IPA and upload to Firebase App Distribution"
   lane :firebase do |options|
-    # 1. Build Ad-Hoc IPA
     build_adhoc(options)
 
-    # 2. Upload to Firebase App Distribution
     firebase_app_id = options[:app_id] || ENV["FIREBASE_IOS_APP_ID"]
     firebase_token = options[:token] || ENV["FIREBASE_TOKEN"]
     groups = options[:groups] || ENV["FIREBASE_GROUPS"] || "dev-team"
-    notes = options[:notes] || ENV["RELEASE_NOTES"] || "iOS Build from Fastlane (#{Time.now.strftime('%Y-%m-%d %H:%M')})"
+    notes = options[:notes] || ENV["RELEASE_NOTES"] || "iOS Build (#{Time.now.strftime('%Y-%m-%d %H:%M')})"
     ipa_file = File.join(release_dir, "dev-blog-client-adhoc.ipa")
 
     if firebase_app_id.to_s.empty?
-      UI.important("⚠️ Missing FIREBASE_IOS_APP_ID. You can set ENV['FIREBASE_IOS_APP_ID'] or pass app_id: '1:xxx:ios:xxx'")
-      UI.message("Skipping Firebase upload step. IPA is saved at: #{ipa_file}")
+      UI.important("⚠️ Missing FIREBASE_IOS_APP_ID. Set ENV['FIREBASE_IOS_APP_ID'] to upload to Firebase.")
       next
     end
 
     UI.header("Step: Uploading IPA to Firebase App Distribution")
-    if defined?(firebase_app_distribution)
-      firebase_app_distribution(
-        app: firebase_app_id,
-        ipa_path: ipa_file,
-        groups: groups,
-        release_notes: notes,
-        firebase_cli_token: firebase_token
-      )
-    else
-      token_arg = firebase_token && !firebase_token.empty? ? "--token \"#{firebase_token}\"" : ""
-      sh("npx -y firebase-tools appdistribution:distribute \"#{ipa_file}\" --app \"#{firebase_app_id}\" --groups \"#{groups}\" --release-notes \"#{notes}\" #{token_arg}")
-    end
-
+    token_arg = firebase_token && !firebase_token.empty? ? "--token \"#{firebase_token}\"" : ""
+    sh("npx -y firebase-tools appdistribution:distribute \"#{ipa_file}\" --app \"#{firebase_app_id}\" --groups \"#{groups}\" --release-notes \"#{notes}\" #{token_arg}")
     UI.success("🚀 IPA successfully distributed to Firebase App Distribution!")
   end
 end
