@@ -76,3 +76,12 @@ Thumbs.db
 *.p8
 *.mobileprovision
 release/
+
+# Fastlane & iOS Build artifacts
+*.ipa
+*.dSYM.zip
+**/fastlane/report.xml
+**/fastlane/Preview.html
+**/fastlane/screenshots
+**/fastlane/test_output
+

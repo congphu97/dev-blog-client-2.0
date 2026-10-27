@@ -1,0 +1,143 @@
+# Fastfile for dev-blog-client iOS
+opt_out_usage
+
+default_platform(:ios)
+
+platform :ios do
+  before_all do
+    # Ensure UTF-8 encoding
+    ENV["LANG"] = "en_US.UTF-8"
+    ENV["LC_ALL"] = "en_US.UTF-8"
+  end
+
+  desc "Build Angular app and sync web assets to Capacitor iOS"
+  lane :sync_cap do
+    UI.header("Step: Syncing Angular Web Build to Capacitor iOS")
+    Dir.chdir("../..") do
+      sh("npm run build")
+      sh("npx cap sync ios")
+    end
+  end
+
+  desc "Install CocoaPods dependencies"
+  lane :install_pods do
+    UI.header("Step: Installing CocoaPods dependencies")
+    cocoapods(
+      clean_install: false,
+      podfile: "./Podfile"
+    )
+  end
+
+  desc "Build Development IPA (for testing on development devices)"
+  lane :build_dev do |options|
+    skip_sync = options[:skip_sync] || false
+    sync_cap unless skip_sync
+
+    UI.header("Step: Building Development IPA")
+    build_app(
+      workspace: "App.xcworkspace",
+      scheme: "App",
+      clean: true,
+      configuration: "Debug",
+      export_method: "development",
+      output_directory: "../../release/ios",
+      output_name: "dev-blog-client-dev.ipa",
+      export_xcargs: "-allowProvisioningUpdates",
+      export_options: {
+        compileBitcode: false
+      }
+    )
+    UI.success("🎉 Development IPA generated successfully at release/ios/dev-blog-client-dev.ipa")
+  end
+
+  desc "Build Ad-Hoc IPA (for Diawi, Firebase App Distribution, registered devices)"
+  lane :build_adhoc do |options|
+    skip_sync = options[:skip_sync] || false
+    sync_cap unless skip_sync
+
+    UI.header("Step: Building Ad-Hoc IPA")
+    build_app(
+      workspace: "App.xcworkspace",
+      scheme: "App",
+      clean: true,
+      configuration: "Release",
+      export_method: "ad-hoc",
+      output_directory: "../../release/ios",
+      output_name: "dev-blog-client-adhoc.ipa",
+      export_xcargs: "-allowProvisioningUpdates",
+      export_options: {
+        compileBitcode: false
+      }
+    )
+    UI.success("🎉 Ad-Hoc IPA generated successfully at release/ios/dev-blog-client-adhoc.ipa")
+  end
+
+  desc "Build App Store IPA (for App Store Connect / TestFlight)"
+  lane :build_appstore do |options|
+    skip_sync = options[:skip_sync] || false
+    sync_cap unless skip_sync
+
+    UI.header("Step: Building App Store IPA")
+    build_app(
+      workspace: "App.xcworkspace",
+      scheme: "App",
+      clean: true,
+      configuration: "Release",
+      export_method: "app-store",
+      output_directory: "../../release/ios",
+      output_name: "dev-blog-client-appstore.ipa",
+      export_xcargs: "-allowProvisioningUpdates",
+      export_options: {
+        compileBitcode: false,
+        uploadBitcode: false
+      }
+    )
+    UI.success("🎉 App Store IPA generated successfully at release/ios/dev-blog-client-appstore.ipa")
+  end
+
+  desc "Build and upload to TestFlight"
+  lane :beta do
+    build_appstore(skip_sync: false)
+    UI.header("Step: Uploading IPA to TestFlight")
+    upload_to_testflight(
+      skip_waiting_for_build_processing: true
+    )
+    UI.success("🚀 IPA uploaded to TestFlight successfully!")
+  end
+
+  desc "Build Ad-Hoc IPA and upload to Firebase App Distribution"
+  lane :firebase do |options|
+    # 1. Build Ad-Hoc IPA
+    build_adhoc(options)
+
+    # 2. Upload to Firebase App Distribution
+    firebase_app_id = options[:app_id] || ENV["FIREBASE_IOS_APP_ID"]
+    firebase_token = options[:token] || ENV["FIREBASE_TOKEN"]
+    groups = options[:groups] || ENV["FIREBASE_GROUPS"] || "dev-team"
+    notes = options[:notes] || ENV["RELEASE_NOTES"] || "iOS Build from Fastlane (#{Time.now.strftime('%Y-%m-%d %H:%M')})"
+    ipa_path = File.expand_path("../../release/ios/dev-blog-client-adhoc.ipa", __dir__)
+
+    if firebase_app_id.to_s.empty?
+      UI.important("⚠️ Missing FIREBASE_IOS_APP_ID. You can set ENV['FIREBASE_IOS_APP_ID'] or pass app_id: '1:xxx:ios:xxx'")
+      UI.message("Skipping Firebase upload step. IPA is saved at: #{ipa_path}")
+      next
+    end
+
+    UI.header("Step: Uploading IPA to Firebase App Distribution")
+    if defined?(firebase_app_distribution)
+      firebase_app_distribution(
+        app: firebase_app_id,
+        ipa_path: ipa_path,
+        groups: groups,
+        release_notes: notes,
+        firebase_cli_token: firebase_token
+      )
+    else
+      token_arg = firebase_token && !firebase_token.empty? ? "--token \"#{firebase_token}\"" : ""
+      sh("npx -y firebase-tools appdistribution:distribute \"#{ipa_path}\" --app \"#{firebase_app_id}\" --groups \"#{groups}\" --release-notes \"#{notes}\" #{token_arg}")
+    end
+
+    UI.success("🚀 IPA successfully distributed to Firebase App Distribution!")
+  end
+end
+

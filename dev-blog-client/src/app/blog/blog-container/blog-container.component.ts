@@ -52,6 +52,10 @@ export class BlogContainerComponent implements OnInit {
   public selectedCategory = signal<string>('all');
   public readonly categories = [
     { id: 'all', label: 'Tất cả' },
+    { id: 'GitHub', label: 'GitHub' },
+    { id: 'UI Design', label: 'UI Design' },
+    { id: 'Google', label: 'Google' },
+    { id: 'Tailwind CSS', label: 'Tailwind CSS' },
     { id: 'CI/CD & DevOps', label: 'CI/CD & DevOps' },
     { id: 'Android & Firebase', label: 'Android & Firebase' },
     { id: 'Google Play', label: 'Google Play' },
@@ -64,6 +68,32 @@ export class BlogContainerComponent implements OnInit {
 
   public isFavorite = signal(false);
   public blogPosts = signal<BlogPost[]>([
+    {
+      id: 99,
+      title: '4 Open Source Tools That Feel Illegal To Be Free',
+      content: `## 🚀 4 Open Source Tools That Feel Illegal To Be Free
+
+Tổng hợp các công cụ mã nguồn mở đột phá giúp bạn tăng tốc độ lập trình gấp 10 lần, tích hợp AI Agents và tự động hóa quy trình phát triển phần mềm hiện đại.
+
+- 🤖 **AI Code Orchestration:** Tự động hóa tác vụ lặp lại
+- 🎨 **Modern UI Kits:** Thư viện giao diện mở siêu nhẹ
+- 📦 **Local Database Emulator:** Chạy test không cần cloud
+- ⚡ **API Stress Tester:** Đo lường tải tức thì`,
+      summary: 'Khám phá 4 công cụ mã nguồn mở cực đỉnh cho lập trình viên với AI agents và giao diện hiện đại.',
+      imageUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80',
+      publishedAt: '2026-10-12T08:30:00Z',
+      viewCount: 519600,
+      createAt: '2026-10-12T08:30:00Z',
+      updateAt: '2026-10-12T08:30:00Z',
+      author: 'Danny Tech',
+      authorAvatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=LuckyGreen&backgroundColor=b6e3f4',
+      category: 'GitHub',
+      tags: ['open-source', 'ai-agents', 'devtools', 'productivity'],
+      upvotes: 222,
+      commentsCount: 8,
+      readTime: '22m watch time',
+      isVideo: true
+    },
     {
       id: 1,
       title: 'Cẩm Nang Toàn Tập Về CI/CD Web Với GitHub Actions (Angular 22 + Ionic)',

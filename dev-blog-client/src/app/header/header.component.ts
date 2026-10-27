@@ -1,7 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { IonHeader, IonToolbar, IonButtons } from '@ionic/angular/standalone';
 import { NgcAvatarModule } from 'ngc-library';
+import { OAuthService } from '../auth/oauth.service';
+import { ThemeService } from '../shared/theme.service';
 
 @Component({
   selector: 'app-header',
@@ -10,5 +12,7 @@ import { NgcAvatarModule } from 'ngc-library';
   imports: [IonHeader, IonToolbar, IonButtons, NgcAvatarModule, RouterLink, RouterLinkActive],
 })
 export class HeaderComponent {
-  constructor() { }
+  public oauthService = inject(OAuthService);
+  public themeService = inject(ThemeService);
+  constructor() {}
 }

@@ -131,23 +131,44 @@
 
       <!-- Social Logins -->
       <div class="social-actions">
-        <button type="button" class="social-btn" (click)="fillDemoAccount('admin')">
+        <button type="button" class="social-btn github-btn" (click)="onLoginWithOAuth('github')" title="Đăng nhập với GitHub OAuth2 (PKCE)">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
             <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
           </svg>
-          <span>GitHub</span>
+          <span>GitHub (OAuth2)</span>
         </button>
 
-        <button type="button" class="social-btn" (click)="fillDemoAccount('admin')">
+        <button type="button" class="social-btn google-btn" (click)="onLoginWithOAuth('google')" title="Đăng nhập với Google OAuth2 (PKCE)">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
             <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
             <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
             <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
           </svg>
-          <span>Google</span>
+          <span>Google (OAuth2)</span>
         </button>
       </div>
+
+      <!-- Current OAuth2 User Session Info (if logged in) -->
+      @if (oauthService.currentUser()) {
+        <div class="oauth-session-box">
+          <div class="session-header">
+            <span class="session-badge">✓ Đã xác thực OAuth 2.0</span>
+            <span class="provider-pill">{{ oauthService.currentUser()?.provider | uppercase }}</span>
+          </div>
+          <div class="session-body">
+            <img [src]="oauthService.currentUser()?.avatar" alt="Avatar" class="session-avatar" />
+            <div class="session-details">
+              <strong class="session-name">{{ oauthService.currentUser()?.name }}</strong>
+              <span class="session-email">{{ oauthService.currentUser()?.email }}</span>
+            </div>
+          </div>
+          <div class="session-actions">
+            <a routerLink="/blog" class="session-btn btn-primary">Xem Bài Viết →</a>
+            <button type="button" class="session-btn btn-secondary" (click)="oauthService.logout()">Đăng Xuất</button>
+          </div>
+        </div>
+      }
 
       <!-- Back Link -->
       <div class="card-footer-nav">
@@ -158,3 +179,135 @@
     </div>
   </div>
 </ion-content>
+
+<!-- OAuth 2.0 PKCE Interactive Consent & Live Inspector Modal -->
+@if (oauthService.isConsentOpen() && oauthService.pkceInspector(); as pkce) {
+    <div class="oauth-modal-backdrop" (click)="onCloseOAuth()">
+      <div class="oauth-modal-container" (click)="$event.stopPropagation()">
+        <!-- Provider Brand Banner -->
+        <div class="oauth-modal-header" [class.google-theme]="pkce.provider === 'google'" [class.github-theme]="pkce.provider === 'github'">
+          <div class="oauth-provider-logo">
+            @if (pkce.provider === 'google') {
+              <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
+                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
+                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
+              </svg>
+            } @else {
+              <svg viewBox="0 0 24 24" width="28" height="28" fill="#ffffff">
+                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+              </svg>
+            }
+          </div>
+          <div class="oauth-header-text">
+            <h2>{{ pkce.provider === 'google' ? 'Đăng nhập bằng tài khoản Google' : 'Cấp quyền ứng dụng GitHub' }}</h2>
+            <p>Ứng dụng <strong>Dev Blog 2.0</strong> đang yêu cầu xác thực</p>
+          </div>
+          <button type="button" class="oauth-close-btn" (click)="onCloseOAuth()">✕</button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="oauth-modal-body">
+          <!-- Step 1: Chọn tài khoản -->
+          <div class="oauth-section">
+            <label class="section-title">1. Chọn tài khoản để đăng nhập:</label>
+            <div class="account-selector-list">
+              @for (acc of testAccounts; track acc.email) {
+                <div 
+                  class="account-card" 
+                  [class.selected]="selectedAccount().email === acc.email"
+                  (click)="selectedAccount.set(acc)"
+                >
+                  <img [src]="acc.avatar" alt="Avatar" class="acc-avatar" />
+                  <div class="acc-info">
+                    <span class="acc-name">{{ acc.name }}</span>
+                    <span class="acc-email">{{ acc.email }}</span>
+                  </div>
+                  <span class="acc-badge">{{ acc.badge }}</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Step 2: Các quyền yêu cầu (Scopes) -->
+          <div class="oauth-section">
+            <label class="section-title">2. Quyền ứng dụng yêu cầu (Scopes):</label>
+            <div class="scope-tags">
+              <span class="scope-tag">🔑 <code>openid</code> (Nhận diện danh tính OIDC)</span>
+              <span class="scope-tag">👤 <code>profile</code> (Xem tên, hình đại diện)</span>
+              <span class="scope-tag">✉️ <code>email</code> (Xem địa chỉ email chính)</span>
+            </div>
+          </div>
+
+          <!-- Step 3: PKCE Inspector Live View -->
+          <div class="oauth-section pkce-debugger-card">
+            <div class="debugger-header" (click)="showPkceInspectorTab.set(!showPkceInspectorTab())">
+              <div class="debug-title">
+                <span>🛡️ PKCE Live Inspector (Mã hóa SHA-256 an toàn)</span>
+                <span class="status-pill">{{ pkce.step }}</span>
+              </div>
+              <span class="toggle-icon">{{ showPkceInspectorTab() ? '▲ Ẩn' : '▼ Xem chi tiết PKCE' }}</span>
+            </div>
+
+            @if (showPkceInspectorTab()) {
+              <div class="debugger-body">
+                <div class="debug-row">
+                  <span class="debug-label">Client ID:</span>
+                  <code class="debug-value">{{ pkce.clientId }}</code>
+                </div>
+                <div class="debug-row">
+                  <span class="debug-label">Code Verifier (Client sinh):</span>
+                  <code class="debug-value highlight-pink">{{ pkce.codeVerifier }}</code>
+                </div>
+                <div class="debug-row">
+                  <span class="debug-label">Code Challenge (SHA-256 S256):</span>
+                  <code class="debug-value highlight-cyan">{{ pkce.codeChallenge }}</code>
+                </div>
+                <div class="debug-row">
+                  <span class="debug-label">State (Chống CSRF):</span>
+                  <code class="debug-value">{{ pkce.state }}</code>
+                </div>
+
+                @if (pkce.authorizationCode) {
+                  <div class="debug-row">
+                    <span class="debug-label">Auth Code nhận được:</span>
+                    <code class="debug-value highlight-green">{{ pkce.authorizationCode }}</code>
+                  </div>
+                }
+
+                @if (pkce.tokens) {
+                  <div class="debug-row token-preview">
+                    <span class="debug-label">Access Token (JWT Bearer):</span>
+                    <textarea readonly class="debug-token-box" rows="2">{{ pkce.tokens.accessToken }}</textarea>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Modal Actions -->
+        <div class="oauth-modal-footer">
+          <button type="button" class="btn-cancel" (click)="onCloseOAuth()" [disabled]="oauthService.isExchanging()">
+            Hủy bỏ
+          </button>
+          <button 
+            type="button" 
+            class="btn-authorize"
+            [class.google-btn]="pkce.provider === 'google'"
+            [class.github-btn]="pkce.provider === 'github'"
+            [disabled]="oauthService.isExchanging()"
+            (click)="onAuthorizeOAuth()"
+          >
+            @if (oauthService.isExchanging()) {
+              <span class="spinner"></span>
+              <span>Đang trao đổi Token (PKCE)...</span>
+            } @else {
+              <span>✓ Cấp quyền & Đổi Token (Authorize)</span>
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }

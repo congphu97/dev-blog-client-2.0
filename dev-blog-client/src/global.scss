@@ -32,9 +32,61 @@
  * https://ionicframework.com/docs/theming/dark-mode
  */
 
-/* @import "@ionic/angular/css/palettes/dark.always.css"; */
-/* @import "@ionic/angular/css/palettes/dark.class.css"; */
-@import '@ionic/angular/css/palettes/dark.system.css';
+/* Ionic Dark Mode Class Palette */
+@import "@ionic/angular/css/palettes/dark.class.css";
+
+/* ============================================================ */
+/* THEME TOKENS: LIGHT VS DARK                                  */
+/* ============================================================ */
+:root, [data-theme="light"], .light {
+  --app-bg: #f8fafc;
+  --app-card-bg: #ffffff;
+  --app-card-border: #e2e8f0;
+  --app-card-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  --app-text-primary: #0f172a;
+  --app-text-secondary: #475569;
+  --app-text-muted: #64748b;
+  --app-pill-bg: #f1f5f9;
+  --app-pill-border: #e2e8f0;
+  --app-pill-text: #475569;
+  --app-pill-active-bg: #0f172a;
+  --app-pill-active-text: #ffffff;
+  --app-header-bg: #ffffff;
+  --app-header-border: #e2e8f0;
+  --app-input-bg: #ffffff;
+  --app-input-border: #cbd5e1;
+  --app-input-text: #0f172a;
+  --app-media-bg: #e2e8f0;
+  --app-skeleton-bg: #e2e8f0;
+}
+
+[data-theme="dark"], .dark {
+  --app-bg: #0e1217;
+  --app-card-bg: #181c24;
+  --app-card-border: #282f3d;
+  --app-card-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  --app-text-primary: #f8fafc;
+  --app-text-secondary: #94a3b8;
+  --app-text-muted: #8593a6;
+  --app-pill-bg: #222834;
+  --app-pill-border: #2f384a;
+  --app-pill-text: #cbd5e1;
+  --app-pill-active-bg: #f8fafc;
+  --app-pill-active-text: #09090b;
+  --app-header-bg: #131720;
+  --app-header-border: #232936;
+  --app-input-bg: #181c24;
+  --app-input-border: #282f3d;
+  --app-input-text: #f8fafc;
+  --app-media-bg: #10141c;
+  --app-skeleton-bg: #252b38;
+}
+
+body {
+  background-color: var(--app-bg);
+  color: var(--app-text-primary);
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
 
 /* GitHub Markdown & Syntax Highlighting */
 @import 'github-markdown-css/github-markdown.css';

@@ -22,17 +22,59 @@
       </div>
     </a>
 
-    <!-- Right Actions: Navigation Links & Login -->
+    <!-- Right Actions: Navigation Links & Theme Toggle & Login -->
     <ion-buttons slot="end" class="header-user-actions">
+      <!-- Dark / Light Theme Toggle Button -->
+      <button 
+        type="button" 
+        class="theme-toggle-btn" 
+        (click)="themeService.toggleTheme()" 
+        [title]="themeService.isDark() ? 'Chuyển sang Giao diện Sáng (Light Mode)' : 'Chuyển sang Giao diện Tối (Dark Mode)'"
+      >
+        @if (themeService.isDark()) {
+          <!-- Sun Icon with glowing rays -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="theme-icon sun-icon">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+        } @else {
+          <!-- Moon Icon -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="theme-icon moon-icon">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        }
+      </button>
+
       <a routerLink="/blog" routerLinkActive="active" class="header-nav-link" [routerLinkActiveOptions]="{ exact: true }">
         <span class="nav-icon">📰</span>
         <span class="nav-text">Bài viết</span>
       </a>
-      <a routerLink="/login" routerLinkActive="active" class="header-nav-link login-nav-link">
-        <span class="nav-icon">🔐</span>
-        <span class="nav-text">Đăng nhập</span>
-      </a>
-      <ngc-avatar label="Phú Cường" size="small"></ngc-avatar>
+
+      @if (oauthService.currentUser(); as user) {
+        <div class="header-auth-user" [title]="user.email">
+          <span class="user-provider-badge" [class.google]="user.provider === 'google'" [class.github]="user.provider === 'github'">
+            {{ user.provider === 'google' ? 'G' : 'GH' }}
+          </span>
+          <span class="header-user-name">{{ user.name }}</span>
+          <button type="button" class="header-logout-btn" (click)="oauthService.logout()" title="Đăng xuất OAuth2">
+            Đăng xuất
+          </button>
+        </div>
+      } @else {
+        <a routerLink="/login" routerLinkActive="active" class="header-nav-link login-nav-link">
+          <span class="nav-icon">🔐</span>
+          <span class="nav-text">Đăng nhập</span>
+        </a>
+      }
+
+      <ngc-avatar [label]="oauthService.currentUser()?.name || 'Phú Cường'" size="small"></ngc-avatar>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>

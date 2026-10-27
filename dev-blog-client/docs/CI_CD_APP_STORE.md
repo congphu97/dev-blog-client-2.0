@@ -10,8 +10,9 @@
 5. [Bước 3: Tạo App Store Connect API Key (Để CI/CD tự động đăng nhập)](#bước-3-tạo-app-store-connect-api-key-để-cicd-tự-động-đăng-nhập)
 6. [Bước 4: Cài đặt Bí mật trên GitHub (GitHub Secrets)](#bước-4-cài-đặt-bí-mật-trên-github-github-secrets)
 7. [Bước 5: File Workflow mẫu hoàn chỉnh (`ios-app-store.yml`)](#bước-5-file-workflow-mẫu-hoàn-chỉnh-ios-app-storeyml)
-8. [Phương án thay thế: Build thủ công bằng Xcode trên máy Mac cá nhân](#phương-án-thay-thế-build-thủ-công-bằng-xcode-trên-máy-mac-cá-nhân)
-9. [Những lỗi kinh điển khi phát hành iOS & Cách khắc phục](#những-lỗi-kinh-điển-khi-phát-hành-ios--cách-khắc-phục)
+8. [Tự Động Hóa Build IPA & TestFlight Bằng Fastlane (Khuyên dùng)](#8-tự-động-hóa-build-ipa--testflight-bằng-fastlane-khuyên-dùng)
+9. [Phương án thay thế: Build thủ công bằng Xcode trên máy Mac cá nhân](#phương-án-thay-thế-build-thủ-công-bằng-xcode-trên-máy-mac-cá-nhân)
+10. [Những lỗi kinh điển khi phát hành iOS & Cách khắc phục](#những-lỗi-kinh-điển-khi-phát-hành-ios--cách-khắc-phục)
 
 ---
 
@@ -298,7 +299,89 @@ jobs:
 
 ---
 
-## 8. Phương án thay thế: Build thủ công bằng Xcode trên máy Mac cá nhân
+## 8. Tự Động Hóa Build IPA & TestFlight Bằng Fastlane (Khuyên dùng)
+
+**Fastlane** là công cụ chuẩn công nghiệp số 1 thế giới để tự động hóa build, ký mã và phân phối ứng dụng iOS mà không cần mở giao diện Xcode.
+
+### 8.1. Cấu trúc thư mục Fastlane trong dự án
+
+Dự án đã được tích hợp Fastlane tại thư mục `ios/App/fastlane`:
+- [Appfile](file:///Users/congphu2210/Desktop/Phu/dev-blog-client-2.0/dev-blog-client/ios/App/fastlane/Appfile): Chứa `app_identifier` (`io.ionic.starter` hoặc đọc từ `ENV['APP_IDENTIFIER']`), Apple ID và Team ID.
+- [Fastfile](file:///Users/congphu2210/Desktop/Phu/dev-blog-client-2.0/dev-blog-client/ios/App/fastlane/Fastfile): Định nghĩa các luồng công việc (lanes) tự động hóa.
+
+```
+dev-blog-client/
+├── ios/App/
+│   ├── fastlane/
+│   │   ├── Appfile       # Cấu hình Bundle ID & Apple Team
+│   │   └── Fastfile      # Các lane build_dev, build_adhoc, build_appstore, beta
+│   ├── App.xcworkspace
+│   └── Podfile
+└── release/
+    └── ios/              # Thư mục xuất file .ipa sau khi build
+```
+
+---
+
+### 8.2. Danh sách các lệnh Build nhanh (NPM Scripts)
+
+Bạn chỉ cần đứng tại thư mục gốc của dự án và chạy 1 lệnh duy nhất:
+
+| Lệnh NPM | Lệnh Fastlane tương đương | Mục đích sử dụng | File xuất ra |
+| :--- | :--- | :--- | :--- |
+| `npm run fastlane:dev` | `fastlane build_dev` | Build file IPA dạng **Development** để cài test trực tiếp trên máy Mac / iPhone nhà phát triển. | `release/ios/dev-blog-client-dev.ipa` |
+| `npm run fastlane:adhoc` | `fastlane build_adhoc` | Build file IPA dạng **Ad-Hoc** để upload lên Diawi, Firebase App Distribution cho tester cài đặt. | `release/ios/dev-blog-client-adhoc.ipa` |
+| `npm run fastlane:appstore` | `fastlane build_appstore` | Build file IPA chuẩn **App Store / TestFlight** đã tối ưu hóa và ký mã Production. | `release/ios/dev-blog-client-appstore.ipa` |
+| `npm run fastlane:beta` | `fastlane beta` | Tự động build App Store IPA và đẩy thẳng lên **TestFlight** trên App Store Connect. | TestFlight Build |
+
+> [!TIP]
+> Mỗi lệnh trên đều **tự động chạy** quy trình:
+> 1. `npm run build` (Biên dịch Angular Web sang `www/`)
+> 2. `npx cap sync ios` (Đồng bộ web build và native plugins vào thư mục `ios/App`)
+> 3. Tự động biên dịch & đóng gói file `.ipa` thông qua `gym` (`build_app`).
+
+---
+
+### 8.3. Chạy Fastlane trực tiếp từ Terminal
+
+Nếu bạn muốn chạy trực tiếp bằng lệnh Fastlane và truyền tham số:
+
+```bash
+cd ios/App
+
+# 1. Kiểm tra danh sách các lane có sẵn
+fastlane lanes
+
+# 2. Build Development IPA (Bỏ qua bước sync web nếu đã sync trước đó)
+fastlane build_dev skip_sync:true
+
+# 3. Build Ad-Hoc IPA
+fastlane build_adhoc
+
+# 4. Build App Store IPA
+fastlane build_appstore
+```
+
+---
+
+### 8.4. Cấu hình Signing (Ký mã chứng chỉ) cho Fastlane
+
+Fastlane hỗ trợ cờ `-allowProvisioningUpdates`. Khi máy Mac của bạn đã đăng nhập Apple ID trong Xcode:
+1. Mở Xcode một lần: `npx cap open ios`
+2. Vào thẻ **Signing & Capabilities** -> Chọn Team của bạn và tích chọn **Automatically manage signing**.
+3. Sau đó, Fastlane sẽ tự động tải hoặc cập nhật Provisioning Profile hợp lệ tương ứng với từng kiểu export (`development`, `ad-hoc`, `app-store`) mà không cần làm thủ công.
+
+Nếu cần chỉ định Team ID hoặc Apple ID thông qua biến môi trường:
+```bash
+export APP_IDENTIFIER="io.ionic.starter"
+export APPLE_ID="your-email@example.com"
+export FASTLANE_TEAM_ID="YOUR_TEAM_ID"
+npm run fastlane:dev
+```
+
+---
+
+## 9. Phương án thay thế: Build thủ công bằng Xcode trên máy Mac cá nhân
 
 Nếu bạn chưa sẵn sàng thiết lập toàn bộ chứng chỉ lên CI/CD của GitHub, bạn có thể build và upload trực tiếp từ máy tính Mac của mình trong **5 phút**:
 
@@ -317,7 +400,7 @@ flowchart TD
 
 ---
 
-## 9. Những lỗi kinh điển khi phát hành iOS & Cách khắc phục
+## 10. Những lỗi kinh điển khi phát hành iOS & Cách khắc phục
 
 ### ❌ Lỗi 1: `Provisioning profile doesn't match the entitlement...`
 - **Nguyên nhân**: Bundle Identifier trong file cấu hình `project.pbxproj` của Xcode khác với Bundle ID đã đăng ký trên trang Apple Developer.

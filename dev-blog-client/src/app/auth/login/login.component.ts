@@ -5,6 +5,7 @@ import { Router, RouterLink } from '@angular/router';
 import { IonContent } from '@ionic/angular/standalone';
 import { HeaderComponent } from '../../header/header.component';
 import { NgcButtonModule } from 'ngc-library';
+import { OAuthService } from '../oauth.service';
 
 @Component({
   selector: 'app-login',
@@ -14,6 +15,7 @@ import { NgcButtonModule } from 'ngc-library';
 })
 export class LoginComponent {
   private router = inject(Router);
+  public oauthService = inject(OAuthService);
 
   public email = signal<string>('phu.cuong@devblog.com');
   public password = signal<string>('Developer@2026');
@@ -22,6 +24,26 @@ export class LoginComponent {
   public isLoading = signal<boolean>(false);
   public errorMessage = signal<string>('');
   public loginSuccess = signal<boolean>(false);
+
+  // Danh sách tài khoản mẫu để test OAuth2 Consent Screen
+  public testAccounts = [
+    {
+      name: 'Phú Cường (Admin)',
+      email: 'phu.cuong@gmail.com',
+      avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=PhuCuong',
+      role: 'admin' as const,
+      badge: '👑 Quản trị viên'
+    },
+    {
+      name: 'Nguyễn Văn Đọc (Reader)',
+      email: 'van.doc@gmail.com',
+      avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=VanDoc',
+      role: 'reader' as const,
+      badge: '👤 Độc giả'
+    }
+  ];
+  public selectedAccount = signal(this.testAccounts[0]);
+  public showPkceInspectorTab = signal<boolean>(true);
 
   public togglePasswordVisibility() {
     this.showPassword.update(v => !v);
@@ -36,6 +58,30 @@ export class LoginComponent {
       this.password.set('Guest123456');
     }
     this.errorMessage.set('');
+  }
+
+  /**
+   * Bắt đầu luồng OAuth2 PKCE
+   */
+  public onLoginWithOAuth(provider: 'google' | 'github') {
+    this.oauthService.startOAuthFlow(provider);
+  }
+
+  /**
+   * Cấp quyền trên Consent Screen và tiến hành Token Exchange
+   */
+  public async onAuthorizeOAuth() {
+    await this.oauthService.confirmConsentAndExchange(this.selectedAccount());
+    this.loginSuccess.set(true);
+
+    setTimeout(() => {
+      this.oauthService.closeConsent();
+      this.router.navigate(['/blog']);
+    }, 1800);
+  }
+
+  public onCloseOAuth() {
+    this.oauthService.closeConsent();
   }
 
   public onLogin(event: Event) {

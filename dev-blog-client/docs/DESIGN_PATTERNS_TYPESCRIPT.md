@@ -58,7 +58,7 @@ classDiagram
     AppNotification <|.. SMSNotification : implements
     AppNotification <|.. PushNotification : implements
     NotificationFactory ..> AppNotification : creates
-    Client ..> NotificationFactory : calls createNotification()
+    Client ..> NotificationFactory : calls createNotification
     Client ..> AppNotification : uses
 ```
 
@@ -283,28 +283,28 @@ app.paint();
 ```mermaid
 classDiagram
     class ProductService {
-        -instance: ProductService$
-        -cachedProducts: Product[]
-        -hasLoaded: boolean
-        -constructor()
+        -ProductService instance$
+        -Array~Product~ cachedProducts
+        -boolean hasLoaded
+        -ProductService()
         +getInstance() ProductService$
-        +getProducts() Promise~Product[]~
+        +getProducts() Promise~Array~Product~~
         +clearCache() void
     }
-    note for ProductService "- constructor() là private để chặn new từ bên ngoài\n- getInstance() trả về thể hiện duy nhất (Singleton)"
+    note for ProductService "constructor private de chan new tu ben ngoai\ngetInstance tra ve the hien duy nhat"
 ```
 
 #### Sơ đồ hoạt động (Flowchart)
 
 ```mermaid
 flowchart TD
-    Client[Client gọi ProductService.getInstance] --> Check{Instance đã tồn tại chưa?}
-    Check -- Chưa có -- --> Create[Khởi tạo new ProductService và lưu vào static variable]
-    Check -- Đã có sẵn -- --> Return[Trả về static instance có sẵn]
+    Client["Client gọi ProductService.getInstance()"] --> Check{"Instance đã tồn tại chưa?"}
+    Check -->|Chưa có| Create["Khởi tạo new ProductService và lưu vào static variable"]
+    Check -->|Đã có sẵn| Return["Trả về static instance có sẵn"]
     Create --> Return
-    Return --> CacheCheck{hasLoaded == true?}
-    CacheCheck -- True (Cache Hit) -- --> ReturnCache[Trả về cachedProducts]
-    CacheCheck -- False (Cache Miss) -- --> FetchAPI[Gọi API lấy data -> Gán vào Cache -> hasLoaded=true]
+    Return --> CacheCheck{"hasLoaded == true?"}
+    CacheCheck -->|True - Cache Hit| ReturnCache["Trả về cachedProducts"]
+    CacheCheck -->|False - Cache Miss| FetchAPI["Gọi API lấy data -> Gán vào Cache -> hasLoaded=true"]
     FetchAPI --> ReturnCache
 ```
 
@@ -394,12 +394,12 @@ const query = new ProductQuery(
 
 ```mermaid
 flowchart LR
-    A[new ProductQueryBuilder] --> B[.setKeyword('laptop')]
-    B --> C[.setCategory('electronics')]
-    C --> D[.setPriceRange(500, 2000)]
-    D --> E[.onlyInStock]
-    E --> F[.build]
-    F --> G[(ProductQuery Instance hoàn chỉnh)]
+    A["new ProductQueryBuilder()"] --> B[".setKeyword('laptop')"]
+    B --> C[".setCategory('electronics')"]
+    C --> D[".setPriceRange(500, 2000)"]
+    D --> E[".onlyInStock()"]
+    E --> F[".build()"]
+    F --> G[("ProductQuery Instance hoàn chỉnh")]
     
     style G fill:#2e7d32,stroke:#1b5e20,color:#fff
 ```
@@ -409,30 +409,30 @@ flowchart LR
 ```mermaid
 classDiagram
     class ProductQuery {
-        +keyword?: string
-        +category?: string
-        +minPrice?: number
-        +maxPrice?: number
-        +inStock?: boolean
-        +sortBy?: string
-        +page: number
-        +pageSize: number
+        +string keyword
+        +string category
+        +number minPrice
+        +number maxPrice
+        +boolean inStock
+        +string sortBy
+        +number page
+        +number pageSize
         +execute() void
     }
 
     class ProductQueryBuilder {
-        -query: ProductQuery
-        +reset() this
-        +setKeyword(keyword: string) this
-        +setCategory(category: string) this
-        +setPriceRange(min: number, max: number) this
-        +onlyInStock() this
-        +setSorting(sortBy) this
-        +setPagination(page, pageSize) this
+        -ProductQuery query
+        +reset() ProductQueryBuilder
+        +setKeyword(string keyword) ProductQueryBuilder
+        +setCategory(string category) ProductQueryBuilder
+        +setPriceRange(number min, number max) ProductQueryBuilder
+        +onlyInStock() ProductQueryBuilder
+        +setSorting(string sortBy) ProductQueryBuilder
+        +setPagination(number page, number pageSize) ProductQueryBuilder
         +build() ProductQuery
     }
 
-    ProductQueryBuilder ..> ProductQuery : builds & returns
+    ProductQueryBuilder ..> ProductQuery : builds and returns
 ```
 
 #### Triển khai mẫu (TypeScript)
@@ -545,8 +545,8 @@ sequenceDiagram
 
     Note over Sub: Trạng thái thay đổi! (State Changed)
     
-    Sub-->>ObsA: notify(data) -> Cập nhật giao diện
-    Sub-->>ObsB: notify(data) -> Gửi log analytics
+    Sub-->>ObsA: notify(data) - Cập nhật giao diện
+    Sub-->>ObsB: notify(data) - Gửi log analytics
 ```
 
 #### Sơ đồ cấu trúc lớp (Class Diagram)
@@ -554,7 +554,7 @@ sequenceDiagram
 ```mermaid
 classDiagram
     class Subject {
-        -observers: Observer[]
+        -Array~Observer~ observers
         +attach(observer: Observer) void
         +detach(observer: Observer) void
         +notify(data: any) void
@@ -570,7 +570,7 @@ classDiagram
         +update(data: any) void
     }
 
-    Subject "1" o--> "*" Observer : holds list
+    Subject "1" o-- "*" Observer : holds list
     Observer <|.. ConcreteObserverA
     Observer <|.. ConcreteObserverB
 ```
@@ -593,20 +593,16 @@ classDiagram
 ```mermaid
 stateDiagram-v2
     [*] --> Draft : Tạo mới đơn hàng
-    Draft --> Paid : pay() [Thành công]
-    Draft --> Cancelled : cancel() [Hủy đơn]
+    Draft --> Paid : pay() Thành công
+    Draft --> Cancelled : cancel() Hủy đơn
 
-    Paid --> Shipped : ship() [Giao hàng]
-    Paid --> Cancelled : cancel() [Hủy & hoàn tiền]
+    Paid --> Shipped : ship() Giao hàng
+    Paid --> Cancelled : cancel() Hủy và hoàn tiền
 
     Shipped --> [*] : Hoàn thành
     Cancelled --> [*] : Kết thúc
 
-    note right of Shipped
-        Ở Shipped:
-        - pay() -> Báo lỗi
-        - cancel() -> Báo lỗi
-    end note
+    note right of Shipped : Đang giao hàng không thể hủy hoặc thanh toán
 ```
 
 #### Sơ đồ cấu trúc lớp (Class Diagram)
@@ -652,7 +648,7 @@ classDiagram
         +cancel() void
     }
 
-    Order "1" *--> "1" OrderState : delegates actions
+    Order "1" *-- "1" OrderState : delegates actions
     OrderState <|.. DraftOrderState
     OrderState <|.. PaidOrderState
     OrderState <|.. ShippedOrderState
@@ -821,7 +817,7 @@ classDiagram
         +pay(amount: number) void
     }
 
-    OrderProcessor "1" o--> "1" PaymentStrategy : relies on interface
+    OrderProcessor "1" o-- "1" PaymentStrategy : relies on interface
     PaymentStrategy <|.. MomoPaymentStrategy : implements
     PaymentStrategy <|.. StripePaymentStrategy : implements
     PaymentStrategy <|.. CodPaymentStrategy : implements
@@ -831,23 +827,26 @@ classDiagram
 
 ```mermaid
 flowchart TD
-    Client[Client / Người dùng chọn phương thức thanh toán]
+    Client["Client / Người dùng chọn phương thức thanh toán"]
     
-    subgraph Context [OrderProcessor]
+    subgraph Context ["OrderProcessor (Context)"]
         direction TB
-        StrategyHolder[Tham chiếu: paymentStrategy]
+        StrategyHolder["Tham chiếu: paymentStrategy"]
+        Execute["Thực thi: paymentStrategy.pay(amount)"]
+        StrategyHolder --> Execute
     end
 
-    subgraph Strategies [Các Concrete Strategy hoán đổi linh hoạt]
-        Momo[MomoPaymentStrategy]
-        Stripe[StripePaymentStrategy]
-        COD[CodPaymentStrategy]
-        Zalo[ZaloPayStrategy - Mở rộng dễ dàng]
+    subgraph Strategies ["Các Concrete Strategy hoán đổi linh hoạt"]
+        Momo["MomoPaymentStrategy"]
+        Stripe["StripePaymentStrategy"]
+        COD["CodPaymentStrategy"]
+        Zalo["ZaloPayStrategy (Mở rộng dễ dàng)"]
     end
 
-    Client -- "1. Chọn MoMo" --> Momo -. Gán vào .-> StrategyHolder
-    Client -- "2. Đổi sang Stripe" --> Stripe -. Tráo đổi runtime .-> StrategyHolder
-    StrategyHolder --> Execute[Thực thi paymentStrategy.pay]
+    Client -->|1. Chọn MoMo| Momo
+    Client -->|2. Đổi sang Stripe| Stripe
+    Momo -.->|Gán vào context| StrategyHolder
+    Stripe -.->|Hoán đổi tại runtime| StrategyHolder
 ```
 
 #### Triển khai mẫu (TypeScript)

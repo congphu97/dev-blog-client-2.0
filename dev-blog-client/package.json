@@ -13,7 +13,12 @@
     "test:ci": "ng test --watch=false --browsers=ChromeHeadless",
     "lint": "ng lint",
     "build.android": "ng build && cap sync android",
-    "build.ios": "ng build && cap sync ios"
+    "build.ios": "ng build && cap sync ios",
+    "fastlane:dev": "cd ios/App && fastlane build_dev",
+    "fastlane:adhoc": "cd ios/App && fastlane build_adhoc",
+    "fastlane:appstore": "cd ios/App && fastlane build_appstore",
+    "fastlane:beta": "cd ios/App && fastlane beta",
+    "fastlane:firebase": "cd ios/App && fastlane firebase"
   },
   "private": true,
   "dependencies": {

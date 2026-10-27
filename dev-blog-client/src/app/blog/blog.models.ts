@@ -12,4 +12,9 @@ export interface BlogPost {
   tags: string[];
   summary?: string;
   favorite?: boolean;
+  upvotes?: number;
+  commentsCount?: number;
+  readTime?: string;
+  authorAvatar?: string;
+  isVideo?: boolean;
 }

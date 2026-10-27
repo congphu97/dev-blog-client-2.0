@@ -1,102 +1,170 @@
 @if (isLoading()) {
   <div class="blog-grid">
     @for (card of skeletonCards; track $index) {
-      <ngc-card [borderRadius]="'12px'" borderColor="#e2e8f0" [contentPaddingVertical]="'0px'" [contentPaddingHorizontal]="'0px'">
-        <div ngcCardHeader class="skeleton-header">
-          <ngc-skeleton width="80px" height="20px" borderRadius="10px"></ngc-skeleton>
-          <ngc-skeleton width="24px" height="24px" [circle]="true"></ngc-skeleton>
+      <div class="feed-card skeleton-card">
+        <div class="skeleton-avatar"></div>
+        <div class="skeleton-line skeleton-title"></div>
+        <div class="skeleton-line skeleton-title-short"></div>
+        <div class="skeleton-tags-row">
+          <div class="skeleton-pill"></div>
+          <div class="skeleton-pill"></div>
         </div>
-        <div ngcCardContent class="skeleton-content">
-          <ngc-skeleton width="100%" height="150px" borderRadius="0px"></ngc-skeleton>
-          <div class="skeleton-body">
-            <div class="skeleton-author-row">
-              <ngc-skeleton width="28px" height="28px" [circle]="true"></ngc-skeleton>
-              <ngc-skeleton width="90px" height="14px" borderRadius="4px"></ngc-skeleton>
-            </div>
-            <ngc-skeleton width="95%" height="18px" borderRadius="4px"></ngc-skeleton>
-            <ngc-skeleton width="70%" height="18px" borderRadius="4px"></ngc-skeleton>
-            <ngc-skeleton width="100%" height="12px" borderRadius="4px"></ngc-skeleton>
-          </div>
-        </div>
-        <div ngcCardFooter class="skeleton-footer">
-          <ngc-skeleton width="90px" height="28px" borderRadius="6px"></ngc-skeleton>
-        </div>
-      </ngc-card>
+        <div class="skeleton-meta"></div>
+        <div class="skeleton-thumb"></div>
+        <div class="skeleton-footer"></div>
+      </div>
     }
   </div>
 } @else {
   <div class="blog-grid">
     @for (post of posts(); track post.id) {
-      <ngc-card 
-        class="post-card"
-        [borderRadius]="'12px'" 
-        borderColor="#e2e8f0" 
-        [contentPaddingVertical]="'0px'" 
-        [contentPaddingHorizontal]="'0px'" 
-        (click)="navigationToDetail(post)"
-      >
-        <div ngcCardHeader class="card-header">
-          <ngc-tag 
-            [label]="post.category || 'Công nghệ'" 
-            color="#18181b" 
-            [minimize]="false"
-          ></ngc-tag>
-
-          <button 
-            class="favorite-btn" 
-            (click)="onToggleFavorite(post.id); $event.stopPropagation()"
-            [title]="post.favorite ? 'Bỏ thích' : 'Thêm vào yêu thích'"
-          >
-            @if (post.favorite) {
-              <span>❤️</span>
-            } @else {
-              <span>🤍</span>
-            }
-          </button>
-        </div>
-
-        <div ngcCardContent class="card-main-content">
-          <div class="card-image-wrapper">
-            <img [src]="post.imageUrl" [alt]="post.title" loading="lazy" />
+      <article class="feed-card" (click)="navigationToDetail(post)">
+        <!-- 1. TOP ROW: Author Avatar (ngc-avatar) & Quick Action -->
+        <div class="card-top-row">
+          <div class="author-avatar-wrapper">
+            <ngc-avatar 
+              [label]="post.author || 'Tác giả'" 
+              [avatar]="{ photo: getAuthorAvatar(post), mode: 'photo' }" 
+              size="small"
+            ></ngc-avatar>
           </div>
 
-          <div class="card-body">
-            <div class="author-row">
-              <ngc-avatar 
-                [label]="post.author || 'Tác giả'" 
-                [avatar]="{ photo: post.imageUrl, mode: 'photo' }" 
-                size="small"
-              ></ngc-avatar>
-              <span class="author-name">{{ post.author || 'Tác giả' }}</span>
-              @if (post.publishedAt) {
-                <span class="post-date">{{ post.publishedAt | date:'dd/MM' }}</span>
-              }
+          <div class="top-actions">
+            <!-- Edit Button -->
+            <button 
+              type="button" 
+              class="action-icon-btn edit-btn" 
+              (click)="onChooseToEdit(post, $event)" 
+              title="Chỉnh sửa bài"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="svg-icon">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. CARD TITLE -->
+        <h2 class="card-title" [title]="post.title">
+          {{ post.title }}
+        </h2>
+
+        <!-- 3. TAGS ROW: Shield Badge + Tag Pills -->
+        <div class="card-tags-row">
+          <!-- Shield Badge -->
+          <span class="shield-badge" title="Đã kiểm chứng / Open source">
+            <svg class="shield-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+          </span>
+
+          <!-- Tag Pills -->
+          @for (tag of getVisibleTags(post); track tag) {
+            <span class="tag-pill">{{ tag.startsWith('#') ? tag : '#' + tag }}</span>
+          }
+
+          @if (getRemainingTagsCount(post) > 0) {
+            <span class="tag-pill tag-pill--more">+{{ getRemainingTagsCount(post) }}</span>
+          }
+        </div>
+
+        <!-- 4. META ROW: Date • Watch/Read Time -->
+        <div class="card-meta-row">
+          <span class="meta-date">{{ getFormattedDate(post) }}</span>
+          <span class="meta-dot">•</span>
+          <span class="meta-time">{{ getReadingOrWatchTime(post) }}</span>
+        </div>
+
+        <!-- 5. MEDIA COVER BANNER (CHỈ HIỆN NÚT PLAY NẾU LÀ VIDEO) -->
+        <div class="card-media-container">
+          <img [src]="post.imageUrl" [alt]="post.title" class="media-image" loading="lazy" />
+          
+          @if (post.isVideo) {
+            <div class="play-overlay">
+              <div class="play-circle-btn">
+                <svg class="play-triangle-svg" viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="6 3 20 12 6 21 6 3"></polygon>
+                </svg>
+              </div>
             </div>
-
-            <h3 class="card-title" [title]="post.title">
-              {{ post.title }}
-            </h3>
-
-            @if (post.summary) {
-              <p class="card-summary">{{ post.summary }}</p>
-            }
-          </div>
+          }
         </div>
 
-        <div ngcCardFooter class="card-actions">
+        <!-- 6. BOTTOM STATS & ACTION BAR -->
+        <div class="card-bottom-bar">
+          <!-- Upvote Button -->
           <button 
             type="button" 
-            ngcButton 
-            size="32px"
-            color="#ffffff" 
-            textColor="#18181b" 
-            borderColor="#e4e4e7" 
-            (click)="onChooseToEdit(post); $event.stopPropagation()"
+            class="stat-btn upvote-btn" 
+            [class.active]="getVote(post.id) === 1"
+            (click)="onUpvote($event, post)"
+            title="Thích"
           >
-            ✏️ Sửa bài
+            <svg class="bar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="12" y1="19" x2="12" y2="5"></line>
+              <polyline points="5 12 12 5 19 12"></polyline>
+            </svg>
+            <span class="stat-number">{{ getUpvoteCount(post) }}</span>
           </button>
+
+          <!-- Comment Button -->
+          <button 
+            type="button" 
+            class="stat-btn comment-btn" 
+            (click)="navigationToDetail(post); $event.stopPropagation()"
+            title="Bình luận"
+          >
+            <svg class="bar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+            </svg>
+            <span class="stat-number">{{ post.commentsCount || 8 }}</span>
+          </button>
+
+          <!-- Downvote Button -->
+          <button 
+            type="button" 
+            class="stat-btn downvote-btn" 
+            [class.active]="getVote(post.id) === -1"
+            (click)="onDownvote($event, post)"
+            title="Không thích"
+          >
+            <svg class="bar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <polyline points="19 12 12 19 5 12"></polyline>
+            </svg>
+          </button>
+
+          <!-- Share / Copy Link Button -->
+          <button 
+            type="button" 
+            class="stat-btn share-btn" 
+            (click)="onCopyLink($event, post)"
+            [title]="copiedPostId() === post.id ? 'Đã sao chép link!' : 'Chia sẻ bài viết'"
+          >
+            @if (copiedPostId() === post.id) {
+              <span class="copied-indicator">✓</span>
+            } @else {
+              <svg class="bar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+              </svg>
+            }
+          </button>
+
+          <!-- View Count -->
+          <div class="stat-item views-item" title="Lượt xem">
+            <svg class="bar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="20" x2="18" y2="10"></line>
+              <line x1="12" y1="20" x2="12" y2="4"></line>
+              <line x1="6" y1="20" x2="6" y2="14"></line>
+            </svg>
+            <span class="stat-number">{{ formatViews(post.viewCount) }}</span>
+          </div>
         </div>
-      </ngc-card>
+      </article>
     } @empty {
       <div class="empty-grid-state">
         <p>🔍 Không tìm thấy bài viết nào phù hợp.</p>

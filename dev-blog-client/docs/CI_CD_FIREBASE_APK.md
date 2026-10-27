@@ -16,6 +16,7 @@
 6. [Bước 3: Mổ xẻ chi tiết TỪNG DÒNG file `android-firebase.yml`](#bước-3-mổ-xẻ-chi-tiết-từng-dòng-file-android-firebaseyml)
 7. [Các lỗi thực tế kinh điển & Cách giải quyết triệt để](#các-lỗi-thực-tế-kinh-điển--cách-giải-quyết-triệt-để)
 8. [Hướng dẫn Tester & Lập trình viên nhận và cài đặt app](#hướng-dẫn-tester--lập-trình-viên-nhận-và-cài-đặt-app)
+9. [Phân phối file iOS IPA lên Firebase bằng GitHub Actions & Fastlane](#9-phân-phối-file-ios-ipa-lên-firebase-bằng-github-actions--fastlane)
 
 ---
 
@@ -332,4 +333,80 @@ Khi pipeline chạy thành công:
 3. Cuộn xuống cuối trang mục **Artifacts** ➡️ Bấm tải file **`app-debug-0.0.2`** về máy tính và cài vào điện thoại hoặc máy ảo Android Studio.
 
 ---
+
+## 9. Phân phối file iOS IPA lên Firebase bằng GitHub Actions & Fastlane
+
+Bên cạnh Android APK, dự án đã hỗ trợ đóng gói và phân phối file iOS `.ipa` lên Firebase App Distribution thông qua sự kết hợp giữa **GitHub Actions (macOS runner)** và **Fastlane**.
+
+### 9.1. Sơ đồ kiến trúc CI/CD iOS + Fastlane + Firebase
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Dev as Lập trình viên
+    participant GH as GitHub Actions (macos-14)
+    participant FL as Fastlane (gym / build_app)
+    participant FB as Firebase App Distribution
+    actor Tester as iOS Tester (iPhone/iPad)
+
+    Dev->>GH: Push commit lên branch main (hoặc Manual Trigger)
+    GH->>GH: 1. Setup Node.js 22 & Ruby 3.3
+    GH->>GH: 2. Import Certificate (.p12) & Provisioning Profile vào Keychain tạm
+    GH->>FL: 3. Chạy lệnh: npm run fastlane:adhoc
+    FL->>FL: - npm run build (Angular web)
+    FL->>FL: - npx cap sync ios (Capacitor Sync)
+    FL->>FL: - xcodebuild archive & export IPA dạng Ad-Hoc
+    FL-->>GH: File release/ios/dev-blog-client-adhoc.ipa
+    GH->>FB: 4. Upload IPA bằng action Firebase-Distribution-Github-Action
+    FB-->>Tester: 5. Gửi email mời cài đặt qua Firebase Tester Profile
+```
+
+---
+
+### 9.2. Các GitHub Secrets cần chuẩn bị cho iOS
+
+Để GitHub Actions runner tự động ký mã iOS và phân phối lên Firebase, hãy thêm các secret sau vào **Repository Settings ➡️ Secrets and variables ➡️ Actions**:
+
+| Tên Secret | Ý nghĩa | Cách lấy |
+| :--- | :--- | :--- |
+| `FIREBASE_IOS_APP_ID` | App ID của ứng dụng iOS trên Firebase | Vào **Firebase Console** ➡️ **Project Settings** ➡️ Chọn app iOS (định dạng `1:xxx:ios:xxx`). |
+| `FIREBASE_TOKEN` | Token CLI chứng thực quyền đẩy bản build | Chạy lệnh `npx firebase login:ci` trên máy cá nhân để lấy token. |
+| `BUILD_CERTIFICATE_BASE64` | File chứng chỉ `.p12` đã mã hóa Base64 | Xuất từ Keychain Access máy Mac (Certificate Distribution/Development) rồi chạy lệnh `base64 -i cert.p12 \| pbcopy`. |
+| `P12_PASSWORD` | Mật khẩu bảo vệ file `.p12` khi xuất ra | Mật khẩu bạn đặt lúc export `.p12` từ Keychain Access. |
+| `BUILD_PROVISION_PROFILE_BASE64` | Provisioning Profile (`.mobileprovision`) dạng Ad-Hoc đã mã hóa Base64 | Tải profile Ad-Hoc từ Apple Developer Portal rồi chạy lệnh `base64 -i profile.mobileprovision \| pbcopy`. |
+| `FIREBASE_TESTER_GROUPS` | Tên nhóm tester trên Firebase (Tùy chọn) | Ví dụ: `dev-team` (mặc định nếu không set). |
+
+---
+
+### 9.3. File Workflow hoàn chỉnh: `.github/workflows/ios-firebase.yml`
+
+File workflow nằm tại [.github/workflows/ios-firebase.yml](file://.github/workflows/ios-firebase.yml).
+Quy trình tự động thực hiện:
+1. Tải source code và cài đặt Node.js, Ruby, CocoaPods, Fastlane.
+2. Giải mã và import chứng chỉ vào Keychain tạm thời của GitHub runner.
+3. Kích hoạt Fastlane đóng gói file `.ipa` dạng Ad-Hoc ra thư mục `release/ios/dev-blog-client-adhoc.ipa`.
+4. Đẩy file `.ipa` lên Firebase App Distribution và gửi thông báo tới nhóm testers.
+5. Dọn dẹp Keychain an toàn sau khi hoàn tất.
+
+---
+
+### 9.4. Chạy trực tiếp từ máy Mac cá nhân (Local Fastlane)
+
+Nếu bạn muốn build và đẩy thẳng lên Firebase từ máy Mac của mình mà không cần chờ GitHub Actions:
+
+```bash
+# 1. Đặt biến môi trường Firebase App ID và Token (hoặc đăng nhập npx firebase login)
+export FIREBASE_IOS_APP_ID="1:YOUR_APP_ID:ios:YOUR_HASH"
+export FIREBASE_TOKEN="YOUR_FIREBASE_TOKEN"
+
+# 2. Chạy 1 lệnh duy nhất (tự động build web + sync + đóng gói .ipa + upload Firebase)
+npm run fastlane:firebase
+```
+
+> [!IMPORTANT]
+> **Lưu ý đối với iOS Tester khi cài đặt qua Firebase:**
+> Apple yêu cầu thiết bị của tester (iPhone/iPad) phải có mã **UDID** được đăng ký trong **Ad-Hoc Provisioning Profile** của tài khoản Apple Developer. Tester khi nhận email từ Firebase chỉ cần mở link trên Safari để cài đặt cấu hình thiết bị (Device Profile) nếu cần đăng ký UDID.
+
+---
 *Tài liệu chuẩn hóa dành riêng cho dự án `dev-blog-client-2.0` (Capacitor 7 + Ionic 8 + Firebase App Distribution).*
+
