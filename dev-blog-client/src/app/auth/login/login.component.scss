@@ -156,7 +156,8 @@
       .forgot-link {
         font-size: 0.75rem;
         font-weight: 600;
-        color: #2563eb;
+        color: var(--app-text-primary, #ffffff);
+        text-decoration: underline;
         text-decoration: none;
 
         &:hover {
@@ -591,9 +592,9 @@
       }
 
       &.selected {
-        border-color: #3b82f6;
-        background: #eff6ff;
-        box-shadow: 0 0 0 1px #3b82f6;
+        border-color: #18181b;
+        background: #f4f4f5;
+        box-shadow: 0 0 0 1px #18181b;
       }
 
       .acc-avatar {
@@ -724,8 +725,8 @@
           }
 
           &.highlight-cyan {
-            color: #38bdf8;
-            border-color: rgba(56, 189, 248, 0.3);
+            color: #e4e4e7;
+            border-color: rgba(228, 228, 231, 0.3);
           }
 
           &.highlight-green {

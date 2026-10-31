@@ -1,0 +1,120 @@
+.guideline-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  background: var(--app-bg, #0e1217);
+}
+
+.guideline-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: var(--app-header-bg, #131720);
+  border-bottom: 1px solid var(--app-card-border, #282f3d);
+  flex-shrink: 0;
+  gap: 12px;
+
+  .topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .back-btn {
+      background: var(--app-pill-bg, #222834);
+      border: 1px solid var(--app-card-border, #282f3d);
+      color: var(--app-text-primary, #ffffff);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+
+      &:hover {
+        background: var(--app-text-primary, #ffffff);
+        color: var(--app-bg, #09090b);
+      }
+    }
+
+    .guideline-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .badge {
+        font-size: 0.6875rem;
+        font-weight: 700;
+        padding: 2px 6px;
+        border-radius: 4px;
+        background: var(--app-pill-bg, #222834);
+        border: 1px solid var(--app-card-border, #282f3d);
+        color: var(--app-text-muted, #94a3b8);
+        text-transform: uppercase;
+      }
+
+      .guideline-title {
+        font-size: 0.95rem;
+        font-weight: 700;
+        margin: 0;
+        color: var(--app-text-primary, #ffffff);
+      }
+    }
+  }
+
+  .topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .action-btn {
+      background: transparent;
+      border: 1px solid var(--app-card-border, #282f3d);
+      color: var(--app-text-secondary, #94a3b8);
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+
+      &:hover {
+        background: var(--app-pill-bg, #222834);
+        color: var(--app-text-primary, #ffffff);
+      }
+    }
+  }
+}
+
+.guideline-loading-overlay {
+  position: absolute;
+  top: 52px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: var(--app-bg, #0e1217);
+  z-index: 10;
+
+  .loading-text {
+    font-size: 0.9rem;
+    color: var(--app-text-muted, #94a3b8);
+    margin: 0;
+  }
+}
+
+.guideline-iframe {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #ffffff;
+}
+

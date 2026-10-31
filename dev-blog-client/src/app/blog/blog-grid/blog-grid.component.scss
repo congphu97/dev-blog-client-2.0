@@ -38,7 +38,7 @@
 
   &:hover {
     transform: translateY(-3px);
-    border-color: #3b82f6;
+    border-color: var(--app-card-border-hover, #71717a);
     box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
 
     .media-image {
@@ -175,7 +175,7 @@
 
     &:hover {
       color: var(--app-text-primary, #f1f5f9);
-      border-color: #3b82f6;
+      border-color: var(--app-text-secondary, #a1a1aa);
     }
 
     &--more {
@@ -291,7 +291,8 @@
     }
 
     &.active {
-      color: #3b82f6;
+      color: var(--app-text-primary, #ffffff);
+      font-weight: 700;
     }
 
     &.downvote-btn.active {
@@ -333,8 +334,19 @@
 }
 
 // ==========================================
-// SKELETON LOADING THEME
+// SKELETON LOADING THEME (NGC-SKELETON & NGC-LOADING)
 // ==========================================
+.blog-grid-loading-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 8px 0 20px;
+  color: var(--app-text-muted, #94a3b8);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
 .skeleton-card {
   cursor: default;
   background-color: var(--app-card-bg, #181c24);

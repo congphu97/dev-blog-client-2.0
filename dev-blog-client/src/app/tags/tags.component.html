@@ -1,0 +1,160 @@
+<ion-content class="tags-page-content">
+  <div class="tags-container-wrapper">
+
+    <!-- 1. HEADER SECTION (THEO ĐÚNG HÌNH ẢNH MẪU) -->
+    <header class="explore-tags-header">
+      <h1 class="tags-main-title">Explore tags</h1>
+      <p class="tags-subtitle">
+        Browse the tags millions of developers follow on daily.dev. Search, jump to any letter, and follow the ones that matter to you.
+      </p>
+
+      <!-- Search Input Box -->
+      <div class="tags-search-wrapper">
+        <span class="search-icon">🔍</span>
+        <input 
+          type="text" 
+          class="tags-search-input" 
+          placeholder="Search all tags" 
+          [ngModel]="searchQuery()" 
+          (ngModelChange)="searchQuery.set($event)"
+        />
+        @if (searchQuery()) {
+          <button class="clear-search-btn" (click)="searchQuery.set('')">✕</button>
+        }
+      </div>
+
+      <!-- Recommended Tags Row -->
+      <div class="recommended-tags-row">
+        <span class="rec-label">Recommended:</span>
+        <div class="rec-tags-list">
+          @for (rec of recommendedTags; track rec) {
+            <button 
+              type="button" 
+              class="rec-tag-chip" 
+              (click)="selectTag(rec)"
+              [class.rec-tag-chip--active]="selectedTag() === rec"
+            >
+              {{ rec }}
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- 2. ALPHABET BAR (ALL, A -> Z, #) THEO CHUẨN HÌNH MẪU -->
+      <div class="alphabet-nav-bar">
+        @for (char of alphabet; track char) {
+          <button 
+            type="button"
+            class="alphabet-btn"
+            [class.alphabet-btn--active]="selectedLetter() === char"
+            (click)="selectLetter(char)"
+          >
+            {{ char }}
+          </button>
+        }
+      </div>
+    </header>
+
+    <!-- 3. TAGS GRID RESULT SECTION -->
+    <section class="tags-results-section">
+      <div class="section-meta-header">
+        <h2 class="results-heading">
+          @if (selectedLetter() === 'ALL') {
+            Tất cả thẻ tags
+          } @else {
+            Thẻ bắt đầu bằng chữ '{{ selectedLetter() }}'
+          }
+          <span class="tags-count">({{ filteredTags().length }})</span>
+        </h2>
+      </div>
+
+      @if (isLoading()) {
+        <div class="tags-loading-state">
+          <ngc-loading [size]="26" color="#94a3b8" backgroundColor="transparent"></ngc-loading>
+          <span class="loading-label">Đang tải danh sách thẻ tags...</span>
+        </div>
+        <div class="tags-cards-grid">
+          @for (item of skeletonCards; track $index) {
+            <div class="tag-card-item skeleton-tag-card">
+              <div class="tag-card-top" style="display: flex; align-items: center; gap: 8px;">
+                <span class="tag-hash">#</span>
+                <ngc-skeleton width="70%" height="18px" borderRadius="4px"></ngc-skeleton>
+              </div>
+              <div class="tag-card-footer" style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                <ngc-skeleton width="55px" height="13px" borderRadius="3px"></ngc-skeleton>
+                <ngc-skeleton width="45px" height="13px" borderRadius="3px"></ngc-skeleton>
+              </div>
+            </div>
+          }
+        </div>
+      } @else if (filteredTags().length === 0) {
+        <div class="tags-empty-state">
+          <p class="empty-text">Không tìm thấy thẻ tag nào phù hợp với bộ lọc hiện tại.</p>
+          <button type="button" class="reset-filter-btn" (click)="selectedLetter.set('ALL'); searchQuery.set('')">
+            Xem tất cả tags
+          </button>
+        </div>
+      } @else {
+        <!-- Grid thẻ tag -->
+        <div class="tags-cards-grid">
+          @for (tag of filteredTags(); track tag.name) {
+            <div 
+              class="tag-card-item"
+              [class.tag-card-item--active]="selectedTag() === tag.name"
+              (click)="selectTag(tag.name)"
+            >
+              <div class="tag-card-top">
+                <span class="tag-hash">#</span>
+                <span class="tag-title">{{ tag.name }}</span>
+              </div>
+              <div class="tag-card-footer">
+                <span class="tag-post-count">{{ tag.count }} bài viết</span>
+                <span class="tag-select-hint">{{ selectedTag() === tag.name ? 'Đang lọc' : 'Bấm xem' }}</span>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- 4. DANH SÁCH BÀI VIẾT KHI CLICK VÀO TAG -->
+      @if (selectedTag(); as activeTag) {
+        <div class="active-tag-articles-section">
+          <div class="articles-header">
+            <h3 class="articles-title">
+              Bài viết có tag <span class="highlight-tag">#{{ activeTag }}</span>
+              <span class="articles-count">({{ articlesWithSelectedTag().length }})</span>
+            </h3>
+            <button type="button" class="close-filter-tag-btn" (click)="selectedTag.set(null)">✕ Bỏ lọc</button>
+          </div>
+
+          @if (articlesWithSelectedTag().length === 0) {
+            <div class="articles-empty">Chưa có bài viết nào với thẻ này.</div>
+          } @else {
+            <div class="articles-grid">
+              @for (post of articlesWithSelectedTag(); track post.id) {
+                <div class="article-card" (click)="viewPost(post)">
+                  @if (post.imageUrl) {
+                    <div class="article-img-wrap">
+                      <img [src]="post.imageUrl" [alt]="post.title" class="article-img" loading="lazy" />
+                    </div>
+                  }
+                  <div class="article-info">
+                    <span class="article-cat">{{ post.category }}</span>
+                    <h4 class="article-title">{{ post.title }}</h4>
+                    <p class="article-summary">{{ post.summary }}</p>
+                    <div class="article-footer">
+                      <span class="article-author">✍️ {{ post.author }}</span>
+                      <span class="article-read-btn">Đọc bài →</span>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+    </section>
+
+  </div>
+</ion-content>
+

@@ -1,5 +1,6 @@
 import { isDevMode, importProvidersFrom } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
+import { provideAnimations } from '@angular/platform-browser/animations';
 import { RouteReuseStrategy, provideRouter, withPreloading, PreloadAllModules } from '@angular/router';
 import { provideHttpClient, withFetch } from '@angular/common/http';
 import { IonicRouteStrategy, provideIonicAngular } from '@ionic/angular/standalone';
@@ -14,6 +15,7 @@ import { authFeature, AuthEffects } from './app/store/auth';
 
 bootstrapApplication(AppComponent, {
   providers: [
+    provideAnimations(),
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     provideIonicAngular(),
     provideHttpClient(withFetch()),

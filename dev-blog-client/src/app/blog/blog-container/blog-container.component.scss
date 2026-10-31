@@ -42,8 +42,8 @@
   transition: all 0.15s ease;
 
   &:focus-within {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 1px #3b82f6;
+    border-color: var(--app-text-muted, #71717a);
+    box-shadow: 0 0 0 1px var(--app-text-muted, #71717a);
   }
 
   .search-icon {
@@ -102,50 +102,71 @@
   flex-wrap: wrap;
 }
 
-// 2. CATEGORY CHIPS (DẠNG PILL THANH CUỘN DARK/LIGHT THEME)
+// 2. CATEGORY CHIPS (DẠNG PILL WRAP NHIỀU DÒNG DARK/LIGHT THEME)
 .category-chips-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 14px;
   margin-bottom: 28px;
-  flex-wrap: wrap;
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+
+    .category-label {
+      padding-top: 0;
+    }
+  }
 
   .category-label {
     font-size: 0.875rem;
     font-weight: 600;
     color: var(--app-text-muted, #94a3b8);
     white-space: nowrap;
+    padding-top: 6px;
   }
 
   .chips-container {
     display: flex;
-    gap: 10px;
-    overflow-x: auto;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-    padding-bottom: 4px;
-
-    &::-webkit-scrollbar {
-      display: none;
-    }
+    flex-wrap: wrap;
+    gap: 8px 10px;
+    flex: 1;
   }
 
   .chip-button {
     background: var(--app-pill-bg, #181c24);
     border: 1px solid var(--app-pill-border, #282f3d);
-    padding: 7px 18px;
+    padding: 6px 14px;
     border-radius: 9999px;
-    font-size: 0.85rem;
+    font-size: 0.84rem;
     font-weight: 500;
     color: var(--app-pill-text, #cbd5e1);
     cursor: pointer;
     white-space: nowrap;
     transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    .chip-name {
+      display: inline-block;
+    }
+
+    .chip-count {
+      font-size: 0.75rem;
+      font-weight: 600;
+      opacity: 0.75;
+    }
 
     &:hover {
       background: var(--app-card-border, #222834);
       color: var(--app-text-primary, #ffffff);
-      border-color: #3b82f6;
+      border-color: var(--app-card-border-hover, #71717a);
+
+      .chip-count {
+        opacity: 1;
+      }
     }
 
     &--active {
@@ -153,6 +174,11 @@
       border-color: var(--app-pill-active-bg, #f8fafc);
       color: var(--app-pill-active-text, #09090b);
       font-weight: 600;
+
+      .chip-count {
+        opacity: 0.9;
+        color: var(--app-pill-active-text, #09090b);
+      }
 
       &:hover {
         background: var(--app-pill-active-bg, #ffffff);
@@ -234,8 +260,8 @@
       transition: all 0.15s ease;
 
       &:focus {
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 1px #3b82f6;
+        border-color: var(--app-text-muted, #71717a);
+        box-shadow: 0 0 0 1px var(--app-text-muted, #71717a);
       }
 
       &::placeholder {
@@ -325,7 +351,7 @@
     transition: all 0.15s ease;
 
     &:hover {
-      border-color: #3b82f6;
+      border-color: var(--app-card-border-hover, #71717a);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
 

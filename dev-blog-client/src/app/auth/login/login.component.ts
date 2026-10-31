@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { IonContent } from '@ionic/angular/standalone';
 import { Store } from '@ngrx/store';
-import { HeaderComponent } from '../../header/header.component';
 import { NgcButtonModule } from 'ngc-library';
 import { OAuthService } from '../oauth.service';
 import { AuthService } from '../auth.service';
@@ -14,7 +13,7 @@ import { AuthActions, authFeature, AuthUser } from '../../store/auth';
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
-  imports: [CommonModule, FormsModule, RouterLink, IonContent, HeaderComponent, NgcButtonModule],
+  imports: [CommonModule, FormsModule, RouterLink, IonContent, NgcButtonModule],
 })
 export class LoginComponent {
   private router = inject(Router);

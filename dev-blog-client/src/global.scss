@@ -57,13 +57,19 @@
   --app-input-border: #cbd5e1;
   --app-input-text: #0f172a;
   --app-media-bg: #e2e8f0;
-  --app-skeleton-bg: #e2e8f0;
+  --app-skeleton-bg: #e4e4e7;
+  --app-sidebar-bg: #ffffff;
+  --app-sidebar-border: #e2e8f0;
+  --app-sidebar-hover: #f1f5f9;
+  --app-sidebar-active: #e2e8f0;
+  --app-sidebar-text: #475569;
+  --app-sidebar-text-active: #0f172a;
 }
 
 [data-theme="dark"], .dark {
   --app-bg: #0e1217;
   --app-card-bg: #181c24;
-  --app-card-border: #282f3d;
+  --app-card-border: #232936;
   --app-card-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
   --app-text-primary: #f8fafc;
   --app-text-secondary: #94a3b8;
@@ -79,7 +85,32 @@
   --app-input-border: #282f3d;
   --app-input-text: #f8fafc;
   --app-media-bg: #10141c;
-  --app-skeleton-bg: #252b38;
+  --app-skeleton-bg: #222834;
+  --app-sidebar-bg: #0e1217;
+  --app-sidebar-border: #232936;
+  --app-sidebar-hover: rgba(255, 255, 255, 0.06);
+  --app-sidebar-active: #222834;
+  --app-sidebar-text: #94a3b8;
+  --app-sidebar-text-active: #f8fafc;
+}
+
+// Tối ưu component ngc-skeleton của ngc-library cho Light & Dark Theme
+ngc-skeleton {
+  display: inline-block;
+  line-height: 0;
+
+  .ngc-skeleton {
+    background-color: var(--app-skeleton-bg, #e4e4e7) !important;
+  }
+}
+
+.dark ngc-skeleton .ngc-skeleton,
+[data-theme="dark"] ngc-skeleton .ngc-skeleton {
+  background-color: #1e2430 !important;
+
+  &:after {
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent) !important;
+  }
 }
 
 body {

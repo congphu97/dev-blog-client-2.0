@@ -68,9 +68,9 @@
       font-weight: 700;
       padding: 1px 6px;
       border-radius: 12px;
-      background: rgba(56, 189, 248, 0.15);
-      color: #38bdf8;
-      border: 1px solid rgba(56, 189, 248, 0.35);
+      background: var(--app-pill-bg, rgba(255, 255, 255, 0.08));
+      color: var(--app-text-muted, #a1a1aa);
+      border: 1px solid var(--app-card-border, #3f3f46);
     }
   }
 }
@@ -100,9 +100,9 @@
     &:hover {
       background: var(--app-pill-bg, #222834);
       color: var(--app-text-primary, #ffffff);
-      border-color: #3b82f6;
+      border-color: var(--app-card-border-hover, #71717a);
       transform: scale(1.08);
-      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
     }
 
     .theme-icon {
@@ -156,17 +156,17 @@
     }
 
     &.login-nav-link {
-      background: #3b82f6;
-      color: #ffffff;
-      border-color: #3b82f6;
+      background: var(--app-pill-active-bg, #ffffff);
+      color: var(--app-pill-active-text, #09090b);
+      border-color: var(--app-pill-active-bg, #ffffff);
 
       &:hover {
-        background: #2563eb;
-        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+        background: #e4e4e7;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
       }
 
       &.active {
-        background: #1d4ed8;
+        background: #d4d4d8;
       }
     }
   }
@@ -195,8 +195,8 @@
         color: #f8fafc;
       }
       &.local {
-        background: rgba(56, 189, 248, 0.2);
-        color: #38bdf8;
+        background: var(--app-pill-bg, rgba(255, 255, 255, 0.1));
+        color: var(--app-text-primary, #f8fafc);
       }
     }
 

@@ -1,17 +1,32 @@
 @if (isLoading()) {
+  <div class="blog-grid-loading-bar">
+    <ngc-loading [size]="24" color="#94a3b8" backgroundColor="transparent"></ngc-loading>
+    <span class="loading-label">Đang tải bài viết...</span>
+  </div>
   <div class="blog-grid">
     @for (card of skeletonCards; track $index) {
       <div class="feed-card skeleton-card">
-        <div class="skeleton-avatar"></div>
-        <div class="skeleton-line skeleton-title"></div>
-        <div class="skeleton-line skeleton-title-short"></div>
-        <div class="skeleton-tags-row">
-          <div class="skeleton-pill"></div>
-          <div class="skeleton-pill"></div>
+        <div class="card-top-row">
+          <ngc-skeleton width="32px" height="32px" [circle]="true"></ngc-skeleton>
         </div>
-        <div class="skeleton-meta"></div>
-        <div class="skeleton-thumb"></div>
-        <div class="skeleton-footer"></div>
+        <div style="display: flex; flex-direction: column; gap: 8px; margin: 14px 0 10px;">
+          <ngc-skeleton width="92%" height="20px" borderRadius="6px"></ngc-skeleton>
+          <ngc-skeleton width="60%" height="16px" borderRadius="6px"></ngc-skeleton>
+        </div>
+        <div style="display: flex; gap: 6px; margin-bottom: 12px;">
+          <ngc-skeleton width="68px" height="22px" borderRadius="6px"></ngc-skeleton>
+          <ngc-skeleton width="54px" height="22px" borderRadius="6px"></ngc-skeleton>
+        </div>
+        <div style="margin-bottom: 12px;">
+          <ngc-skeleton width="110px" height="13px" borderRadius="4px"></ngc-skeleton>
+        </div>
+        <div style="margin-bottom: 14px;">
+          <ngc-skeleton width="100%" height="160px" borderRadius="10px"></ngc-skeleton>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding-top: 10px; border-top: 1px solid var(--app-card-border, #282f3d);">
+          <ngc-skeleton width="70px" height="18px" borderRadius="4px"></ngc-skeleton>
+          <ngc-skeleton width="80px" height="18px" borderRadius="4px"></ngc-skeleton>
+        </div>
       </div>
     }
   </div>

@@ -1,3 +1,92 @@
-<ion-app>
-  <ion-router-outlet></ion-router-outlet>
+<ion-app class="app-root-layout">
+  <!-- 1. Header nằm ở trên cùng toàn app (full width) -->
+  <app-header></app-header>
+
+  <!-- 2. Khung nội dung bên dưới Header gồm Drawer và Content -->
+  <div class="app-main-layout">
+    <ngc-drawer-container [stretch]="true" class="app-drawer-container">
+      <!-- Collapsible Drawer (ngc-drawer chuẩn theo menu guideline) -->
+      <ngc-drawer
+        [opened]="isDrawerOpen()"
+        (openedChange)="isDrawerOpen.set($event)"
+        width="220px"
+        position="left"
+        label="Menu"
+        paddingVertical="16px"
+        paddingHorizontal="10px"
+        class="app-nav-drawer"
+      >
+        <div class="drawer-inner-container">
+          <div class="drawer-section-heading">Explore</div>
+
+          <!-- Menu items xếp san sát nhau chuẩn phong cách daily.dev -->
+          <div class="drawer-nav-group">
+            <!-- 1. Dashboard -->
+            <button 
+              type="button" 
+              class="daily-nav-item"
+              [class.daily-nav-item--active]="isRouteActive('/dashboard') || isRouteActive('/home')"
+              (click)="navigateTo('/dashboard')"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-svg-icon">
+                <rect x="3" y="3" width="7" height="9"></rect>
+                <rect x="14" y="3" width="7" height="5"></rect>
+                <rect x="14" y="12" width="7" height="9"></rect>
+                <rect x="3" y="16" width="7" height="5"></rect>
+              </svg>
+              <span class="nav-label">Dashboard</span>
+            </button>
+
+            <!-- 2. Components (Guideline) -->
+            <button 
+              type="button" 
+              class="daily-nav-item"
+              [class.daily-nav-item--active]="isRouteActive('/guideline') || isRouteActive('/components')"
+              (click)="navigateTo('/guideline')"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-svg-icon">
+                <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                <polyline points="2 17 12 22 22 17"></polyline>
+                <polyline points="2 12 12 17 22 12"></polyline>
+              </svg>
+              <span class="nav-label">Components</span>
+            </button>
+
+            <!-- 3. Home (Dev Blog) -->
+            <button 
+              type="button" 
+              class="daily-nav-item"
+              [class.daily-nav-item--active]="isRouteActive('/blog')"
+              (click)="navigateTo('/blog')"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-svg-icon">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+              </svg>
+              <span class="nav-label">Home</span>
+            </button>
+
+            <!-- 3. Tags -->
+            <button 
+              type="button" 
+              class="daily-nav-item"
+              [class.daily-nav-item--active]="isRouteActive('/tags')"
+              (click)="navigateTo('/tags')"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-svg-icon">
+                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                <line x1="7" y1="7" x2="7.01" y2="7"></line>
+              </svg>
+              <span class="nav-label">Tags</span>
+            </button>
+          </div>
+        </div>
+      </ngc-drawer>
+
+      <!-- Nội dung chính (Router Outlet) co giãn mượt mà theo trạng thái đóng/mở của Drawer -->
+      <ngc-drawer-content class="app-drawer-content" paddingVertical="0" paddingHorizontal="0">
+        <ion-router-outlet></ion-router-outlet>
+      </ngc-drawer-content>
+    </ngc-drawer-container>
+  </div>
 </ion-app>

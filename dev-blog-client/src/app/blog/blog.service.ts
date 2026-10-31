@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { environment } from 'src/environments/environment';
-import { BlogPost } from './blog.models';
+import { BlogPost, BlogCategory } from './blog.models';
 
 @Injectable({
   providedIn: 'root'
@@ -72,6 +72,42 @@ export class BlogService {
 
     if (!res.ok) {
       throw new Error(`Cập nhật blog thất bại (HTTP ${res.status})`);
+    }
+  }
+
+  /**
+   * Lấy danh sách danh mục (categories) từ Firebase
+   */
+  async getCategories(abortSignal?: AbortSignal): Promise<BlogCategory[]> {
+    const url = this.isFirebase
+      ? `${environment.apiUrl}/blogs-dev/categories.json`
+      : `${environment.apiUrl}/categories`;
+
+    const res = await fetch(url, { signal: abortSignal });
+    if (!res.ok) return [];
+
+    const json = await res.json();
+    if (!json) return [];
+
+    return Array.isArray(json) ? json.filter(Boolean) : Object.values(json);
+  }
+
+  /**
+   * Cập nhật hoặc lưu danh sách categories lên Firebase
+   */
+  async saveCategories(categories: BlogCategory[]): Promise<void> {
+    const url = this.isFirebase
+      ? `${environment.apiUrl}/blogs-dev/categories.json`
+      : `${environment.apiUrl}/categories`;
+
+    const res = await fetch(url, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(categories)
+    });
+
+    if (!res.ok) {
+      throw new Error(`Cập nhật danh mục thất bại (HTTP ${res.status})`);
     }
   }
 }

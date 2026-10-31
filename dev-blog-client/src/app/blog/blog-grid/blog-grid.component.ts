@@ -3,13 +3,13 @@ import { CommonModule } from '@angular/common';
 import { BlogPost } from '../blog.models';
 import { ModalController } from '@ionic/angular/standalone';
 import { BlogDetailComponent } from '../blog-detail/blog-detail.component';
-import { NgcAvatarModule } from 'ngc-library';
+import { NgcAvatarModule, NgcSkeletonModule, NgcLoadingModule } from 'ngc-library';
 
 @Component({
   selector: 'app-blog-grid',
   templateUrl: './blog-grid.component.html',
   styleUrls: ['./blog-grid.component.scss'],
-  imports: [CommonModule, NgcAvatarModule],
+  imports: [CommonModule, NgcAvatarModule, NgcSkeletonModule, NgcLoadingModule],
 })
 export class BlogGridComponent {
   posts = input.required<BlogPost[]>();

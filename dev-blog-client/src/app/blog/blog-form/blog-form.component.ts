@@ -9,6 +9,7 @@ import {
   ModalController
 } from '@ionic/angular/standalone';
 import { BlogPost } from '../blog.models';
+import { CategoryService } from '../category.service';
 import { MarkdownPipe } from '../markdown.pipe';
 import { NgcButtonModule, NgcFormFieldModule, NgcCheckboxModule } from 'ngc-library';
 
@@ -49,6 +50,7 @@ export type FormMode = 'reactive-form' | 'template-driven-form' | 'signal-form';
 export class BlogFormComponent implements OnInit {
   private modalCtrl = inject(ModalController);
   private fb = inject(FormBuilder);
+  private categoryService = inject(CategoryService);
 
   public showLiveContentPreview = signal<boolean>(true);
 
@@ -63,12 +65,23 @@ export class BlogFormComponent implements OnInit {
   // Input nhận vào bài viết ban đầu (nếu là chế độ Cập nhật / Edit)
   @Input() initialData?: BlogPost | null = null;
 
-  public readonly categoryList = [
+  // Input danh mục truyền từ ngoài vào
+  @Input() categories: string[] = [];
+
+  public categoryList: string[] = [
+    'Tips',
+    'English',
+    'Web Development',
+    'Capacitor',
+    'Angular',
     'CI/CD & DevOps',
     'Android & Firebase',
     'Google Play',
     'iOS & App Store',
-    'Web Development',
+    'Mobile Development',
+    'JavaScript & Web APIs',
+    'Kiến Trúc & Design Patterns',
+    'OOP & Software Design',
     'Khác'
   ];
 
@@ -355,6 +368,17 @@ export class BlogFormComponent implements OnInit {
   }
 
   ngOnInit() {
+    // Nạp danh sách categories động từ Input hoặc từ Firebase Service
+    if (this.categories && this.categories.length > 0) {
+      this.categoryList = [...this.categories.filter(c => c !== 'Khác'), 'Khác'];
+    } else {
+      this.categoryService.getCategories().then(remoteCats => {
+        if (remoteCats && remoteCats.length > 0) {
+          this.categoryList = [...remoteCats.map(c => c.name).filter(c => c !== 'Khác'), 'Khác'];
+        }
+      });
+    }
+
     // Khởi tạo chế độ hiện tại
     if (this.mode) {
       this.currentMode.set(this.mode);
@@ -367,7 +391,7 @@ export class BlogFormComponent implements OnInit {
       const publishedDate = init.publishedAt ? init.publishedAt.substring(0, 10) : new Date().toISOString().substring(0, 10);
       
       const isStandardCat = this.categoryList.filter(c => c !== 'Khác').includes(init.category);
-      const catValue = isStandardCat ? (init.category || 'CI/CD & DevOps') : 'Khác';
+      const catValue = isStandardCat ? (init.category || this.categoryList[0]) : 'Khác';
       const customCat = !isStandardCat ? (init.category || '') : '';
       if (customCat) {
         this.customCategorySignal.set(customCat);
@@ -416,9 +440,18 @@ export class BlogFormComponent implements OnInit {
     } else {
       // 2. Chế độ Tạo mới (Create)
       const defaultDate = new Date().toISOString().substring(0, 10);
+      const defaultCat = this.categoryList[0] || 'Tips';
+
+      this.signalForm.update(s => ({
+        ...s,
+        category: defaultCat
+      }));
+
+      this.templateModel.category = defaultCat;
+
       this.blogForm = this.fb.group({
         title: ['', [Validators.required, Validators.minLength(3)]],
-        category: ['CI/CD & DevOps', [Validators.required]],
+        category: [defaultCat, [Validators.required]],
         customCategory: [''],
         author: ['Phú Nguyễn', [Validators.required]],
         imageUrl: ['https://images.unsplash.com/photo-1618401471353-b98aedd04e11?w=800&auto=format&fit=crop&q=80'],

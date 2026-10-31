@@ -18,3 +18,8 @@ export interface BlogPost {
   authorAvatar?: string;
   isVideo?: boolean;
 }
+
+export interface BlogCategory {
+  id: string;
+  name: string;
+}

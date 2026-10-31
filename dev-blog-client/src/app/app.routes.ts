@@ -12,6 +12,23 @@ export const routes: Routes = [
     loadComponent: () => import('./home/home.page').then((m) => m.HomePage),
   },
   {
+    path: 'dashboard',
+    loadComponent: () => import('./home/home.page').then((m) => m.HomePage),
+  },
+  {
+    path: 'tags',
+    loadComponent: () => import('./tags/tags.component').then((m) => m.TagsComponent),
+  },
+  {
+    path: 'guideline',
+    loadComponent: () => import('./guideline/guideline.component').then((m) => m.GuidelineComponent),
+  },
+  {
+    path: 'components',
+    redirectTo: 'guideline',
+    pathMatch: 'full',
+  },
+  {
     path: 'blog',
     children: [
       {

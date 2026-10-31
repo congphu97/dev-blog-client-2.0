@@ -1,14 +1,21 @@
-import { Component, NgZone, OnInit } from '@angular/core';
+import { Component, NgZone, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
 import { App, URLOpenListenerEvent } from '@capacitor/app';
+import { NgcDrawerModule, NgcListModule, NgcButtonModule } from 'ngc-library';
+import { HeaderComponent } from './header/header.component';
 
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
-  imports: [IonApp, IonRouterOutlet],
+  styleUrls: ['app.component.scss'],
+  imports: [CommonModule, IonApp, IonRouterOutlet, NgcDrawerModule, NgcListModule, NgcButtonModule, HeaderComponent],
 })
 export class AppComponent implements OnInit {
+  // Trạng thái mở drawer mặc định (có thể thu phóng linh hoạt như guideline)
+  public isDrawerOpen = signal<boolean>(true);
+
   constructor(
     private router: Router,
     private zone: NgZone
@@ -16,6 +23,14 @@ export class AppComponent implements OnInit {
 
   ngOnInit() {
     this.setupDeepLinks();
+  }
+
+  public isRouteActive(route: string): boolean {
+    return this.router.url.startsWith(route);
+  }
+
+  public navigateTo(route: string): void {
+    this.router.navigate([route]);
   }
 
   private async setupDeepLinks() {

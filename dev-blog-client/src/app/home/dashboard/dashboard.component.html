@@ -1,82 +1,150 @@
 <div class="dashboard-wrapper">
-  <!-- Hero Section -->
-  <section class="hero-section">
+  <!-- 1. Hero Header -->
+  <header class="dashboard-hero">
     <div class="hero-badge">
       <span class="badge-dot"></span>
-      <span>Chào mừng đến với Dev Blog 2.0</span>
+      <span>Hệ sinh thái • Dev Blog & UI System</span>
     </div>
-    <h1 class="hero-title">Khám phá Thế giới Công nghệ & Lập trình</h1>
+    <h1 class="hero-title">Khám phá Nền tảng & Phân hệ</h1>
     <p class="hero-subtitle">
-      Cập nhật kiến thức chuyên sâu về Angular, TypeScript, Ionic và xu hướng công nghệ mới nhất.
+      Chọn phân hệ bạn muốn làm việc: tra cứu tài liệu UI Components của ngc-library hoặc quản lý và đọc các bài viết công nghệ.
     </p>
 
-    <!-- Quick Stats -->
-    <div class="stats-row">
-      <div class="stat-card" *ngFor="let stat of recentStats">
-        <span class="stat-icon">{{ stat.icon }}</span>
-        <div class="stat-info">
-          <span class="stat-count">{{ stat.count }}</span>
-          <span class="stat-label">{{ stat.label }}</span>
-        </div>
+    <!-- Quick Highlights Bar -->
+    <div class="dashboard-highlights-row">
+      <div class="highlight-chip">
+        <span class="chip-icon">🧩</span>
+        <span class="chip-text"><strong>40+</strong> UI Components</span>
+      </div>
+      <div class="highlight-chip">
+        <span class="chip-icon">🏷️</span>
+        <span class="chip-text"><strong>58+</strong> Thẻ Tags A-Z</span>
+      </div>
+      <div class="highlight-chip">
+        <span class="chip-icon">⚡</span>
+        <span class="chip-text"><strong>Angular 22</strong> Standalone</span>
+      </div>
+      <div class="highlight-chip">
+        <span class="chip-icon">🌗</span>
+        <span class="chip-text"><strong>100%</strong> Dark/Light Theme</span>
       </div>
     </div>
-  </section>
+  </header>
 
-  <!-- Featured Blog Card Section -->
-  <section class="featured-section">
-    <div class="section-header">
-      <div>
-        <h2 class="section-title">Bài viết nổi bật</h2>
-        <p class="section-desc">Khám phá các bài viết chất lượng được tuyển chọn</p>
-      </div>
-      <button
-        type="button"
-        class="browse-all-btn"
-        (click)="navigateToBlog()">
-        Xem tất cả bài viết →
-      </button>
-    </div>
-
-    <!-- Clickable Featured Blog Card -->
-    <div class="featured-card" (click)="navigateToBlog()">
-      <div class="image-container">
-        <img
-          [src]="featuredBlog.imageUrl"
-          [alt]="featuredBlog.title"
-          class="blog-cover" />
-        <div class="image-overlay">
-          <span class="category-pill">{{ featuredBlog.category }}</span>
+  <!-- 2. Two Main Sections: Component & Blog -->
+  <div class="dashboard-grid-cards">
+    <!-- ITEM 1: COMPONENT (NGC LIBRARY GUIDELINE) -->
+    <div class="dashboard-card component-card" (click)="navigateToGuideline()">
+      <!-- Card Image Banner -->
+      <div class="card-cover-wrap">
+        <img 
+          src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1000&auto=format&fit=crop&q=80" 
+          alt="NGC Library UI Components" 
+          class="card-cover-img"
+          loading="lazy"
+        />
+        <div class="card-cover-overlay"></div>
+        <div class="cover-badge-top">
+          <span class="card-pill">UI System</span>
+          <span class="link-hint">Nhúng trong App ↗</span>
+        </div>
+        <div class="cover-floating-chips">
+          <span class="floating-chip">&lt;ngc-drawer&gt;</span>
+          <span class="floating-chip">&lt;ngc-skeleton&gt;</span>
+          <span class="floating-chip">&lt;ngc-loading&gt;</span>
+          <span class="floating-chip">&lt;ngc-button&gt;</span>
         </div>
       </div>
 
-      <div class="content-container">
-        <div class="card-meta">
-          <div class="author-info">
-            <span class="author-avatar">💻</span>
-            <span class="author-name">{{ featuredBlog.author }}</span>
+      <!-- Card Content -->
+      <div class="card-content">
+        <h2 class="card-title">UI Components & Guideline</h2>
+        <p class="card-desc">
+          Bộ thư viện UI components đa nền tảng tối ưu hóa cho Angular 22 & Ionic 8. Xem toàn bộ guideline thiết kế, live preview tương tác và tài liệu API trực tiếp trong app.
+        </p>
+
+        <div class="card-features-list">
+          <div class="feature-item">
+            <span class="feature-icon">📐</span>
+            <span>Guideline & Hướng dẫn thiết kế chi tiết</span>
           </div>
-          <span class="meta-dot">•</span>
-          <span class="read-time">{{ featuredBlog.readTime }}</span>
+          <div class="feature-item">
+            <span class="feature-icon">🧩</span>
+            <span>Hơn 40+ UI Components chuẩn hóa</span>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon">⚡</span>
+            <span>Tích hợp IFrame xem ngay không cần mở tab</span>
+          </div>
         </div>
-
-        <h3 class="card-title">{{ featuredBlog.title }}</h3>
-        <p class="card-description">{{ featuredBlog.description }}</p>
 
         <div class="card-footer">
-          <div class="tags-group">
-            <span class="chip">#Angular22</span>
-            <span class="chip">#Ionic8</span>
-            <span class="chip">#Signals</span>
-          </div>
-
-          <div class="action-btn">
-            <span>Đọc bài viết</span>
-            <svg class="arrow-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M5 12h14M12 5l7 7-7 7"/>
+          <button type="button" class="card-action-btn primary" (click)="navigateToGuideline(); $event.stopPropagation()">
+            <span>Xem Component Guideline →</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="arrow-icon">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
             </svg>
-          </div>
+          </button>
         </div>
       </div>
     </div>
-  </section>
+
+    <!-- ITEM 2: BLOG (DEV BLOG) -->
+    <div class="dashboard-card blog-card" (click)="navigateToBlog()">
+      <!-- Card Image Banner -->
+      <div class="card-cover-wrap">
+        <img 
+          src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1000&auto=format&fit=crop&q=80" 
+          alt="Dev Blog Articles" 
+          class="card-cover-img"
+          loading="lazy"
+        />
+        <div class="card-cover-overlay"></div>
+        <div class="cover-badge-top">
+          <span class="card-pill">Articles</span>
+          <span class="link-hint">Dev Blog 2.0 →</span>
+        </div>
+        <div class="cover-floating-chips">
+          <span class="floating-chip">#Angular22</span>
+          <span class="floating-chip">#Ionic8</span>
+          <span class="floating-chip">#Capacitor7</span>
+          <span class="floating-chip">#CI/CD</span>
+        </div>
+      </div>
+
+      <!-- Card Content -->
+      <div class="card-content">
+        <h2 class="card-title">Bài viết Công nghệ (Dev Blog)</h2>
+        <p class="card-desc">
+          Không gian chia sẻ kinh nghiệm thực chiến, bài viết công nghệ, hệ thống chuyên mục và tra cứu theo bảng chữ cái A-Z thẻ tags.
+        </p>
+
+        <div class="card-features-list">
+          <div class="feature-item">
+            <span class="feature-icon">🏷️</span>
+            <span>Hệ thống 58+ Thẻ Tags lọc theo A-Z</span>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon">🔍</span>
+            <span>Tìm kiếm tức thì với Debounced Signal</span>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon">🌗</span>
+            <span>Giao diện Dark/Light Monochrome cao cấp</span>
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <button type="button" class="card-action-btn secondary" (click)="navigateToBlog(); $event.stopPropagation()">
+            <span>Vào đọc Dev Blog →</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="arrow-icon">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

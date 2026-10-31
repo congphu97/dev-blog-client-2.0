@@ -1,22 +1,32 @@
 import { Component, computed, debounced, effect, inject, linkedSignal, OnInit, signal } from '@angular/core';
 import { IonContent, ModalController } from '@ionic/angular/standalone';
-import { HeaderComponent } from 'src/app/header/header.component';
 import { arrayEqualByKey } from 'src/app/shared/signal-utils';
 import { BlogFormComponent, BlogSubmitData } from '../blog-form/blog-form.component';
-import { BlogPost } from '../blog.models';
+import { BlogPost, BlogCategory } from '../blog.models';
 import { BlogGridComponent } from '../blog-grid/blog-grid.component';
 import { BlogListComponent } from '../blog-list/blog-list.component';
 
-import { NgcBadgeModule, NgcButtonModule, NgcTagModule, NgcAvatarModule, NgcCardModule } from 'ngc-library';
+import { NgcBadgeModule, NgcButtonModule, NgcTagModule, NgcAvatarModule, NgcCardModule, NgcSkeletonModule, NgcLoadingModule } from 'ngc-library';
 
 import { BlogService } from '../blog.service';
+import { CategoryService } from '../category.service';
+
+function slugify(text: string): string {
+  return text
+    .toString()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^\w\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-');
+}
 
 @Component({
   selector: 'app-blog-container',
   templateUrl: './blog-container.component.html',
   styleUrls: ['./blog-container.component.scss'],
   imports: [
-    HeaderComponent, 
     IonContent, 
     BlogGridComponent, 
     BlogListComponent,
@@ -24,12 +34,15 @@ import { BlogService } from '../blog.service';
     NgcButtonModule,
     NgcTagModule,
     NgcAvatarModule,
-    NgcCardModule
+    NgcCardModule,
+    NgcSkeletonModule,
+    NgcLoadingModule
   ],
 })
 export class BlogContainerComponent implements OnInit {
   private modalCtrl = inject(ModalController);
   private blogService = inject(BlogService);
+  private categoryService = inject(CategoryService);
 
   // Trạng thái loading toàn cục khi tải từ Firebase
   public isLoading = signal<boolean>(true);
@@ -48,19 +61,58 @@ export class BlogContainerComponent implements OnInit {
   // Trì hoãn 400ms sau khi người dùng dừng gõ mới cập nhật
   public debouncedKeyword = debounced(this.keyword, 400);
 
-  // Bộ lọc danh mục Category
+  // Bộ lọc danh mục Category đang được chọn
   public selectedCategory = signal<string>('all');
-  public readonly categories = [
-    { id: 'all', label: 'Tất cả' },
-    { id: 'GitHub', label: 'GitHub' },
-    { id: 'UI Design', label: 'UI Design' },
-    { id: 'Google', label: 'Google' },
-    { id: 'Tailwind CSS', label: 'Tailwind CSS' },
-    { id: 'CI/CD & DevOps', label: 'CI/CD & DevOps' },
-    { id: 'Android & Firebase', label: 'Android & Firebase' },
-    { id: 'Google Play', label: 'Google Play' },
-    { id: 'iOS & App Store', label: 'iOS & App Store' }
-  ];
+
+  // Danh mục chuyên mục động (lấy từ Firebase qua blogService.getCategories())
+  public rawCategories = signal<BlogCategory[]>([
+    { id: 'tips', name: 'Tips' },
+    { id: 'english', name: 'English' },
+    { id: 'web-development', name: 'Web Development' },
+    { id: 'capacitor', name: 'Capacitor' },
+    { id: 'angular', name: 'Angular' },
+    { id: 'cicd-devops', name: 'CI/CD & DevOps' },
+    { id: 'android-firebase', name: 'Android & Firebase' },
+    { id: 'google-play', name: 'Google Play' },
+    { id: 'ios-app-store', name: 'iOS & App Store' },
+    { id: 'mobile-development', name: 'Mobile Development' },
+    { id: 'javascript-web-apis', name: 'JavaScript & Web APIs' },
+    { id: 'kien-truc-design-patterns', name: 'Kiến Trúc & Design Patterns' },
+    { id: 'oop-software-design', name: 'OOP & Software Design' }
+  ]);
+
+  // Computed: Tự động tính số lượng bài viết của từng Category kèm theo
+  public categoriesWithCount = computed(() => {
+    const posts = this.blogPosts();
+    const totalCount = posts.length;
+    const cats = this.rawCategories();
+
+    // Map đếm số lượng bài viết theo Category
+    const countMap = new Map<string, number>();
+    for (const p of posts) {
+      if (p.category) {
+        const catName = p.category.trim();
+        countMap.set(catName, (countMap.get(catName) || 0) + 1);
+      }
+    }
+
+    const allItem = {
+      id: 'all',
+      name: 'Tất cả',
+      count: totalCount
+    };
+
+    const catItems = cats.map(c => {
+      const count = countMap.get(c.name.trim()) || 0;
+      return {
+        id: c.id,
+        name: c.name,
+        count
+      };
+    });
+
+    return [allItem, ...catItems];
+  });
 
   selectCategory(catId: string) {
     this.selectedCategory.set(catId);
@@ -390,13 +442,23 @@ end
   // 4. computed lọc bài viết theo search và danh mục
   public filteredBlogPosts = computed(() => {
     const search = (this.debouncedKeyword.value() ?? '').trim().toLowerCase();
-    const cat = this.selectedCategory();
+    const selectedCatId = this.selectedCategory();
+    
+    // Tìm thông tin danh mục theo id
+    const activeCat = this.categoriesWithCount().find(c => c.id === selectedCatId);
+    const targetCatName = activeCat?.name?.trim();
+
     return this.blogPosts().filter(post => {
       const matchSearch = !search || 
         post.title.toLowerCase().includes(search) || 
         post.category.toLowerCase().includes(search) ||
         (post.summary && post.summary.toLowerCase().includes(search));
-      const matchCat = cat === 'all' || post.category === cat;
+      
+      const postCat = post.category ? post.category.trim() : '';
+      const matchCat = selectedCatId === 'all' || 
+        postCat === selectedCatId || 
+        (targetCatName && postCat.toLowerCase() === targetCatName.toLowerCase());
+
       return matchSearch && matchCat;
     });
   });
@@ -414,13 +476,22 @@ end
   async ngOnInit() {
     this.isLoading.set(true);
     try {
-      const posts = await this.blogService.getBlogs();
+      // Tải đồng thời cả blogs và categories từ Firebase Realtime Database
+      const [posts, remoteCats] = await Promise.all([
+        this.blogService.getBlogs(),
+        this.categoryService.getCategories()
+      ]);
+
       if (posts && posts.length > 0) {
         this.blogPosts.set(posts);
         this.selectedBlog.set(posts[0]);
       }
+
+      if (remoteCats && remoteCats.length > 0) {
+        this.rawCategories.set(remoteCats);
+      }
     } catch (err) {
-      console.error('Không thể tải bài viết từ Firebase:', err);
+      console.error('Không thể tải dữ liệu từ Firebase:', err);
     } finally {
       this.isLoading.set(false);
     }
@@ -458,7 +529,8 @@ end
       cssClass: 'blog-form-modal',
       componentProps: {
         mode: mode,
-        initialData: null
+        initialData: null,
+        categories: this.rawCategories().map(c => c.name)
       }
     });
     await modal.present();
@@ -466,6 +538,31 @@ end
     const { data, role } = await modal.onWillDismiss<BlogSubmitData>();
 
     if (role === 'confirm' && data) {
+      // Tự động tạo và lưu chuyên mục mới vào Firebase nếu người dùng chọn "Khác"
+      const chosenCatName = data.category ? data.category.trim() : '';
+      if (chosenCatName && chosenCatName !== 'Khác') {
+        const existingCats = this.rawCategories();
+        const exists = existingCats.some(
+          c => c.name.trim().toLowerCase() === chosenCatName.toLowerCase()
+        );
+
+        if (!exists) {
+          const newCat: BlogCategory = {
+            id: slugify(chosenCatName) || `cat-${Date.now()}`,
+            name: chosenCatName
+          };
+          const updatedCategories = [...existingCats, newCat];
+          this.rawCategories.set(updatedCategories);
+
+          // Lưu danh mục mới vào Firebase RTDB (blogs-dev/categories) qua CategoryService
+          this.categoryService.saveCategories(updatedCategories).then(() => {
+            console.log('🔥 Đã tự động tạo và lưu chuyên mục mới vào Firebase:', newCat);
+          }).catch(err => {
+            console.error('❌ Lỗi khi lưu chuyên mục mới lên Firebase:', err);
+          });
+        }
+      }
+
       const newPost: BlogPost = {
         id: Date.now(),
         title: data.title,
@@ -505,7 +602,8 @@ end
       cssClass: 'blog-form-modal',
       componentProps: {
         mode: mode,
-        initialData: blog
+        initialData: blog,
+        categories: this.rawCategories().map(c => c.name)
       }
     });
     await modal.present();
@@ -513,6 +611,30 @@ end
     const { data, role } = await modal.onWillDismiss<BlogSubmitData>();
 
     if (role === 'confirm' && data) {
+      // Tự động tạo và lưu chuyên mục mới vào Firebase nếu người dùng chọn "Khác"
+      const chosenCatName = data.category ? data.category.trim() : '';
+      if (chosenCatName && chosenCatName !== 'Khác') {
+        const existingCats = this.rawCategories();
+        const exists = existingCats.some(
+          c => c.name.trim().toLowerCase() === chosenCatName.toLowerCase()
+        );
+
+        if (!exists) {
+          const newCat: BlogCategory = {
+            id: slugify(chosenCatName) || `cat-${Date.now()}`,
+            name: chosenCatName
+          };
+          const updatedCategories = [...existingCats, newCat];
+          this.rawCategories.set(updatedCategories);
+
+          this.categoryService.saveCategories(updatedCategories).then(() => {
+            console.log('🔥 Đã tự động tạo và lưu chuyên mục mới vào Firebase:', newCat);
+          }).catch(err => {
+            console.error('❌ Lỗi khi lưu chuyên mục mới lên Firebase:', err);
+          });
+        }
+      }
+
       const updatedPost: BlogPost = {
         ...blog,
         title: data.title,

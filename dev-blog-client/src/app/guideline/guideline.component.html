@@ -1,0 +1,41 @@
+<div class="guideline-container">
+  <!-- Top Action & Navigation Bar -->
+  <header class="guideline-topbar">
+    <div class="topbar-left">
+      <button type="button" class="back-btn" (click)="backToDashboard()" title="Quay lại Dashboard">
+        ← Dashboard
+      </button>
+      <div class="guideline-title-wrap">
+        <span class="badge">ngc-library</span>
+        <h1 class="guideline-title">Component Guideline</h1>
+      </div>
+    </div>
+
+    <div class="topbar-actions">
+      <button type="button" class="action-btn" (click)="refresh()" title="Tải lại Guideline">
+        🔄 Làm mới
+      </button>
+      <button type="button" class="action-btn" (click)="openExternal()" title="Mở trang gốc trong tab mới">
+        ↗ Tab mới
+      </button>
+    </div>
+  </header>
+
+  <!-- Loading Overlay -->
+  @if (isLoading()) {
+    <div class="guideline-loading-overlay">
+      <ngc-loading [size]="32" color="#ffffff" backgroundColor="transparent"></ngc-loading>
+      <p class="loading-text">Đang tải NGC-Library Component Guideline...</p>
+    </div>
+  }
+
+  <!-- Nhúng IFrame trực tiếp vào app -->
+  <iframe
+    [src]="safeUrl"
+    class="guideline-iframe"
+    (load)="onIframeLoad()"
+    allow="clipboard-write"
+    title="NGC Library Guideline"
+  ></iframe>
+</div>
+

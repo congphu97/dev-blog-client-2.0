@@ -350,13 +350,13 @@
       border: none;
       font-size: 0.75rem;
       font-weight: 500;
-      color: #3b82f6;
+      color: var(--app-text-muted, #71717a);
       cursor: pointer;
       padding: 0;
       transition: color 0.15s;
 
       &:hover {
-        color: #1d4ed8;
+        color: var(--app-text-primary, #09090b);
         text-decoration: underline;
       }
     }
@@ -566,7 +566,7 @@
       .preview-toggle-btn {
         background: transparent;
         border: none;
-        color: #2563eb;
+        color: var(--app-text-muted, #71717a);
         font-size: 0.75rem;
         font-weight: 600;
         cursor: pointer;
@@ -574,7 +574,8 @@
         border-radius: 4px;
 
         &:hover {
-          background: rgba(37, 99, 235, 0.08);
+          color: var(--app-text-primary, #09090b);
+          background: rgba(0, 0, 0, 0.06);
         }
       }
     }
