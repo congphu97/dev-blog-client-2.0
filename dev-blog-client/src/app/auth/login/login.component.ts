@@ -3,9 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { IonContent } from '@ionic/angular/standalone';
+import { Store } from '@ngrx/store';
 import { HeaderComponent } from '../../header/header.component';
 import { NgcButtonModule } from 'ngc-library';
 import { OAuthService } from '../oauth.service';
+import { AuthService } from '../auth.service';
+import { AuthActions, authFeature, AuthUser } from '../../store/auth';
 
 @Component({
   selector: 'app-login',
@@ -16,6 +19,14 @@ import { OAuthService } from '../oauth.service';
 export class LoginComponent {
   private router = inject(Router);
   public oauthService = inject(OAuthService);
+  public authService = inject(AuthService);
+  private store = inject(Store);
+
+  // Lắng nghe trạng thái user từ NgRx Global Store bằng Signal
+  public authUser = this.store.selectSignal(authFeature.selectUser);
+  public isAuthenticated = this.store.selectSignal(authFeature.selectIsAuthenticated);
+  public isStoreLoading = this.store.selectSignal(authFeature.selectLoading);
+  public storeError = this.store.selectSignal(authFeature.selectError);
 
   public email = signal<string>('phu.cuong@devblog.com');
   public password = signal<string>('Developer@2026');
@@ -71,7 +82,24 @@ export class LoginComponent {
    * Cấp quyền trên Consent Screen và tiến hành Token Exchange
    */
   public async onAuthorizeOAuth() {
-    await this.oauthService.confirmConsentAndExchange(this.selectedAccount());
+    const selected = this.selectedAccount();
+    await this.oauthService.confirmConsentAndExchange(selected);
+
+    // Lưu thông tin account test vào NgRx Global Store
+    this.store.dispatch(
+      AuthActions.loginSuccess({
+        user: {
+          id: `usr_${Date.now()}`,
+          name: selected.name,
+          email: selected.email,
+          avatar: selected.avatar,
+          role: selected.role,
+          provider: this.oauthService.pkceInspector()?.provider || 'google',
+          badge: selected.badge,
+        },
+      })
+    );
+
     this.loginSuccess.set(true);
 
     setTimeout(() => {
@@ -82,6 +110,11 @@ export class LoginComponent {
 
   public onCloseOAuth() {
     this.oauthService.closeConsent();
+  }
+
+  public onLogout() {
+    this.store.dispatch(AuthActions.logout());
+    this.oauthService.logout();
   }
 
   public onLogin(event: Event) {
@@ -104,17 +137,13 @@ export class LoginComponent {
       return;
     }
 
-    this.isLoading.set(true);
-
-    // Giả lập xác thực (Authentication)
-    setTimeout(() => {
-      this.isLoading.set(false);
-      this.loginSuccess.set(true);
-
-      // Chuyển hướng về trang Blog sau 1.2s
-      setTimeout(() => {
-        this.router.navigate(['/blog']);
-      }, 1200);
-    }, 900);
+    // 👉 CHUẨN KIẾN TRÚC NGRX EFFECTS:
+    // Component CHỈ dispatch action 'Login', KHÔNG cần gọi service hay subscribe!
+    // AuthEffects sẽ:
+    // 1. Tự bắt action Login
+    // 2. Gọi AuthService.getAccountUser(emailVal)
+    // 3. Dispatch 'Login Success' để cập nhật Store
+    // 4. Tự động chuyển hướng về /blog sau 1s
+    this.store.dispatch(AuthActions.login({ email: emailVal, password: passVal }));
   }
 }

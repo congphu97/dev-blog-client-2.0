@@ -57,13 +57,13 @@
         <span class="nav-text">Bài viết</span>
       </a>
 
-      @if (oauthService.currentUser(); as user) {
+      @if (currentUser(); as user) {
         <div class="header-auth-user" [title]="user.email">
-          <span class="user-provider-badge" [class.google]="user.provider === 'google'" [class.github]="user.provider === 'github'">
-            {{ user.provider === 'google' ? 'G' : 'GH' }}
+          <span class="user-provider-badge" [class.google]="user.provider === 'google'" [class.github]="user.provider === 'github'" [class.local]="user.provider === 'local'">
+            {{ user.provider === 'google' ? 'G' : (user.provider === 'github' ? 'GH' : 'APP') }}
           </span>
           <span class="header-user-name">{{ user.name }}</span>
-          <button type="button" class="header-logout-btn" (click)="oauthService.logout()" title="Đăng xuất OAuth2">
+          <button type="button" class="header-logout-btn" (click)="onLogout()" title="Đăng xuất">
             Đăng xuất
           </button>
         </div>
@@ -74,7 +74,7 @@
         </a>
       }
 
-      <ngc-avatar [label]="oauthService.currentUser()?.name || 'Phú Cường'" size="small"></ngc-avatar>
+      <ngc-avatar [label]="currentUser()?.name || 'Phú Cường'" size="small"></ngc-avatar>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>

@@ -6,23 +6,38 @@ import { BlogPost } from './blog.models';
   providedIn: 'root'
 })
 export class BlogService {
-  private readonly baseUrl = `${environment.firebase.databaseURL}/blogs-dev/blogs`;
+  // Tự động phân biệt format API dựa theo URL trong environment.apiUrl
+  private readonly isFirebase = environment.apiUrl.includes('firebasedatabase.app');
+  private readonly apiUrl = this.isFirebase
+    ? `${environment.apiUrl}/blogs-dev/blogs.json`
+    : `${environment.apiUrl}/blogs`;
 
   /**
-   * Lấy danh sách tất cả bài viết từ Firebase Realtime Database
+   * Lấy danh sách bài viết trực tiếp từ API (Express hoặc Firebase tùy theo environment)
    */
   async getBlogs(limit?: number, abortSignal?: AbortSignal): Promise<BlogPost[]> {
-    const res = await fetch(`${this.baseUrl}.json`, { signal: abortSignal });
+    const url = this.isFirebase
+      ? this.apiUrl
+      : `${this.apiUrl}${limit ? `?limit=${limit}` : ''}`;
+
+    const res = await fetch(url, { signal: abortSignal });
     if (!res.ok) {
-      throw new Error(`Không thể tải dữ liệu blog từ Firebase (HTTP ${res.status})`);
+      throw new Error(`Không thể tải dữ liệu blog (HTTP ${res.status})`);
     }
 
-    const data = await res.json();
-    if (!data) return [];
+    const json = await res.json();
+    if (!json) return [];
 
-    const blogs: BlogPost[] = Array.isArray(data)
-      ? data.filter(Boolean)
-      : Object.values(data);
+    let blogs: BlogPost[] = [];
+    if (this.isFirebase) {
+      blogs = Array.isArray(json) ? json.filter(Boolean) : Object.values(json);
+    } else {
+      if (json.success && Array.isArray(json.data)) {
+        blogs = json.data;
+      } else if (Array.isArray(json)) {
+        blogs = json;
+      }
+    }
 
     return limit ? blogs.slice(0, limit) : blogs;
   }
@@ -31,19 +46,30 @@ export class BlogService {
    * Lấy chi tiết 1 bài viết theo ID
    */
   async getBlogById(id: number, abortSignal?: AbortSignal): Promise<BlogPost | null> {
-    const blogs = await this.getBlogs(undefined, abortSignal);
-    return blogs.find(b => b.id === id) || null;
+    if (this.isFirebase) {
+      const blogs = await this.getBlogs(undefined, abortSignal);
+      return blogs.find(b => b.id === id) || null;
+    }
+
+    const res = await fetch(`${this.apiUrl}/${id}`, { signal: abortSignal });
+    if (!res.ok) {
+      return null;
+    }
+
+    const json = await res.json();
+    return json?.data || null;
   }
 
   /**
-   * Cập nhật hoặc lưu danh sách blogs lên Firebase
+   * Cập nhật hoặc lưu danh sách blogs
    */
   async saveBlogs(blogs: BlogPost[]): Promise<void> {
-    const res = await fetch(`${this.baseUrl}.json`, {
+    const res = await fetch(this.apiUrl, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(blogs)
     });
+
     if (!res.ok) {
       throw new Error(`Cập nhật blog thất bại (HTTP ${res.status})`);
     }

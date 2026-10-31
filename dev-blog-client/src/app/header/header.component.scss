@@ -194,6 +194,10 @@
         background: rgba(148, 163, 184, 0.2);
         color: #f8fafc;
       }
+      &.local {
+        background: rgba(56, 189, 248, 0.2);
+        color: #38bdf8;
+      }
     }
 
     .header-user-name {

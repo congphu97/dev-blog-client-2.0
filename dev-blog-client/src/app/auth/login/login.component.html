@@ -37,15 +37,15 @@
       </div>
 
       <!-- Error Alert Message -->
-      @if (errorMessage()) {
+      @if (storeError() || errorMessage()) {
         <div class="login-alert error-alert">
           <span class="alert-icon">⚠️</span>
-          <span class="alert-text">{{ errorMessage() }}</span>
+          <span class="alert-text">{{ storeError() || errorMessage() }}</span>
         </div>
       }
 
       <!-- Success Alert Message -->
-      @if (loginSuccess()) {
+      @if (isAuthenticated() || loginSuccess()) {
         <div class="login-alert success-alert">
           <span class="alert-icon">🎉</span>
           <span class="alert-text">Đăng nhập thành công! Đang chuyển hướng về trang bài viết...</span>
@@ -112,11 +112,11 @@
           color="#0f172a"
           textColor="#ffffff"
           size="42px"
-          [loading]="isLoading()"
-          [disabled]="isLoading() || loginSuccess()"
+          [loading]="isStoreLoading() || isLoading()"
+          [disabled]="isStoreLoading() || isLoading() || isAuthenticated() || loginSuccess()"
           style="width: 100%;"
         >
-          @if (loginSuccess()) {
+          @if (isAuthenticated() || loginSuccess()) {
             <span>✓ Đã đăng nhập</span>
           } @else {
             <span>Đăng nhập ngay →</span>
@@ -149,23 +149,23 @@
         </button>
       </div>
 
-      <!-- Current OAuth2 User Session Info (if logged in) -->
-      @if (oauthService.currentUser()) {
+      <!-- Current User Session Info from NgRx Global Store -->
+      @if (authUser(); as user) {
         <div class="oauth-session-box">
           <div class="session-header">
-            <span class="session-badge">✓ Đã xác thực OAuth 2.0</span>
-            <span class="provider-pill">{{ oauthService.currentUser()?.provider | uppercase }}</span>
+            <span class="session-badge">⚡ NgRx Global Store: Đã lưu State</span>
+            <span class="provider-pill">{{ (user.provider || 'local') | uppercase }}</span>
           </div>
           <div class="session-body">
-            <img [src]="oauthService.currentUser()?.avatar" alt="Avatar" class="session-avatar" />
+            <img [src]="user.avatar" alt="Avatar" class="session-avatar" />
             <div class="session-details">
-              <strong class="session-name">{{ oauthService.currentUser()?.name }}</strong>
-              <span class="session-email">{{ oauthService.currentUser()?.email }}</span>
+              <strong class="session-name">{{ user.name }} ({{ user.role }})</strong>
+              <span class="session-email">{{ user.email }}</span>
             </div>
           </div>
           <div class="session-actions">
             <a routerLink="/blog" class="session-btn btn-primary">Xem Bài Viết →</a>
-            <button type="button" class="session-btn btn-secondary" (click)="oauthService.logout()">Đăng Xuất</button>
+            <button type="button" class="session-btn btn-secondary" (click)="onLogout()">Đăng Xuất</button>
           </div>
         </div>
       }
