@@ -1,10 +1,11 @@
-import { Component, NgZone, OnInit, signal } from '@angular/core';
+import { Component, NgZone, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
 import { App, URLOpenListenerEvent } from '@capacitor/app';
 import { NgcDrawerModule, NgcListModule, NgcButtonModule } from 'ngc-library';
 import { HeaderComponent } from './header/header.component';
+import { DrawerService } from './shared/drawer.service';
 
 @Component({
   selector: 'app-root',
@@ -13,16 +14,26 @@ import { HeaderComponent } from './header/header.component';
   imports: [CommonModule, IonApp, IonRouterOutlet, NgcDrawerModule, NgcListModule, NgcButtonModule, HeaderComponent],
 })
 export class AppComponent implements OnInit {
-  // Trạng thái mở drawer mặc định (có thể thu phóng linh hoạt như guideline)
-  public isDrawerOpen = signal<boolean>(true);
+  public drawerService = inject(DrawerService);
 
   constructor(
     private router: Router,
     private zone: NgZone
-  ) {}
+  ) {
+    // Tự động đóng Drawer mỗi khi chuyển trang trên Mobile
+    this.router.events.subscribe(() => {
+      if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+        this.drawerService.close();
+      }
+    });
+  }
 
   ngOnInit() {
     this.setupDeepLinks();
+    // Đảm bảo đóng sidebar khi khởi tạo trên mobile
+    if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+      this.drawerService.close();
+    }
   }
 
   public isRouteActive(route: string): boolean {
@@ -30,6 +41,9 @@ export class AppComponent implements OnInit {
   }
 
   public navigateTo(route: string): void {
+    if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+      this.drawerService.close();
+    }
     this.router.navigate([route]);
   }
 

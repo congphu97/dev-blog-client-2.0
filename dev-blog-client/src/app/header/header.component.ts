@@ -5,6 +5,7 @@ import { NgcAvatarModule } from 'ngc-library';
 import { Store } from '@ngrx/store';
 import { OAuthService } from '../auth/oauth.service';
 import { ThemeService } from '../shared/theme.service';
+import { DrawerService } from '../shared/drawer.service';
 import { AuthActions, authFeature } from '../store/auth';
 
 @Component({
@@ -18,6 +19,7 @@ export class HeaderComponent {
   public authUser = this.store.selectSignal(authFeature.selectUser);
   public oauthService = inject(OAuthService);
   public themeService = inject(ThemeService);
+  public drawerService = inject(DrawerService);
 
   public currentUser = computed(() => this.authUser() || this.oauthService.currentUser());
 

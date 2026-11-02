@@ -11,6 +11,45 @@
   padding: 0 16px;
   height: 60px;
   transition: --background 0.25s ease;
+  display: flex;
+  align-items: center;
+
+  @media (max-width: 768px) {
+    height: 52px;
+    padding: 0 8px;
+  }
+}
+
+/* Nút Hamburger menu (chỉ hiển thị trên mobile/tablet) */
+.mobile-menu-btn {
+  display: none;
+  background: transparent;
+  border: 1px solid var(--app-card-border, #282f3d);
+  background-color: var(--app-card-bg, #181c24);
+  color: var(--app-text-primary, #f8fafc);
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-right: 8px;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background-color: var(--app-pill-bg, #222834);
+    border-color: var(--app-text-muted, #71717a);
+  }
+
+  .hamburger-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  @media (max-width: 768px) {
+    display: inline-flex;
+  }
 }
 
 /* Brand Logo & Name */
@@ -223,6 +262,55 @@
 
       &:hover {
         background: rgba(239, 68, 68, 0.15);
+      }
+    }
+  }
+}
+
+/* ========================================================
+   RESPONSIVE HEADER CHO MOBILE & TABLET (<= 768px)
+   ======================================================== */
+@media (max-width: 768px) {
+  .brand-link {
+    padding: 2px 4px;
+    gap: 6px;
+
+    .brand-logo-badge {
+      width: 28px;
+      height: 28px;
+    }
+
+    .brand-title {
+      font-size: 1rem !important;
+    }
+  }
+
+  .header-user-actions {
+    gap: 6px;
+    margin-right: 0;
+
+    .theme-toggle-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+
+      .theme-icon {
+        width: 16px;
+        height: 16px;
+      }
+    }
+
+    .hide-on-mobile {
+      display: none !important;
+    }
+
+    .header-auth-user {
+      padding: 3px 6px;
+      gap: 6px;
+
+      .header-user-name {
+        max-width: 60px;
+        font-size: 0.75rem;
       }
     }
   }

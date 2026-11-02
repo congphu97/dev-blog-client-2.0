@@ -7,8 +7,8 @@
     <ngc-drawer-container [stretch]="true" class="app-drawer-container">
       <!-- Collapsible Drawer (ngc-drawer chuẩn theo menu guideline) -->
       <ngc-drawer
-        [opened]="isDrawerOpen()"
-        (openedChange)="isDrawerOpen.set($event)"
+        [opened]="drawerService.isOpen()"
+        (openedChange)="drawerService.isOpen.set($event)"
         width="220px"
         position="left"
         label="Menu"
@@ -17,7 +17,12 @@
         class="app-nav-drawer"
       >
         <div class="drawer-inner-container">
-          <div class="drawer-section-heading">Explore</div>
+          <div class="drawer-header-row">
+            <span class="drawer-section-heading">Explore</span>
+            <button type="button" class="drawer-close-mobile-btn" (click)="drawerService.close()" title="Đóng menu">
+              ✕
+            </button>
+          </div>
 
           <!-- Menu items xếp san sát nhau chuẩn phong cách daily.dev -->
           <div class="drawer-nav-group">
@@ -82,6 +87,11 @@
           </div>
         </div>
       </ngc-drawer>
+
+      <!-- Backdrop khi Drawer mở trên mobile -->
+      @if (drawerService.isOpen()) {
+        <div class="mobile-drawer-backdrop" (click)="drawerService.close()"></div>
+      }
 
       <!-- Nội dung chính (Router Outlet) co giãn mượt mà theo trạng thái đóng/mở của Drawer -->
       <ngc-drawer-content class="app-drawer-content" paddingVertical="0" paddingHorizontal="0">

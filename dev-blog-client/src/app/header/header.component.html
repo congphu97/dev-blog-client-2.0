@@ -1,5 +1,20 @@
 <ion-header [translucent]="true" class="app-main-header">
   <ion-toolbar class="header-toolbar">
+    <!-- Nút Hamburger Menu trên Mobile / Tablet -->
+    <button 
+      type="button" 
+      class="mobile-menu-btn" 
+      (click)="drawerService.toggle()"
+      title="Menu điều hướng"
+      aria-label="Toggle navigation menu"
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hamburger-icon">
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+      </svg>
+    </button>
+
     <!-- Brand Logo & Title with Router Link -->
     <a class="brand-link" routerLink="/blog" title="Dev Blog Home">
       <div class="brand-logo-badge">
@@ -18,7 +33,7 @@
       </div>
       <div class="brand-text">
         <span class="brand-title">Dev Blog</span>
-        <span class="brand-badge">2.0</span>
+        <span class="brand-badge hide-on-mobile">2.0</span>
       </div>
     </a>
 
@@ -52,14 +67,15 @@
         }
       </button>
 
-      <a routerLink="/blog" routerLinkActive="active" class="header-nav-link" [routerLinkActiveOptions]="{ exact: true }">
+      <!-- Ẩn text "Bài viết" trên Mobile vì đã có trong Drawer menu -->
+      <a routerLink="/blog" routerLinkActive="active" class="header-nav-link hide-on-mobile" [routerLinkActiveOptions]="{ exact: true }">
         <span class="nav-icon">📰</span>
         <span class="nav-text">Bài viết</span>
       </a>
 
       @if (currentUser(); as user) {
         <div class="header-auth-user" [title]="user.email">
-          <span class="user-provider-badge" [class.google]="user.provider === 'google'" [class.github]="user.provider === 'github'" [class.local]="user.provider === 'local'">
+          <span class="user-provider-badge hide-on-mobile" [class.google]="user.provider === 'google'" [class.github]="user.provider === 'github'" [class.local]="user.provider === 'local'">
             {{ user.provider === 'google' ? 'G' : (user.provider === 'github' ? 'GH' : 'APP') }}
           </span>
           <span class="header-user-name">{{ user.name }}</span>
@@ -70,7 +86,7 @@
       } @else {
         <a routerLink="/login" routerLinkActive="active" class="header-nav-link login-nav-link">
           <span class="nav-icon">🔐</span>
-          <span class="nav-text">Đăng nhập</span>
+          <span class="nav-text hide-on-mobile">Đăng nhập</span>
         </a>
       }
 
