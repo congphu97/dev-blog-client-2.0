@@ -81,8 +81,6 @@
   --padding-bottom: 40px;
   --padding-start: 20px;
   --padding-end: 20px;
-  overscroll-behavior-y: contain !important;
-  -webkit-overflow-scrolling: touch !important;
 
   @media (max-width: 768px) {
     --background: #ffffff !important;
@@ -331,18 +329,77 @@
     margin-top: 24px;
     margin-bottom: 12px;
 
-    /* DOM Virtualization/Containment trên Mobile Safari:
-       Mỗi block markdown chỉ render layout/paint khi cuộn vào viewport hoặc gần viewport,
-       tránh tiêu thụ 1.5GB GPU Memory khiến Safari crash OOM. */
-    > * {
-      content-visibility: auto;
-      contain-intrinsic-size: auto 120px;
+    .markdown-chunk {
+      margin-bottom: 16px;
+    }
+  }
+
+  /* Footer tải lũy tiến (Progressive Loading) cho bài viết siêu dài */
+  .progressive-footer {
+    margin: 28px 0 16px;
+    position: relative;
+
+    .load-more-sentinel {
+      height: 2px;
+      margin-bottom: 12px;
+      visibility: hidden;
     }
 
-    ::ng-deep .gh-code-block {
-      contain: content !important;
-      box-shadow: none !important;
+    .load-more-card {
+      background: #f4f4f5;
+      border: 1px solid #e4e4e7;
+      border-radius: 8px;
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+
+      @media (max-width: 640px) {
+        padding: 14px 16px;
+      }
+
+      .load-more-info {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+
+        .chunk-badge {
+          display: inline-flex;
+          align-self: flex-start;
+          font-size: 0.75rem;
+          font-weight: 600;
+          color: #18181b;
+          background: #ffffff;
+          border: 1px solid #d4d4d8;
+          padding: 3px 10px;
+          border-radius: 9999px;
+        }
+
+        .chunk-desc {
+          margin: 0;
+          font-size: 0.85rem;
+          color: #71717a;
+          line-height: 1.45;
+        }
+      }
+
+      .load-more-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
     }
+  }
+
+  .progressive-end {
+    text-align: center;
+    padding: 20px 16px;
+    margin: 24px 0 12px;
+    border-top: 1px dashed #e4e4e7;
+    color: #71717a;
+    font-size: 0.85rem;
+    font-weight: 500;
   }
 }
 

@@ -108,8 +108,37 @@
             </div>
           }
 
-          <!-- Nội dung chi tiết bài viết (Render Markdown chuẩn GitHub) -->
-          <div class="article-markdown-body markdown-body" [innerHTML]="item.content | markdown"></div>
+          <!-- Nội dung chi tiết bài viết (Progressive Render để chống crash trên Safari iOS) -->
+          <div class="article-markdown-body markdown-body">
+            @for (chunk of visibleChunks(); track $index) {
+              <div class="markdown-chunk" [innerHTML]="chunk | markdown"></div>
+            }
+          </div>
+
+          <!-- Trạng thái tải thêm cho bài viết siêu dài (như ReactJS) -->
+          @if (isProgressive() && visibleChunksCount() < allChunks().length) {
+            <div class="progressive-footer">
+              <div class="load-more-sentinel"></div>
+              <div class="load-more-card">
+                <div class="load-more-info">
+                  <span class="chunk-badge">Đang hiển thị phần {{ visibleChunksCount() }} / {{ allChunks().length }}</span>
+                  <p class="chunk-desc">Bài viết chuyên sâu dung lượng lớn đã được chia phần thông minh để cuộn mượt mà trên Safari.</p>
+                </div>
+                <div class="load-more-actions">
+                  <button type="button" class="shadcn-btn shadcn-btn--sm shadcn-btn--primary" (click)="loadNextChunk()">
+                    Xem tiếp phần {{ visibleChunksCount() + 1 }} ↓
+                  </button>
+                  <button type="button" class="shadcn-btn shadcn-btn--sm shadcn-btn--outline" (click)="loadAllChunks()">
+                    Tải toàn bộ bài
+                  </button>
+                </div>
+              </div>
+            </div>
+          } @else if (isProgressive() && visibleChunksCount() >= allChunks().length) {
+            <div class="progressive-end">
+              <span>✓ Đã hiển thị đầy đủ toàn bộ {{ allChunks().length }} phần bài viết</span>
+            </div>
+          }
         </div>
 
         <!-- FOOTER: Tags -->
