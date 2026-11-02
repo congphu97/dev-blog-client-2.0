@@ -36,30 +36,20 @@
 <ion-content class="blog-detail-wrapper">
   @if (blogPost(); as item) {
     <div class="detail-container" [class.is-fullscreen]="isFullScreen()">
-      <ngc-card 
-        class="detail-card"
-        [borderRadius]="'12px'" 
-        [borderWidth]="'1px'" 
-        borderColor="#e4e4e7" 
-        [contentPaddingVertical]="'20px'" 
-        [contentPaddingHorizontal]="'24px'"
-      >
-        <!-- HEADER CỦA NGC-CARD: Category, Favorite tag, View count & Date -->
-        <div ngcCardHeader class="detail-card-header">
+      <article class="detail-card-article">
+        <!-- HEADER CỦA CARD: Category, Favorite tag, View count & Date -->
+        <header class="detail-card-header">
           <div class="header-left-tags">
-            <ngc-tag 
-              [label]="item.category || 'Công nghệ'" 
-              color="#18181b" 
-              [minimize]="false"
-            ></ngc-tag>
+            <span class="category-badge">{{ item.category || 'Công nghệ' }}</span>
 
-            <ngc-tag 
-              [label]="isFavorite() ? '❤️ Đã thích' : '🤍 Chưa thích'" 
-              [color]="isFavorite() ? '#18181b' : '#71717a'" 
-              [minimize]="false"
+            <button 
+              type="button"
+              class="favorite-pill-btn" 
+              [class.is-favorited]="isFavorite()"
               (click)="toggleFavorite()"
-              style="cursor: pointer;"
-            ></ngc-tag>
+            >
+              {{ isFavorite() ? '❤️ Đã thích' : '🤍 Chưa thích' }}
+            </button>
           </div>
 
           <div class="header-right-meta">
@@ -68,14 +58,14 @@
               <span class="meta-stat">📅 {{ item.publishedAt | date:'dd/MM/yyyy' }}</span>
             }
           </div>
-        </div>
+        </header>
 
-        <!-- CONTENT CỦA NGC-CARD: Ảnh bìa, Tác giả, Tiêu đề, Tóm tắt, Nội dung -->
-        <div ngcCardContent class="detail-card-content">
+        <!-- CONTENT CỦA CARD: Ảnh bìa, Tác giả, Tiêu đề, Tóm tắt, Nội dung -->
+        <div class="detail-card-content">
           <!-- Ảnh bìa -->
           @if (item.imageUrl) {
             <div class="detail-cover-image">
-              <img [src]="item.imageUrl" [alt]="item.title" />
+              <img [src]="item.imageUrl" [alt]="item.title" loading="lazy" />
             </div>
           }
 
@@ -105,7 +95,7 @@
             </button>
           </div>
 
-          <ngc-divider></ngc-divider>
+          <hr class="article-divider" />
 
           <!-- Tóm tắt bài viết -->
           @if (item.summary) {
@@ -122,18 +112,18 @@
           <div class="article-markdown-body markdown-body" [innerHTML]="item.content | markdown"></div>
         </div>
 
-        <!-- FOOTER CỦA NGC-CARD: Chỉ giữ lại Tags (Đã xóa nút đóng footer theo yêu cầu) -->
-        <div ngcCardFooter class="detail-card-footer">
+        <!-- FOOTER: Tags -->
+        <footer class="detail-card-footer">
           <div class="tags-group">
             <span class="tags-label">Thẻ:</span>
             <div class="tags-list">
               @for (tag of item.tags; track tag) {
-                <ngc-tag [label]="tag" color="#27272a" [minimize]="false"></ngc-tag>
+                <span class="tag-pill"># {{ tag }}</span>
               }
             </div>
           </div>
-        </div>
-      </ngc-card>
+        </footer>
+      </article>
     </div>
   } @else {
     <div class="empty-state">

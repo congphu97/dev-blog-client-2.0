@@ -81,8 +81,10 @@
   --padding-bottom: 40px;
   --padding-start: 20px;
   --padding-end: 20px;
+  overscroll-behavior-y: contain !important;
+  -webkit-overflow-scrolling: touch !important;
 
-  @media (max-width: 640px) {
+  @media (max-width: 768px) {
     --background: #ffffff !important;
     --padding-top: 0px !important;
     --padding-bottom: 24px !important;
@@ -101,7 +103,7 @@
     max-width: 1040px;
   }
 
-  @media (max-width: 640px) {
+  @media (max-width: 768px) {
     max-width: 100% !important;
     width: 100% !important;
     padding: 0 !important;
@@ -109,32 +111,24 @@
   }
 }
 
-.detail-card {
+.detail-card-article {
   width: 100%;
   display: block;
+  background: #ffffff;
+  border: 1px solid #e4e4e7;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
+  overflow: visible;
+  /* Chặn WebKit tạo GPU texture khổng lồ cho cả bài viết (nguyên nhân crash trên Safari iOS) */
+  transform: none !important;
+  transition: none !important;
+  will-change: auto !important;
 
-  ::ng-deep .ngc-card-wrapper {
-    height: auto !important;
-    min-height: auto !important;
-    overflow: visible !important;
-    background: #ffffff;
-    border: 1px solid #e4e4e7;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    border-radius: 12px;
-
-    @media (max-width: 640px) {
-      border: none !important;
-      border-radius: 0px !important;
-      box-shadow: none !important;
-      padding: 0 !important;
-    }
-  }
-
-  ::ng-deep .ngc-card-body,
-  ::ng-deep .ngc-card-content-wrapper {
-    @media (max-width: 640px) {
-      padding: 0 !important;
-    }
+  @media (max-width: 768px) {
+    border: none !important;
+    border-radius: 0px !important;
+    box-shadow: none !important;
+    padding: 0 !important;
   }
 }
 
@@ -149,7 +143,7 @@
   background: #ffffff;
   border-bottom: 1px solid #f4f4f5;
 
-  @media (max-width: 640px) {
+  @media (max-width: 768px) {
     padding: 12px 14px !important;
   }
 
@@ -158,6 +152,45 @@
     align-items: center;
     gap: 8px;
     flex-wrap: wrap;
+
+    .category-badge {
+      display: inline-flex;
+      align-items: center;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #18181b;
+      background: #f4f4f5;
+      border: 1px solid #e4e4e7;
+      padding: 3px 10px;
+      border-radius: 9999px;
+      line-height: 1.4;
+    }
+
+    .favorite-pill-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: #71717a;
+      background: transparent;
+      border: 1px solid #e4e4e7;
+      padding: 3px 10px;
+      border-radius: 9999px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+
+      &:hover {
+        background: #f4f4f5;
+        color: #18181b;
+      }
+
+      &.is-favorited {
+        background: #18181b;
+        border-color: #18181b;
+        color: #ffffff;
+      }
+    }
   }
 
   .header-right-meta {
@@ -258,6 +291,12 @@
     }
   }
 
+  .article-divider {
+    border: 0;
+    border-top: 1px solid #f4f4f5;
+    margin: 18px 0;
+  }
+
   .summary-box {
     display: flex;
     align-items: flex-start;
@@ -291,6 +330,19 @@
   .article-markdown-body {
     margin-top: 24px;
     margin-bottom: 12px;
+
+    /* DOM Virtualization/Containment trên Mobile Safari:
+       Mỗi block markdown chỉ render layout/paint khi cuộn vào viewport hoặc gần viewport,
+       tránh tiêu thụ 1.5GB GPU Memory khiến Safari crash OOM. */
+    > * {
+      content-visibility: auto;
+      contain-intrinsic-size: auto 120px;
+    }
+
+    ::ng-deep .gh-code-block {
+      contain: content !important;
+      box-shadow: none !important;
+    }
   }
 }
 
@@ -303,7 +355,7 @@
   background: #fafafa;
   border-top: 1px solid #f4f4f5;
 
-  @media (max-width: 640px) {
+  @media (max-width: 768px) {
     padding: 12px 14px 28px !important;
     background: #ffffff;
   }
@@ -324,6 +376,19 @@
       display: flex;
       gap: 6px;
       flex-wrap: wrap;
+
+      .tag-pill {
+        display: inline-flex;
+        align-items: center;
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: #27272a;
+        background: #f4f4f5;
+        border: 1px solid #e4e4e7;
+        border-radius: 6px;
+        padding: 4px 10px;
+        line-height: 1.35;
+      }
     }
   }
 }

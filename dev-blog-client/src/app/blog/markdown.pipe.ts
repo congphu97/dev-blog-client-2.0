@@ -89,12 +89,29 @@ marked.use({
 })
 export class MarkdownPipe implements PipeTransform {
   private sanitizer = inject(DomSanitizer);
+  private static readonly cache = new Map<string, SafeHtml>();
 
   transform(value: string | null | undefined): SafeHtml {
     if (!value) return '';
+
+    // Cache kết quả để tránh parse lại 100KB markdown & re-create DOM mỗi cycle
+    const cached = MarkdownPipe.cache.get(value);
+    if (cached) {
+      return cached;
+    }
+
     try {
       const html = marked.parse(value, { async: false }) as string;
-      return this.sanitizer.bypassSecurityTrustHtml(html);
+      const safeHtml = this.sanitizer.bypassSecurityTrustHtml(html);
+
+      // Giới hạn kích thước cache tối đa 30 bài
+      if (MarkdownPipe.cache.size > 30) {
+        const firstKey = MarkdownPipe.cache.keys().next().value;
+        if (firstKey) MarkdownPipe.cache.delete(firstKey);
+      }
+      MarkdownPipe.cache.set(value, safeHtml);
+
+      return safeHtml;
     } catch (err) {
       console.error('Markdown parse error:', err);
       return value;

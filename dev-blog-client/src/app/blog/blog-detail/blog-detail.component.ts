@@ -51,7 +51,7 @@ export class BlogDetailComponent implements OnInit {
   constructor() {
     effect(() => {
       const post = this.blogPost();
-      if (post && post.content) {
+      if (post && post.content && post.content.includes('```mermaid')) {
         setTimeout(() => {
           this.renderMermaidDiagrams();
         }, 150);

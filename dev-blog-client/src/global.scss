@@ -193,7 +193,8 @@ body {
     overflow: hidden !important;
     border: 1px solid #30363d !important;
     background-color: #0d1117 !important;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12) !important;
+    box-shadow: none !important;
+    contain: content !important;
 
     .gh-code-header {
       display: flex !important;
@@ -475,7 +476,7 @@ ion-modal.blog-form-modal {
 }
 
 /* Mobile Responsive Modals: Tràn viền 100% full màn hình, loại bỏ padding/margin xám */
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   ion-modal.blog-detail-modal,
   ion-modal.blog-form-modal {
     --width: 100% !important;
