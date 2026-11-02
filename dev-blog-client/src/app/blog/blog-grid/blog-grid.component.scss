@@ -1,17 +1,20 @@
 .blog-grid {
   display: grid;
-  gap: 24px;
-  grid-template-columns: 1fr;
+  gap: 10px;
+  grid-template-columns: repeat(2, 1fr); // 2 blog trên 1 hàng ở mobile responsive
 
   @media (min-width: 640px) {
+    gap: 16px;
     grid-template-columns: repeat(2, 1fr);
   }
 
   @media (min-width: 1024px) {
+    gap: 20px;
     grid-template-columns: repeat(3, 1fr);
   }
 
   @media (min-width: 1400px) {
+    gap: 24px;
     grid-template-columns: repeat(4, 1fr);
   }
 }
@@ -437,4 +440,184 @@
   padding: 60px 20px;
   color: var(--app-text-muted, #94a3b8);
   font-size: 1.1rem;
+}
+
+// ==========================================
+// RESPONSIVE CHO 2 BLOG TRÊN 1 HÀNG (MOBILE & SMALL TABLET)
+// ==========================================
+@media (max-width: 640px) {
+  .feed-card {
+    border-radius: 14px;
+    padding: 10px;
+  }
+
+  .card-top-row {
+    margin-bottom: 6px;
+
+    .author-avatar-wrapper {
+      transform: scale(0.85);
+      transform-origin: left center;
+    }
+
+    .action-icon-btn {
+      padding: 3px;
+
+      .svg-icon {
+        width: 15px;
+        height: 15px;
+      }
+    }
+  }
+
+  .card-title {
+    font-size: 0.84rem;
+    line-height: 1.25;
+    margin-bottom: 6px;
+    height: 2.15rem;
+    min-height: 2.15rem;
+    max-height: 2.15rem;
+  }
+
+  .card-tags-row {
+    height: 20px;
+    min-height: 20px;
+    max-height: 20px;
+    margin-bottom: 6px;
+    gap: 4px;
+
+    .shield-badge {
+      width: 18px;
+      height: 18px;
+      border-radius: 5px;
+
+      .shield-svg {
+        width: 11px;
+        height: 11px;
+      }
+    }
+
+    .tag-pill {
+      padding: 2px 5px;
+      font-size: 0.65rem;
+      max-width: 70px;
+      border-radius: 4px;
+
+      &--more {
+        padding: 2px 4px;
+        font-size: 0.65rem;
+      }
+    }
+  }
+
+  .card-meta-row {
+    font-size: 0.66rem;
+    height: 14px;
+    min-height: 14px;
+    max-height: 14px;
+    margin-bottom: 8px;
+    gap: 3px;
+
+    .meta-dot {
+      font-size: 0.7rem;
+    }
+  }
+
+  .card-media-container {
+    border-radius: 8px;
+    aspect-ratio: 16 / 10;
+
+    .play-circle-btn {
+      width: 32px;
+      height: 32px;
+
+      .play-triangle-svg {
+        width: 13px;
+        height: 13px;
+        margin-left: 2px;
+      }
+    }
+  }
+
+  .card-bottom-bar {
+    margin-top: 8px;
+    padding-top: 0;
+
+    .stat-btn {
+      padding: 3px 4px;
+      font-size: 0.72rem;
+      gap: 3px;
+
+      .stat-number {
+        font-size: 0.72rem;
+      }
+    }
+
+    .downvote-btn,
+    .share-btn {
+      display: none !important;
+    }
+
+    .stat-item.views-item {
+      padding: 3px 2px;
+      font-size: 0.72rem;
+      gap: 3px;
+
+      .stat-number {
+        font-size: 0.72rem;
+      }
+    }
+
+    .bar-icon {
+      width: 13px;
+      height: 13px;
+    }
+  }
+
+  .skeleton-card {
+    .skeleton-avatar {
+      width: 28px;
+      height: 28px;
+      margin-bottom: 6px;
+    }
+
+    .skeleton-line {
+      height: 12px;
+      margin-bottom: 5px;
+
+      &.skeleton-title {
+        height: 13px;
+      }
+
+      &.skeleton-title-short {
+        height: 13px;
+        margin-bottom: 6px;
+      }
+    }
+
+    .skeleton-tags-row {
+      margin-bottom: 6px;
+      gap: 4px;
+
+      .skeleton-pill {
+        width: 44px;
+        height: 16px;
+      }
+    }
+
+    .skeleton-meta {
+      width: 80px;
+      height: 10px;
+      margin-bottom: 6px;
+    }
+
+    .skeleton-thumb {
+      aspect-ratio: 16 / 10;
+      border-radius: 8px;
+      margin-bottom: 6px;
+    }
+
+    .skeleton-footer {
+      height: 16px;
+    }
+  }
 }
