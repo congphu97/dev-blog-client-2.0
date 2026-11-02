@@ -33,8 +33,20 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="blog-detail-wrapper">
-  @if (blogPost(); as item) {
+<ion-content class="blog-detail-wrapper" [scrollEvents]="true" (ionScroll)="onContentScroll($event)">
+  @if (!isReady()) {
+    <!-- Skeleton lúc mở modal để tránh giật frame và WebKit layout panic -->
+    <div class="detail-container">
+      <div class="detail-skeleton-card">
+        <div class="skeleton-shimmer header-line"></div>
+        <div class="skeleton-shimmer title-block"></div>
+        <div class="skeleton-shimmer author-line"></div>
+        <div class="skeleton-shimmer cover-box"></div>
+        <div class="skeleton-shimmer body-paragraph"></div>
+        <div class="skeleton-shimmer body-paragraph short"></div>
+      </div>
+    </div>
+  } @else if (blogPost(); as item) {
     <div class="detail-container" [class.is-fullscreen]="isFullScreen()">
       <article class="detail-card-article">
         <!-- HEADER CỦA CARD: Category, Favorite tag, View count & Date -->
@@ -108,10 +120,43 @@
             </div>
           }
 
-          <!-- Nội dung chi tiết bài viết (Progressive Render để chống crash trên Safari iOS) -->
+          <!-- Mục lục tiến độ cho bài viết chia nhiều phần -->
+          @if (isProgressive()) {
+            <div class="chapters-container">
+              <div class="chapters-top-info">
+                <span class="chapters-badge">📚 Cẩm nang gồm {{ allChunks().length }} phần</span>
+                <span class="chapters-progress-text">Đang xem phần {{ visibleChunksCount() }} / {{ allChunks().length }}</span>
+              </div>
+              <div class="chapters-pills-row">
+                @for (ch of allChunks(); track ch.index) {
+                  <button 
+                    type="button" 
+                    class="chapter-pill-btn"
+                    [class.is-loaded]="ch.index <= visibleChunksCount()"
+                    [class.is-current]="ch.index === visibleChunksCount()"
+                    (click)="jumpToChunk(ch.index)"
+                    [title]="ch.title"
+                  >
+                    <span class="pill-number">#{{ ch.index }}</span>
+                    <span class="pill-name">{{ ch.title }}</span>
+                  </button>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Nội dung chi tiết bài viết (Progressive Render On-Demand) -->
           <div class="article-markdown-body markdown-body">
-            @for (chunk of visibleChunks(); track $index) {
-              <div class="markdown-chunk" [innerHTML]="chunk | markdown"></div>
+            @for (chunk of visibleChunks(); track chunk.index) {
+              <section class="markdown-chunk-section" [id]="'chunk-part-' + chunk.index">
+                @if (isProgressive() && chunk.index > 1) {
+                  <div class="chunk-section-divider">
+                    <span class="section-part-pill">Phần {{ chunk.index }} / {{ allChunks().length }}</span>
+                    <h3 class="section-part-title">{{ chunk.title }}</h3>
+                  </div>
+                }
+                <div class="chunk-content-inner" [innerHTML]="chunk.content | markdown"></div>
+              </section>
             }
           </div>
 
@@ -121,14 +166,27 @@
               <div class="load-more-sentinel"></div>
               <div class="load-more-card">
                 <div class="load-more-info">
-                  <span class="chunk-badge">Đang hiển thị phần {{ visibleChunksCount() }} / {{ allChunks().length }}</span>
-                  <p class="chunk-desc">Bài viết chuyên sâu dung lượng lớn đã được chia phần thông minh để cuộn mượt mà trên Safari.</p>
+                  <span class="chunk-badge">Phần tiếp theo ({{ visibleChunksCount() + 1 }} / {{ allChunks().length }})</span>
+                  <p class="chunk-desc">{{ allChunks()[visibleChunksCount()].title }}</p>
                 </div>
                 <div class="load-more-actions">
-                  <button type="button" class="shadcn-btn shadcn-btn--sm shadcn-btn--primary" (click)="loadNextChunk()">
-                    Xem tiếp phần {{ visibleChunksCount() + 1 }} ↓
+                  <button 
+                    type="button" 
+                    class="shadcn-btn shadcn-btn--sm shadcn-btn--primary" 
+                    [disabled]="isLoadingNextChunk()"
+                    (click)="loadNextChunk()"
+                  >
+                    @if (isLoadingNextChunk()) {
+                      <span>⏳ Đang tải...</span>
+                    } @else {
+                      <span>Xem tiếp phần {{ visibleChunksCount() + 1 }} ↓</span>
+                    }
                   </button>
-                  <button type="button" class="shadcn-btn shadcn-btn--sm shadcn-btn--outline" (click)="loadAllChunks()">
+                  <button 
+                    type="button" 
+                    class="shadcn-btn shadcn-btn--sm shadcn-btn--outline" 
+                    (click)="loadAllChunks()"
+                  >
                     Tải toàn bộ bài
                   </button>
                 </div>
@@ -136,7 +194,7 @@
             </div>
           } @else if (isProgressive() && visibleChunksCount() >= allChunks().length) {
             <div class="progressive-end">
-              <span>✓ Đã hiển thị đầy đủ toàn bộ {{ allChunks().length }} phần bài viết</span>
+              <span>✓ Đã hiển thị trọn vẹn toàn bộ {{ allChunks().length }} phần bài viết</span>
             </div>
           }
         </div>

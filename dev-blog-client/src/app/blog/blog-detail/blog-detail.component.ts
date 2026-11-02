@@ -11,6 +11,12 @@ import { ModalController } from '@ionic/angular/standalone';
 import { MarkdownPipe } from '../markdown.pipe';
 import mermaid from 'mermaid';
 
+export interface MarkdownChunk {
+  index: number;
+  title: string;
+  content: string;
+}
+
 /**
  * Kiểm tra xem vị trí cắt có nằm trong khối code (```) hay không
  */
@@ -20,18 +26,36 @@ function isInsideCodeBlock(text: string, index: number): boolean {
   return (matches.length % 2) !== 0; // Số lẻ fence nghĩa là đang nằm bên trong code block
 }
 
+function extractChunkTitle(chunkText: string, index: number): string {
+  const lines = chunkText.trim().split('\n');
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith('#')) {
+      return trimmed.replace(/^#+\s*/, '').replace(/[*_`]/g, '').trim();
+    }
+  }
+  return `Phần ${index + 1}`;
+}
+
 /**
- * Chia nhỏ nội dung Markdown siêu dài thành các đoạn an toàn (~14.000 ký tự)
+ * Chia nhỏ nội dung Markdown siêu dài thành các đoạn an toàn (~13.000 ký tự)
  * Bẻ gãy chính xác tại tiêu đề (#, ##, ###) và không bao giờ cắt vụn code block
  */
-export function chunkMarkdownSafe(text: string, chunkSize = 14000): string[] {
-  if (!text || text.length <= chunkSize * 1.3) return [text || ''];
-  const chunks: string[] = [];
+export function chunkMarkdownSafe(text: string, chunkSize = 13000): MarkdownChunk[] {
+  if (!text || text.length <= chunkSize * 1.3) {
+    return [{ index: 1, title: 'Toàn bộ bài viết', content: text || '' }];
+  }
+  const chunks: MarkdownChunk[] = [];
   let cursor = 0;
 
   while (cursor < text.length) {
     if (cursor + chunkSize >= text.length) {
-      chunks.push(text.slice(cursor));
+      const remainingText = text.slice(cursor);
+      chunks.push({
+        index: chunks.length + 1,
+        title: extractChunkTitle(remainingText, chunks.length),
+        content: remainingText
+      });
       break;
     }
 
@@ -62,11 +86,21 @@ export function chunkMarkdownSafe(text: string, chunkSize = 14000): string[] {
     }
 
     if (splitPoint === -1) {
-      chunks.push(text.slice(cursor));
+      const remainingText = text.slice(cursor);
+      chunks.push({
+        index: chunks.length + 1,
+        title: extractChunkTitle(remainingText, chunks.length),
+        content: remainingText
+      });
       break;
     }
 
-    chunks.push(text.slice(cursor, splitPoint));
+    const chunkText = text.slice(cursor, splitPoint);
+    chunks.push({
+      index: chunks.length + 1,
+      title: extractChunkTitle(chunkText, chunks.length),
+      content: chunkText
+    });
     cursor = splitPoint;
   }
 
@@ -99,10 +133,12 @@ export class BlogDetailComponent implements OnInit, OnDestroy {
   public blogPost = signal<BlogPost | null>(null);
   public isFavorite = signal<boolean>(false);
   public isFullScreen = signal<boolean>(false);
+  public isReady = signal<boolean>(false);
 
-  // Progressive Chunking để chống WebKit crash OOM trên Mobile Safari
-  public allChunks = signal<string[]>([]);
+  // Progressive Lazy Loading từng phần trên nhu cầu
+  public allChunks = signal<MarkdownChunk[]>([]);
   public visibleChunksCount = signal<number>(1);
+  public isLoadingNextChunk = signal<boolean>(false);
   public isProgressive = computed(() => this.allChunks().length > 1);
   public visibleChunks = computed(() => {
     const chunks = this.allChunks();
@@ -110,7 +146,7 @@ export class BlogDetailComponent implements OnInit, OnDestroy {
     return chunks.slice(0, count);
   });
 
-  private observer: IntersectionObserver | null = null;
+  private lastScrollLoad = 0;
 
   constructor() {
     effect(() => {
@@ -129,17 +165,22 @@ export class BlogDetailComponent implements OnInit, OnDestroy {
     const chunks = chunkMarkdownSafe(post.content || '');
     this.allChunks.set(chunks);
     this.visibleChunksCount.set(1);
-    this.setupIntersectionObserver();
   }
 
   loadNextChunk() {
-    if (this.visibleChunksCount() < this.allChunks().length) {
+    if (this.visibleChunksCount() >= this.allChunks().length) return;
+    if (this.isLoadingNextChunk()) return;
+
+    this.isLoadingNextChunk.set(true);
+    this.lastScrollLoad = Date.now();
+
+    setTimeout(() => {
       this.visibleChunksCount.update(c => Math.min(c + 1, this.allChunks().length));
+      this.isLoadingNextChunk.set(false);
       setTimeout(() => {
         this.renderMermaidDiagrams();
-        this.observeSentinel();
       }, 50);
-    }
+    }, 120);
   }
 
   loadAllChunks() {
@@ -149,37 +190,43 @@ export class BlogDetailComponent implements OnInit, OnDestroy {
     }, 50);
   }
 
-  private setupIntersectionObserver() {
-    if (typeof window === 'undefined' || !('IntersectionObserver' in window)) return;
-    if (this.observer) {
-      this.observer.disconnect();
+  jumpToChunk(targetIndex: number) {
+    if (targetIndex > this.visibleChunksCount()) {
+      this.visibleChunksCount.set(targetIndex);
     }
-    this.observer = new IntersectionObserver((entries) => {
-      const [entry] = entries;
-      if (entry && entry.isIntersecting) {
-        this.loadNextChunk();
+    setTimeout(() => {
+      const el = this.el.nativeElement.querySelector('#chunk-part-' + targetIndex);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
-    }, {
-      rootMargin: '300px 0px' // Tự động load trước khi cuộn tới cách đáy 300px
-    });
-
-    setTimeout(() => this.observeSentinel(), 200);
+    }, 100);
   }
 
-  private observeSentinel() {
-    if (!this.observer) return;
+  onContentScroll(ev: any) {
+    if (!this.isProgressive()) return;
+    if (this.visibleChunksCount() >= this.allChunks().length) return;
+    if (this.isLoadingNextChunk()) return;
+
+    const now = Date.now();
+    if (now - this.lastScrollLoad < 1000) return; // Khóa tối thiểu 1s giữa 2 lần nạp tự động
+
+    const scrollTop = ev?.detail?.scrollTop || 0;
+    if (scrollTop < 300) return; // Người dùng phải chủ động cuộn xuống ít nhất 300px
+
     const sentinel = this.el.nativeElement.querySelector('.load-more-sentinel');
-    if (sentinel) {
-      this.observer.disconnect();
-      this.observer.observe(sentinel);
+    if (!sentinel) return;
+
+    const rect = sentinel.getBoundingClientRect();
+    const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+
+    // Chỉ nạp khi sentinel nằm trong khoảng nhìn thấy ở đáy
+    if (rect.top > 0 && rect.top < windowHeight + 150) {
+      this.loadNextChunk();
     }
   }
 
   ngOnDestroy() {
-    if (this.observer) {
-      this.observer.disconnect();
-      this.observer = null;
-    }
+    // cleanup
   }
 
   private setupMermaidZoomControls() {
@@ -259,6 +306,11 @@ export class BlogDetailComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
+    // Đợi 120ms cho animation mở modal hoàn tất êm ái trước khi render nội dung
+    setTimeout(() => {
+      this.isReady.set(true);
+    }, 120);
+
     // Nếu chưa có post (ví dụ người dùng mở trực tiếp qua URL /blog/:id)
     if (!this.blogPost() && this.route) {
       const idParam = this.route.snapshot.paramMap.get('id');
