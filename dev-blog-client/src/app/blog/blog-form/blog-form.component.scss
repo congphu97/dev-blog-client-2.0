@@ -1,11 +1,13 @@
 .form-modal-header {
   box-shadow: none;
   border-bottom: 1px solid #e4e4e7;
+  padding-top: env(safe-area-inset-top, 0px); // Tương thích tai thỏ / Dynamic Island khi mở Form
+  background: #ffffff;
 
   .form-toolbar {
     --background: #ffffff;
     --border-width: 0;
-    padding: 8px 16px;
+    padding: 8px max(16px, env(safe-area-inset-right, 0px)) 8px max(16px, env(safe-area-inset-left, 0px));
   }
 
   .header-content {

@@ -1,7 +1,7 @@
 import { Component, ElementRef, inject, Input, OnInit, OnDestroy, signal, effect, computed } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IonHeader, IonToolbar, IonTitle, IonButtons, IonContent } from '@ionic/angular/standalone';
+import { IonHeader, IonContent } from '@ionic/angular/standalone';
 import { 
   NgcAvatarModule
 } from 'ngc-library';
@@ -115,9 +115,6 @@ export function chunkMarkdownSafe(text: string, chunkSize = 13000): MarkdownChun
     CommonModule,
     DatePipe,
     IonHeader,
-    IonToolbar,
-    IonTitle,
-    IonButtons,
     IonContent,
     NgcAvatarModule,
     MarkdownPipe

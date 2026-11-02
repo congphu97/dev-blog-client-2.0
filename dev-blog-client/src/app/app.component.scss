@@ -97,40 +97,92 @@ app-header {
   display: flex;
   flex-direction: column;
   width: 100%;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 .drawer-header-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 4px 12px 14px;
+  padding: 6px 8px 12px;
+  border-bottom: 1px solid var(--app-sidebar-border, #232936);
+  margin-bottom: 10px;
 
-  .drawer-section-heading {
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--app-sidebar-text-active, #f8fafc);
-    letter-spacing: -0.01em;
-    padding: 0;
+  .drawer-brand-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .drawer-brand-icon {
+      background: var(--app-text-primary, #0f172a);
+      color: var(--app-card-bg, #ffffff);
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 3px 6px;
+      border-radius: 6px;
+      line-height: 1.2;
+      letter-spacing: -0.5px;
+    }
+
+    .drawer-brand-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--app-sidebar-text-active, #f8fafc);
+      letter-spacing: -0.02em;
+    }
+
+    .drawer-brand-badge {
+      font-size: 0.65rem;
+      font-weight: 600;
+      background: var(--app-pill-bg, #f1f5f9);
+      border: 1px solid var(--app-pill-border, #e2e8f0);
+      color: var(--app-text-muted, #64748b);
+      padding: 1px 5px;
+      border-radius: 4px;
+    }
   }
 
   .drawer-close-mobile-btn {
     display: none;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
-    border-radius: 6px;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
     background: var(--app-card-bg, #181c24);
     border: 1px solid var(--app-sidebar-border, #232936);
     color: var(--app-sidebar-text, #94a3b8);
     cursor: pointer;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
+    font-weight: 600;
     transition: all 0.15s ease;
 
     &:hover {
       background: var(--app-pill-bg, #222834);
       color: #ffffff;
     }
+  }
+}
+
+.drawer-section-heading {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--app-sidebar-text, #64748b);
+  padding: 4px 10px 8px;
+}
+
+.drawer-bottom-footer {
+  margin-top: auto;
+  padding: 16px 10px 8px;
+  border-top: 1px solid var(--app-sidebar-border, #232936);
+
+  .drawer-footer-text {
+    font-size: 0.72rem;
+    color: var(--app-sidebar-text, #94a3b8);
+    opacity: 0.75;
   }
 }
 
@@ -228,62 +280,93 @@ app-header {
     height: 100%;
   }
 
-  /* Biến Drawer thành Full-width Overlay trên điện thoại, không ép Content chia đôi 50/50 */
-  ::ng-deep .app-nav-drawer {
-    position: fixed !important;
-    top: 52px !important;
-    left: 0 !important;
-    bottom: 0 !important;
-    width: 100% !important;
-    max-width: 100vw !important;
-    z-index: 1000 !important;
-    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
-
-    .ngc-drawer__content-wrapper {
+  /* 1. Reset triệt để margin-left 16px/32px của ngc-library để 2 bên padding luôn ĐỀU CHẰN CHẶN */
+  ::ng-deep {
+    .ngc-drawer.ngc-drawer--left ~ .ngc-drawer-content,
+    .ngc-drawer.ngc-drawer--left.ngc-drawer--opened ~ .ngc-drawer-content,
+    .ngc-drawer-content.app-drawer-content,
+    .app-drawer-content,
+    ngc-drawer-content {
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+      padding-left: 0 !important;
+      padding-right: 0 !important;
       width: 100% !important;
-      max-width: 100vw !important;
-      border-right: none !important;
+      max-width: 100% !important;
+      flex: 1 1 100% !important;
     }
 
-    /* Ẩn nút toggle tròn của ngc-drawer nằm giữa màn hình */
-    .ngc-drawer__divider-btn-toggle {
-      display: none !important;
-    }
+    /* 2. Thiết kế Drawer chuẩn Slide-out Sidebar (270px) có bóng đổ, KHÔNG chiếm 100% màn hình */
+    .app-nav-drawer {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      bottom: 0 !important;
+      width: 270px !important;
+      max-width: 80vw !important;
+      height: 100% !important;
+      height: 100dvh !important;
+      z-index: 1200 !important;
+      background-color: var(--app-sidebar-bg, #ffffff) !important;
+      box-shadow: 6px 0 25px rgba(0, 0, 0, 0.25) !important;
+      border-right: 1px solid var(--app-sidebar-border, #e2e8f0) !important;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
 
-    .ngc-drawer__divider {
-      display: none !important;
-    }
+      .ngc-drawer__content-wrapper {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: 100% !important;
+        border-right: none !important;
+        background-color: var(--app-sidebar-bg, #ffffff) !important;
+      }
 
-    &:not(.ngc-drawer--opened) {
-      pointer-events: none !important;
-      transform: translateX(-100%) !important;
-      visibility: hidden !important;
-    }
+      .ngc-drawer__content {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: 100% !important;
+        padding-top: max(16px, env(safe-area-inset-top, 0px)) !important; // Tránh tai thỏ trên iOS khi mở menu
+        padding-bottom: max(16px, env(safe-area-inset-bottom, 0px)) !important;
+        padding-left: max(12px, env(safe-area-inset-left, 0px)) !important;
+        padding-right: 12px !important;
+        box-sizing: border-box !important;
+        background-color: var(--app-sidebar-bg, #ffffff) !important;
+      }
 
-    &.ngc-drawer--opened {
-      transform: translateX(0) !important;
-      visibility: visible !important;
+      /* Ẩn nút toggle divider ngc-drawer giữa màn hình */
+      .ngc-drawer__divider-btn-toggle,
+      .ngc-drawer__divider {
+        display: none !important;
+        width: 0 !important;
+      }
+
+      &:not(.ngc-drawer--opened) {
+        pointer-events: none !important;
+        transform: translateX(-100%) !important;
+        visibility: hidden !important;
+      }
+
+      &.ngc-drawer--opened {
+        transform: translateX(0) !important;
+        visibility: visible !important;
+      }
     }
   }
 
-  /* Backdrop mờ phía sau khi drawer mở */
+  /* 3. Backdrop mờ tối sang trọng bao trọn màn hình khi mở menu */
   .mobile-drawer-backdrop {
-    display: block;
-    position: fixed;
-    top: 52px;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(2px);
-    z-index: 999;
-  }
-
-  /* Content luôn chiếm trọn 100% chiều rộng màn hình mobile */
-  .app-drawer-content {
-    width: 100% !important;
-    max-width: 100vw !important;
-    flex: 1 1 100% !important;
+    display: block !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    height: 100% !important;
+    height: 100dvh !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    backdrop-filter: blur(3px) !important;
+    -webkit-backdrop-filter: blur(3px) !important;
+    z-index: 1100 !important;
   }
 
   /* Nút đóng Drawer xuất hiện trên Mobile */

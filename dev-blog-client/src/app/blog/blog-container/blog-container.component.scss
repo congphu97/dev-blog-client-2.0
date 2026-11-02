@@ -1,9 +1,13 @@
 .blog-container-page {
   --background: var(--app-bg, #0e1217);
+  --padding-start: 0;
+  --padding-end: 0;
 }
 
 .main-content-wrapper {
   max-width: 1240px;
+  width: 100%;
+  box-sizing: border-box;
   margin: 0 auto;
   padding: 24px 20px 60px;
 

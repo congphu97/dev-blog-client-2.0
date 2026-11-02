@@ -18,11 +18,17 @@
       >
         <div class="drawer-inner-container">
           <div class="drawer-header-row">
-            <span class="drawer-section-heading">Explore</span>
+            <div class="drawer-brand-group">
+              <span class="drawer-brand-icon">&lt;/&gt;</span>
+              <span class="drawer-brand-title">Dev Blog</span>
+              <span class="drawer-brand-badge">2.0</span>
+            </div>
             <button type="button" class="drawer-close-mobile-btn" (click)="drawerService.close()" title="Đóng menu">
               ✕
             </button>
           </div>
+
+          <div class="drawer-section-heading">EXPLORE</div>
 
           <!-- Menu items xếp san sát nhau chuẩn phong cách daily.dev -->
           <div class="drawer-nav-group">
@@ -30,7 +36,7 @@
             <button 
               type="button" 
               class="daily-nav-item"
-              [class.daily-nav-item--active]="isRouteActive('/dashboard') || isRouteActive('/home')"
+              [class.daily-nav-item--active]="isRouteActive('/dashboard')"
               (click)="navigateTo('/dashboard')"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-svg-icon">
@@ -71,7 +77,7 @@
               <span class="nav-label">Home</span>
             </button>
 
-            <!-- 3. Tags -->
+            <!-- 4. Tags -->
             <button 
               type="button" 
               class="daily-nav-item"
@@ -84,6 +90,10 @@
               </svg>
               <span class="nav-label">Tags</span>
             </button>
+          </div>
+
+          <div class="drawer-bottom-footer">
+            <span class="drawer-footer-text">© 2026 Dev Blog 2.0</span>
           </div>
         </div>
       </ngc-drawer>

@@ -1,9 +1,9 @@
 <ion-header class="detail-modal-header">
-  <ion-toolbar class="detail-toolbar">
-    <ion-title class="detail-header-title" [title]="blogPost()?.title || 'Chi tiết bài viết'">
+  <div class="detail-custom-toolbar">
+    <h2 class="detail-header-title" [title]="blogPost()?.title || 'Chi tiết bài viết'">
       {{ blogPost()?.title || 'Chi tiết bài viết' }}
-    </ion-title>
-    <ion-buttons slot="end" class="detail-header-actions">
+    </h2>
+    <div class="detail-header-actions">
       <!-- Nút Phóng to / Thu nhỏ full màn hình -->
       <button 
         type="button" 
@@ -29,8 +29,8 @@
       <button class="modal-close-icon-btn" (click)="dismiss()" title="Đóng">
         ✕
       </button>
-    </ion-buttons>
-  </ion-toolbar>
+    </div>
+  </div>
 </ion-header>
 
 <ion-content class="blog-detail-wrapper" [scrollEvents]="true" (ionScroll)="onContentScroll($event)">
