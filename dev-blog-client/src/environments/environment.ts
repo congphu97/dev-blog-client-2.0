@@ -10,7 +10,7 @@ export const environment = {
     projectId: 'blog-dev-33836',
     databaseURL: 'https://blog-dev-33836-default-rtdb.asia-southeast1.firebasedatabase.app'
   },
-  geminiApiKey: 'AIzaSyDrnK6KG1QaA_u6GTGuVl8jjAGKjl3wBsg'
+  geminiApiKey: (typeof process !== 'undefined' && (process?.env?.GEMINI_API_KEY || process?.env?.NG_APP_GEMINI_API_KEY)) || ''
 };
 
 /*

@@ -46,7 +46,12 @@ export class GeminiService {
   private readonly baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models';
 
   private get apiKey(): string {
-    return localStorage.getItem('gemini_api_key') || (environment as any).geminiApiKey || '';
+    return (
+      (environment as any).geminiApiKey ||
+      (typeof process !== 'undefined' && ((process as any)?.env?.['GEMINI_API_KEY'] || (process as any)?.env?.['NG_APP_GEMINI_API_KEY'])) ||
+      localStorage.getItem('gemini_api_key') ||
+      ''
+    );
   }
 
   /**
@@ -56,7 +61,13 @@ export class GeminiService {
     message: string,
     history: Array<{ role: 'user' | 'model'; text: string }> = []
   ): Observable<string> {
-    const url = `${this.baseUrl}/${this.modelName}:generateContent?key=${this.apiKey}`;
+    const key = this.apiKey;
+    if (!key) {
+      return throwError(
+        () => new Error('Chưa cấu hình GEMINI_API_KEY trong environment / process.env hoặc localStorage!')
+      );
+    }
+    const url = `${this.baseUrl}/${this.modelName}:generateContent?key=${key}`;
 
     // Chuẩn bị payload theo đúng format của Gemini API
     const contents: GeminiContent[] = history.map(item => ({
