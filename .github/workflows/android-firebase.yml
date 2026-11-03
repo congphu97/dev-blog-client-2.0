@@ -59,6 +59,8 @@ jobs:
         run: npm ci --legacy-peer-deps
 
       - name: 6. Build mã nguồn Web (Angular www)
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: npm run build
 
       - name: 7. Đồng bộ sang Android Native (Capacitor Sync)

@@ -6,6 +6,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
+    "prebuild": "node scripts/set-env.js || true",
     "build": "ng build",
     "postbuild": "cp www/index.html www/404.html",
     "watch": "ng build --watch --configuration development",

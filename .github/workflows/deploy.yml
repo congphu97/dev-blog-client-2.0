@@ -40,6 +40,8 @@ jobs:
         run: npm ci --legacy-peer-deps
 
       - name: Build Web Production
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: npm run build -- --base-href /${{ github.event.repository.name }}/
 
       - name: Setup Pages

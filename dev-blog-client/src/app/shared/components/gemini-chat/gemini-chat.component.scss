@@ -221,6 +221,94 @@
         border-color: rgba(239, 68, 68, 0.5);
         color: #fca5a5;
       }
+
+      &.active-key {
+        background: rgba(245, 158, 11, 0.25);
+        border-color: rgba(245, 158, 11, 0.5);
+      }
+    }
+  }
+}
+
+// ==============================================================
+// 3.5 API KEY CONFIG BANNER
+// ==============================================================
+.api-key-config-banner {
+  padding: 12px 16px;
+  background: var(--key-banner-bg, #eff6ff);
+  border-bottom: 1px solid var(--key-banner-border, #bfdbfe);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  .banner-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .banner-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--key-title-color, #1e40af);
+    }
+
+    .banner-close-btn {
+      background: transparent;
+      border: none;
+      color: #64748b;
+      cursor: pointer;
+      font-size: 13px;
+      padding: 2px 6px;
+      &:hover { color: #0f172a; }
+    }
+  }
+
+  .banner-desc {
+    margin: 0;
+    font-size: 11.5px;
+    color: var(--key-desc-color, #475569);
+  }
+
+  .banner-input-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 2px;
+
+    .banner-key-input {
+      flex: 1;
+      padding: 6px 10px;
+      font-size: 12px;
+      border: 1px solid var(--key-input-border, #93c5fd);
+      border-radius: 8px;
+      outline: none;
+      background: var(--key-input-bg, #ffffff);
+      color: var(--key-input-color, #0f172a);
+
+      &:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+      }
+    }
+
+    .banner-save-btn {
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 8px;
+      border: none;
+      background: #2563eb;
+      color: #ffffff;
+      cursor: pointer;
+      transition: background 0.2s ease;
+
+      &:hover:not(:disabled) {
+        background: #1d4ed8;
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
     }
   }
 }

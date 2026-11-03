@@ -61,6 +61,11 @@
           </div>
 
           <div class="header-actions">
+            <!-- Nút Cấu hình API Key -->
+            <button type="button" class="action-btn" (click)="toggleKeyConfig()" [class.active-key]="showKeyConfig()" title="Cấu hình Gemini API Key">
+              🔑
+            </button>
+
             <!-- Nút Xoá lịch sử chat -->
             <button type="button" class="action-btn" (click)="clearChat()" title="Làm mới cuộc trò chuyện">
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
@@ -87,6 +92,31 @@
             </button>
           </div>
         </div>
+
+        <!-- CẤU HÌNH API KEY BANNER -->
+        @if (showKeyConfig() || !geminiService.hasApiKey()) {
+          <div class="api-key-config-banner">
+            <div class="banner-title-row">
+              <span class="banner-title">⚙️ Cấu hình Gemini API Key</span>
+              @if (showKeyConfig() && geminiService.hasApiKey()) {
+                <button type="button" class="banner-close-btn" (click)="showKeyConfig.set(false)">✕</button>
+              }
+            </div>
+            <p class="banner-desc">Key được lưu trực tiếp trên thiết bị (Local Storage):</p>
+            <div class="banner-input-row">
+              <input 
+                type="password" 
+                class="banner-key-input" 
+                placeholder="Dán mã AIzaSyDrnK... tại đây" 
+                [value]="tempApiKey()" 
+                (input)="tempApiKey.set($any($event.target).value)" 
+              />
+              <button type="button" class="banner-save-btn" (click)="saveCustomKey()" [disabled]="!tempApiKey().trim()">
+                Lưu Key
+              </button>
+            </div>
+          </div>
+        }
 
         <!-- MESSAGES CONTAINER -->
         <div class="chat-body" #chatMessagesContainer>

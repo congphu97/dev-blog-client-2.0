@@ -15,7 +15,7 @@ import { MarkdownPipe } from '../../../blog/markdown.pipe';
   styleUrls: ['./gemini-chat.component.scss'],
 })
 export class GeminiChatComponent {
-  private geminiService = inject(GeminiService);
+  public geminiService = inject(GeminiService);
   private store = inject(Store);
   private router = inject(Router);
 
@@ -29,6 +29,33 @@ export class GeminiChatComponent {
   public isExpanded = signal<boolean>(false);
   public isLoading = signal<boolean>(false);
   public inputMessage = signal<string>('');
+
+  // Quản lý API Key cấu hình trực tiếp từ giao diện
+  public showKeyConfig = signal<boolean>(false);
+  public tempApiKey = signal<string>('');
+
+  public toggleKeyConfig() {
+    this.showKeyConfig.update(v => !v);
+  }
+
+  public saveCustomKey() {
+    const val = this.tempApiKey().trim();
+    if (val) {
+      this.geminiService.setApiKey(val);
+      this.showKeyConfig.set(false);
+      this.tempApiKey.set('');
+      this.messages.update(prev => [
+        ...prev,
+        {
+          id: `sys_${Date.now()}`,
+          role: 'model',
+          text: '✅ Đã lưu cấu hình GEMINI_API_KEY thành công! Bạn có thể bắt đầu trò chuyện ngay bây giờ.',
+          timestamp: new Date(),
+          status: 'success'
+        }
+      ]);
+    }
+  }
 
   // Danh sách tin nhắn chat
   public messages = signal<ChatMessage[]>([

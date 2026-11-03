@@ -62,7 +62,7 @@ app-header {
       }
 
       .ngc-drawer__divider-label {
-        color: var(--app-sidebar-text, #94a3b8) !important;
+        display: none !important;
       }
 
       .ngc-drawer__divider-btn-toggle {

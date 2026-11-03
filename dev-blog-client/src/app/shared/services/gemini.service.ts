@@ -47,11 +47,21 @@ export class GeminiService {
 
   private get apiKey(): string {
     return (
+      localStorage.getItem('gemini_api_key') ||
       (environment as any).geminiApiKey ||
       (typeof process !== 'undefined' && ((process as any)?.env?.['GEMINI_API_KEY'] || (process as any)?.env?.['NG_APP_GEMINI_API_KEY'])) ||
-      localStorage.getItem('gemini_api_key') ||
       ''
     );
+  }
+
+  public hasApiKey(): boolean {
+    return !!this.apiKey.trim();
+  }
+
+  public setApiKey(key: string): void {
+    if (key && key.trim()) {
+      localStorage.setItem('gemini_api_key', key.trim());
+    }
   }
 
   /**
