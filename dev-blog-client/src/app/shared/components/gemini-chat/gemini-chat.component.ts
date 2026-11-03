@@ -1,6 +1,9 @@
 import { Component, ElementRef, ViewChild, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { Store } from '@ngrx/store';
+import { authFeature } from '../../../store/auth';
 import { GeminiService, ChatMessage } from '../../services/gemini.service';
 import { MarkdownPipe } from '../../../blog/markdown.pipe';
 
@@ -13,6 +16,11 @@ import { MarkdownPipe } from '../../../blog/markdown.pipe';
 })
 export class GeminiChatComponent {
   private geminiService = inject(GeminiService);
+  private store = inject(Store);
+  private router = inject(Router);
+
+  // Lắng nghe trạng thái đăng nhập từ NgRx Store
+  public isAuthenticated = this.store.selectSignal(authFeature.selectIsAuthenticated);
 
   @ViewChild('chatMessagesContainer') private messagesContainer?: ElementRef<HTMLDivElement>;
   @ViewChild('chatInput') private chatInputRef?: ElementRef<HTMLTextAreaElement>;
@@ -42,6 +50,13 @@ export class GeminiChatComponent {
   ];
 
   constructor() {
+    // Đóng chat window ngay khi user đăng xuất
+    effect(() => {
+      if (!this.isAuthenticated()) {
+        this.isOpen.set(false);
+      }
+    });
+
     // Tự động cuộn xuống cuối khi có tin nhắn mới hoặc trạng thái loading thay đổi
     effect(() => {
       this.messages();
@@ -51,6 +66,10 @@ export class GeminiChatComponent {
   }
 
   public toggleChat() {
+    if (!this.isAuthenticated()) {
+      this.router.navigate(['/login']);
+      return;
+    }
     this.isOpen.update(v => !v);
     if (this.isOpen()) {
       setTimeout(() => this.scrollToBottom(), 150);
@@ -93,6 +112,11 @@ export class GeminiChatComponent {
   }
 
   public sendPrompt(customText?: string) {
+    if (!this.isAuthenticated()) {
+      this.router.navigate(['/login']);
+      return;
+    }
+
     const rawVal = this.chatInputRef?.nativeElement?.value;
     const text = (customText ?? (rawVal !== undefined && rawVal !== '' ? rawVal : this.inputMessage())).trim();
     if (!text || this.isLoading()) {
