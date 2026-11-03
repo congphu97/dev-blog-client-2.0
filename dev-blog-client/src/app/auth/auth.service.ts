@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of, catchError, map } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { AuthUser } from '../store/auth';
 
@@ -16,55 +16,55 @@ export class AuthService {
   private http = inject(HttpClient);
   private readonly apiUrl = `${environment.apiUrl}/auth`;
 
-  // Mock data tài khoản dự phòng nếu server offline
+  // Mock data tài khoản quản trị viên Phú Cường
   public testAcount: AuthUser = {
-    id: 'usr_admin_01',
-    name: 'Phú Cường (Admin)',
-    email: 'phu.cuong@gmail.com',
-    avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=PhuCuong',
+    id: 'usr_congphu2210',
+    name: 'Trần Công Phú (Admin)',
+    email: 'congphu2210@gmail.com',
+    avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=congphu2210',
     role: 'admin',
     badge: '👑 Quản trị viên',
     provider: 'local',
   };
 
   /**
-   * Gọi API POST http://localhost:3000/api/auth/login
+   * Đăng nhập: Hardcode congphu2210 / Phu9844136
    */
   login(email: string, password?: string): Observable<AuthUser> {
-    return this.http.post<LoginApiResponse>(`${this.apiUrl}/login`, { email, password }).pipe(
-      map(res => {
-        if (res.success && res.user) {
-          console.log('✅ Đăng nhập thành công từ server :3000:', res.user);
-          if (res.token) {
-            localStorage.setItem('dev_blog_token', res.token);
-          }
-          return res.user;
-        }
-        throw new Error('Dữ liệu trả về không hợp lệ');
-      }),
-      catchError(err => {
-        console.warn('⚠️ Lỗi kết nối server :3000, sử dụng tài khoản mẫu nội bộ:', err);
-        return of(this.getFallbackAccount(email));
-      })
+    const trimmedEmail = (email || '').trim();
+    const trimmedPass = (password || '').trim();
+
+    // Kiểm tra đăng nhập với tài khoản hardcode
+    if (
+      (trimmedEmail === 'congphu2210' || trimmedEmail.toLowerCase() === 'congphu2210@gmail.com') &&
+      trimmedPass === 'Phu9844136'
+    ) {
+      const user: AuthUser = {
+        ...this.testAcount,
+        email: trimmedEmail.includes('@') ? trimmedEmail : 'congphu2210@gmail.com',
+      };
+      localStorage.setItem('dev_blog_token', 'mock_jwt_token_congphu2210');
+      return of(user);
+    }
+
+    // Nếu thông tin không chính xác
+    return throwError(
+      () => new Error('Tài khoản hoặc mật khẩu không chính xác!')
     );
   }
 
   /**
-   * Gọi API GET http://localhost:3000/api/auth/account
+   * Lấy thông tin user hiện tại
    */
   getAccountUser(email?: string): Observable<AuthUser> {
-    const url = `${this.apiUrl}/account${email ? `?email=${encodeURIComponent(email)}` : ''}`;
-    return this.http.get<{ success: boolean; user?: AuthUser }>(url).pipe(
-      map(res => res.user || this.getFallbackAccount(email)),
-      catchError(() => of(this.getFallbackAccount(email)))
-    );
+    return of(this.getFallbackAccount(email));
   }
 
   private getFallbackAccount(email?: string): AuthUser {
     if (email && email.includes('guest')) {
       return {
         id: 'usr_guest_02',
-        name: 'Nguyễn Văn Đọc (Reader)',
+        name: 'Khách (Reader)',
         email: 'guest.reader@devblog.com',
         avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=VanDoc',
         role: 'reader',

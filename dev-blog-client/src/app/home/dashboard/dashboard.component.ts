@@ -13,7 +13,7 @@ export class DashboardComponent {
   private router = inject(Router);
 
   // Link đến trang guideline chính thức của ngc-library
-  public readonly guidelineUrl = 'https://ngc-library.vercel.app/components';
+  public readonly guidelineUrl = 'https://ngc-library-v22.vercel.app/';
 
   /**
    * Điều hướng sang trang Guideline nhúng của NGC-Library trực tiếp trong app

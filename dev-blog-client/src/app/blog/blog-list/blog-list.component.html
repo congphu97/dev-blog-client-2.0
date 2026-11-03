@@ -143,19 +143,21 @@
 
             <p class="item-summary">{{ post.summary }}</p>
 
-            <div class="item-actions">
-              <button 
-                type="button" 
-                ngcButton 
-                size="32px"
-                color="#ffffff" 
-                textColor="#18181b" 
-                borderColor="#e4e4e7"
-                (click)="onChooseToEdit(post); $event.stopPropagation()"
-              >
-                ✏️ Sửa bài này
-              </button>
-            </div>
+            @if (canEdit()) {
+              <div class="item-actions">
+                <button 
+                  type="button" 
+                  ngcButton 
+                  size="32px"
+                  color="#ffffff" 
+                  textColor="#18181b" 
+                  borderColor="#e4e4e7"
+                  (click)="onChooseToEdit(post); $event.stopPropagation()"
+                >
+                  ✏️ Sửa bài này
+                </button>
+              </div>
+            }
           </div>
         </div>
       </ngc-card>

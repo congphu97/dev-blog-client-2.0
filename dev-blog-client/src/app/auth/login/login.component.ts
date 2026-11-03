@@ -27,8 +27,8 @@ export class LoginComponent {
   public isStoreLoading = this.store.selectSignal(authFeature.selectLoading);
   public storeError = this.store.selectSignal(authFeature.selectError);
 
-  public email = signal<string>('phu.cuong@devblog.com');
-  public password = signal<string>('Developer@2026');
+  public email = signal<string>('');
+  public password = signal<string>('');
   public rememberMe = signal<boolean>(true);
   public showPassword = signal<boolean>(false);
   public isLoading = signal<boolean>(false);
@@ -38,15 +38,15 @@ export class LoginComponent {
   // Danh sách tài khoản mẫu để test OAuth2 Consent Screen
   public testAccounts = [
     {
-      name: 'Phú Cường (Admin)',
-      email: 'phu.cuong@gmail.com',
-      avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=PhuCuong',
+      name: 'Trần Công Phú (Admin)',
+      email: 'congphu2210',
+      avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=congphu2210',
       role: 'admin' as const,
       badge: '👑 Quản trị viên'
     },
     {
-      name: 'Nguyễn Văn Đọc (Reader)',
-      email: 'van.doc@gmail.com',
+      name: 'Khách (Reader)',
+      email: 'guest.reader@devblog.com',
       avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=VanDoc',
       role: 'reader' as const,
       badge: '👤 Độc giả'
@@ -60,13 +60,6 @@ export class LoginComponent {
   }
 
   public fillDemoAccount(role: 'admin' | 'guest') {
-    if (role === 'admin') {
-      this.email.set('phu.cuong@devblog.com');
-      this.password.set('DevBlog@Admin2026');
-    } else {
-      this.email.set('guest.reader@devblog.com');
-      this.password.set('Guest123456');
-    }
     this.errorMessage.set('');
   }
 

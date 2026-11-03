@@ -25,9 +25,9 @@
   }
 }
 
-/* Nút Hamburger menu (chỉ hiển thị trên mobile/tablet) */
+/* Nút Hamburger menu (hiển thị trên cả desktop và mobile để toggle drawer) */
 .mobile-menu-btn {
-  display: none;
+  display: inline-flex;
   background: transparent;
   border: 1px solid var(--app-card-border, #282f3d);
   background-color: var(--app-card-bg, #181c24);
@@ -50,10 +50,6 @@
   .hamburger-icon {
     width: 20px;
     height: 20px;
-  }
-
-  @media (max-width: 768px) {
-    display: inline-flex;
   }
 }
 

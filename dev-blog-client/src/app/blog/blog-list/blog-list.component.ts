@@ -24,6 +24,7 @@ import { BlogDetailComponent } from '../blog-detail/blog-detail.component';
 export class BlogListComponent {
   // Input posts tùy chọn để tương thích ngược với container
   posts = input<BlogPost[]>();
+  canEdit = input<boolean>(false);
 
   skeletonItems = Array.from({ length: 3 });
 
@@ -73,6 +74,9 @@ export class BlogListComponent {
   }
 
   onChooseToEdit(post: BlogPost) {
+    if (!this.canEdit()) {
+      return;
+    }
     this.chooseToEdit.emit(post);
   }
 

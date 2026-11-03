@@ -21,19 +21,6 @@
         <p class="login-subtitle">Chào mừng bạn trở lại! Nhập thông tin để quản lý bài viết</p>
       </div>
 
-      <!-- Quick Fill Demo Accounts -->
-      <div class="quick-demo-accounts">
-        <span class="demo-label">⚡ Tài khoản mẫu:</span>
-        <div class="demo-buttons">
-          <button type="button" class="demo-chip" (click)="fillDemoAccount('admin')">
-            👑 Admin (Phú Cường)
-          </button>
-          <button type="button" class="demo-chip" (click)="fillDemoAccount('guest')">
-            👤 Khách (Reader)
-          </button>
-        </div>
-      </div>
-
       <!-- Error Alert Message -->
       @if (storeError() || errorMessage()) {
         <div class="login-alert error-alert">
@@ -54,13 +41,13 @@
       <form class="login-form" (submit)="onLogin($event)">
         <!-- Field 1: Email / Username -->
         <div class="form-group">
-          <label class="form-label">Email hoặc Tên tài khoản</label>
+          <label class="form-label">Tên đăng nhập (Username)</label>
           <div class="input-wrapper">
-            <span class="input-icon">✉️</span>
+            <span class="input-icon">👤</span>
             <input 
               type="text" 
               class="form-input" 
-              placeholder="name@example.com"
+              placeholder="Nhập tên đăng nhập..."
               [value]="email()"
               (input)="email.set($any($event.target).value)"
               required
@@ -79,7 +66,7 @@
             <input 
               [type]="showPassword() ? 'text' : 'password'" 
               class="form-input" 
-              placeholder="Nhập ít nhất 6 ký tự..."
+              placeholder="Nhập mật khẩu..."
               [value]="password()"
               (input)="password.set($any($event.target).value)"
               required

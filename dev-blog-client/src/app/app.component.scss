@@ -66,21 +66,49 @@ app-header {
       }
 
       .ngc-drawer__divider-btn-toggle {
-        background-color: var(--app-card-bg, #181c24) !important;
-        border: 1px solid var(--app-sidebar-border, #232936) !important;
-        color: var(--app-sidebar-text, #94a3b8) !important;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
-        transition: all 0.2s ease;
-
-        &:hover {
-          background-color: var(--app-pill-bg, #222834) !important;
-          color: var(--app-text-primary, #ffffff) !important;
-          border-color: var(--app-text-muted, #71717a) !important;
-          transform: scale(1.08);
-        }
+        background-color: var(--app-card-bg, #ffffff) !important;
+        border: 1px solid var(--app-sidebar-border, #e2e8f0) !important;
+        color: var(--app-text-primary, #0f172a) !important;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 28px !important;
+        height: 28px !important;
+        border-radius: 50% !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+        position: relative !important;
 
         ion-icon {
+          font-size: 15px !important;
           color: inherit !important;
+          display: inline-flex !important;
+        }
+
+        // CSS fallback đảm bảo icon chevron < hoặc > luôn hiển thị rõ nét
+        &::after {
+          content: '' !important;
+          display: block !important;
+          width: 6px !important;
+          height: 6px !important;
+          border-left: 2px solid currentColor !important;
+          border-bottom: 2px solid currentColor !important;
+          transform: rotate(45deg) !important; // Mặc định mũi tên trỏ trái <
+          margin-left: 2px !important;
+        }
+
+        &:has(svg) {
+          &::after {
+            display: none !important;
+          }
+        }
+
+        &:hover {
+          background-color: var(--app-pill-bg, #f1f5f9) !important;
+          color: var(--app-text-primary, #0f172a) !important;
+          border-color: var(--app-text-muted, #71717a) !important;
+          transform: scale(1.1) !important;
         }
       }
     }
@@ -88,6 +116,13 @@ app-header {
     &.ngc-drawer--opened {
       .ngc-drawer__divider {
         background-color: transparent !important;
+      }
+    }
+
+    &:not(.ngc-drawer--opened) {
+      .ngc-drawer__divider-btn-toggle::after {
+        transform: rotate(-135deg) !important; // Mũi tên trỏ phải > khi đang đóng
+        margin-left: -2px !important;
       }
     }
   }
@@ -105,79 +140,74 @@ app-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 6px 8px 12px;
+  padding: 6px 6px 12px;
   border-bottom: 1px solid var(--app-sidebar-border, #232936);
   margin-bottom: 10px;
 
-  .drawer-brand-group {
-    display: flex;
+  .drawer-title-group {
+    display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
 
-    .drawer-brand-icon {
-      background: var(--app-text-primary, #0f172a);
-      color: var(--app-card-bg, #ffffff);
-      font-size: 0.72rem;
-      font-weight: 800;
-      padding: 3px 6px;
-      border-radius: 6px;
-      line-height: 1.2;
-      letter-spacing: -0.5px;
+    .drawer-title-icon {
+      font-size: 13px;
     }
 
-    .drawer-brand-title {
-      font-size: 1.05rem;
+    .drawer-section-heading {
+      font-size: 11px;
       font-weight: 700;
-      color: var(--app-sidebar-text-active, #f8fafc);
-      letter-spacing: -0.02em;
-    }
-
-    .drawer-brand-badge {
-      font-size: 0.65rem;
-      font-weight: 600;
-      background: var(--app-pill-bg, #f1f5f9);
-      border: 1px solid var(--app-pill-border, #e2e8f0);
-      color: var(--app-text-muted, #64748b);
-      padding: 1px 5px;
-      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--app-sidebar-text, #64748b);
+      padding: 0;
     }
   }
 
-  .drawer-close-mobile-btn {
-    display: none;
-    align-items: center;
-    justify-content: center;
-    width: 30px;
-    height: 30px;
-    border-radius: 8px;
-    background: var(--app-card-bg, #181c24);
-    border: 1px solid var(--app-sidebar-border, #232936);
-    color: var(--app-sidebar-text, #94a3b8);
-    cursor: pointer;
-    font-size: 0.9rem;
-    font-weight: 600;
-    transition: all 0.15s ease;
-
-    &:hover {
-      background: var(--app-pill-bg, #222834);
-      color: #ffffff;
-    }
-  }
 }
 
-.drawer-section-heading {
+.drawer-divider-line {
+  height: 1px;
+  background-color: var(--app-sidebar-border, #232936);
+  margin: 12px 6px 8px;
+  opacity: 0.8;
+}
+
+.drawer-group-title {
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   color: var(--app-sidebar-text, #64748b);
-  padding: 4px 10px 8px;
+  padding: 4px 10px 6px;
 }
 
 .drawer-bottom-footer {
-  margin-top: auto;
-  padding: 16px 10px 8px;
+  margin-top: 20px;
+  padding: 14px 10px 8px;
   border-top: 1px solid var(--app-sidebar-border, #232936);
+
+  .footer-badge-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+
+    .footer-version-badge {
+      font-size: 10px;
+      font-weight: 700;
+      background: var(--app-pill-bg, #f1f5f9);
+      border: 1px solid var(--app-pill-border, #e2e8f0);
+      color: var(--app-sidebar-text, #64748b);
+      padding: 1px 6px;
+      border-radius: 4px;
+    }
+
+    .footer-status-pill {
+      font-size: 10px;
+      font-weight: 600;
+      color: #10b981;
+    }
+  }
 
   .drawer-footer-text {
     font-size: 0.72rem;
@@ -215,6 +245,15 @@ app-header {
   font-size: 14px;
   font-weight: 500;
   box-sizing: border-box;
+  outline: none !important;
+  user-select: none;
+  text-decoration: none;
+
+  &:focus,
+  &:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+  }
 
   .nav-svg-icon {
     width: 18px;
@@ -232,16 +271,62 @@ app-header {
     letter-spacing: -0.01em;
   }
 
+  // Chuyên mục chủ đề
+  &.topic-item {
+    height: 34px;
+    gap: 10px;
+
+    .topic-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+
+      &--blue {
+        background-color: #3b82f6;
+        box-shadow: 0 0 6px rgba(59, 130, 246, 0.4);
+      }
+      &--cyan {
+        background-color: #06b6d4;
+        box-shadow: 0 0 6px rgba(6, 182, 212, 0.4);
+      }
+      &--purple {
+        background-color: #a855f7;
+        box-shadow: 0 0 6px rgba(168, 85, 247, 0.4);
+      }
+    }
+
+    .nav-label {
+      font-size: 13.5px;
+    }
+  }
+
+  // Liên kết ngoài
+  &.external-item {
+    height: 34px;
+
+    .external-arrow {
+      font-size: 13px;
+      color: var(--app-sidebar-text, #94a3b8);
+      margin-left: auto;
+      opacity: 0.6;
+    }
+  }
+
   &:hover {
     background: var(--app-sidebar-hover, rgba(255, 255, 255, 0.06));
     color: var(--app-sidebar-text-active, #ffffff);
   }
 
-  // ACTIVE ITEM: NỀN PILL TINH TẾ CHUẨN DAILY.DEV
+  // ACTIVE ITEM: NỀN PILL TINH TẾ CHUẨN DAILY.DEV (KHÔNG CÓ VIỀN OUTLINE XANH)
   &--active {
     background: var(--app-sidebar-active, #222834) !important;
     color: var(--app-sidebar-text-active, #ffffff) !important;
     font-weight: 600;
+
+    .nav-svg-icon {
+      stroke-width: 2.3;
+    }
 
     &:hover {
       background: var(--app-sidebar-active, #222834) !important;
@@ -299,13 +384,13 @@ app-header {
     /* 2. Thiết kế Drawer chuẩn Slide-out Sidebar (270px) có bóng đổ, KHÔNG chiếm 100% màn hình */
     .app-nav-drawer {
       position: fixed !important;
-      top: 0 !important;
+      top: calc(52px + env(safe-area-inset-top, 0px)) !important;
       left: 0 !important;
       bottom: 0 !important;
-      width: 270px !important;
-      max-width: 80vw !important;
-      height: 100% !important;
-      height: 100dvh !important;
+      width: 236px !important;
+      max-width: 75vw !important;
+      height: calc(100% - 52px - env(safe-area-inset-top, 0px)) !important;
+      height: calc(100dvh - 52px - env(safe-area-inset-top, 0px)) !important;
       z-index: 1200 !important;
       background-color: var(--app-sidebar-bg, #ffffff) !important;
       box-shadow: 6px 0 25px rgba(0, 0, 0, 0.25) !important;
@@ -324,7 +409,7 @@ app-header {
         width: 100% !important;
         max-width: 100% !important;
         height: 100% !important;
-        padding-top: max(16px, env(safe-area-inset-top, 0px)) !important; // Tránh tai thỏ trên iOS khi mở menu
+        padding-top: 14px !important;
         padding-bottom: max(16px, env(safe-area-inset-bottom, 0px)) !important;
         padding-left: max(12px, env(safe-area-inset-left, 0px)) !important;
         padding-right: 12px !important;
@@ -352,25 +437,20 @@ app-header {
     }
   }
 
-  /* 3. Backdrop mờ tối sang trọng bao trọn màn hình khi mở menu */
+  /* 3. Backdrop mờ tối sang trọng bao trọn màn hình bên dưới header khi mở menu */
   .mobile-drawer-backdrop {
     display: block !important;
     position: fixed !important;
-    top: 0 !important;
+    top: calc(52px + env(safe-area-inset-top, 0px)) !important;
     left: 0 !important;
     right: 0 !important;
     bottom: 0 !important;
     width: 100vw !important;
-    height: 100% !important;
-    height: 100dvh !important;
+    height: calc(100% - 52px - env(safe-area-inset-top, 0px)) !important;
+    height: calc(100dvh - 52px - env(safe-area-inset-top, 0px)) !important;
     background: rgba(0, 0, 0, 0.5) !important;
     backdrop-filter: blur(3px) !important;
     -webkit-backdrop-filter: blur(3px) !important;
     z-index: 1100 !important;
-  }
-
-  /* Nút đóng Drawer xuất hiện trên Mobile */
-  .drawer-header-row .drawer-close-mobile-btn {
-    display: inline-flex !important;
   }
 }

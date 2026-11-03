@@ -17,20 +17,15 @@
         class="app-nav-drawer"
       >
         <div class="drawer-inner-container">
+          <!-- 1. Header của Sidebar: Gọn gàng, tinh tế -->
           <div class="drawer-header-row">
-            <div class="drawer-brand-group">
-              <span class="drawer-brand-icon">&lt;/&gt;</span>
-              <span class="drawer-brand-title">Dev Blog</span>
-              <span class="drawer-brand-badge">2.0</span>
+            <div class="drawer-title-group">
+              <span class="drawer-title-icon">🧭</span>
+              <span class="drawer-section-heading">EXPLORE</span>
             </div>
-            <button type="button" class="drawer-close-mobile-btn" (click)="drawerService.close()" title="Đóng menu">
-              ✕
-            </button>
           </div>
 
-          <div class="drawer-section-heading">EXPLORE</div>
-
-          <!-- Menu items xếp san sát nhau chuẩn phong cách daily.dev -->
+          <!-- 2. Menu chính chuẩn daily.dev -->
           <div class="drawer-nav-group">
             <!-- 1. Dashboard -->
             <button 
@@ -92,8 +87,50 @@
             </button>
           </div>
 
+          <!-- Divider -->
+          <div class="drawer-divider-line"></div>
+
+          <!-- 3. Chuyên mục nổi bật -->
+          <div class="drawer-group-title">CHUYÊN MỤC</div>
+          <div class="drawer-nav-group">
+            <button type="button" class="daily-nav-item topic-item" (click)="navigateTo('/blog')">
+              <span class="topic-dot topic-dot--blue"></span>
+              <span class="nav-label">Web Development</span>
+            </button>
+            <button type="button" class="daily-nav-item topic-item" (click)="navigateTo('/blog')">
+              <span class="topic-dot topic-dot--cyan"></span>
+              <span class="nav-label">React Native</span>
+            </button>
+            <button type="button" class="daily-nav-item topic-item" (click)="navigateTo('/blog')">
+              <span class="topic-dot topic-dot--purple"></span>
+              <span class="nav-label">Tips & Tricks</span>
+            </button>
+          </div>
+
+          <!-- Divider -->
+          <div class="drawer-divider-line"></div>
+
+          <!-- 4. Tài nguyên ngoại vi -->
+          <div class="drawer-group-title">RESOURCES</div>
+          <div class="drawer-nav-group">
+            <a href="https://ngc-library-v22.vercel.app/" target="_blank" rel="noopener noreferrer" class="daily-nav-item external-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="nav-svg-icon">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                <polyline points="15 3 21 3 21 9"></polyline>
+                <line x1="10" y1="14" x2="21" y2="3"></line>
+              </svg>
+              <span class="nav-label">NGC Library 2.0</span>
+              <span class="external-arrow">↗</span>
+            </a>
+          </div>
+
+          <!-- 5. Chân trang Footer -->
           <div class="drawer-bottom-footer">
-            <span class="drawer-footer-text">© 2026 Dev Blog 2.0</span>
+            <div class="footer-badge-row">
+              <span class="footer-version-badge">v2.0</span>
+              <span class="footer-status-pill">Active</span>
+            </div>
+            <span class="drawer-footer-text">© 2026 Dev Blog Client</span>
           </div>
         </div>
       </ngc-drawer>
@@ -109,4 +146,7 @@
       </ngc-drawer-content>
     </ngc-drawer-container>
   </div>
+
+  <!-- 3. Trợ lý Gemini AI dạng Floating góc màn hình -->
+  <app-gemini-chat></app-gemini-chat>
 </ion-app>

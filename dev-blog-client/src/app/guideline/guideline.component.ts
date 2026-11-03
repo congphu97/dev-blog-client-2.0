@@ -15,7 +15,7 @@ export class GuidelineComponent {
   private sanitizer = inject(DomSanitizer);
   private router = inject(Router);
 
-  public readonly rawUrl = 'https://ngc-library.vercel.app/components';
+  public readonly rawUrl = 'https://ngc-library-v22.vercel.app/';
   public safeUrl: SafeResourceUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.rawUrl);
   public isLoading = signal<boolean>(true);
 

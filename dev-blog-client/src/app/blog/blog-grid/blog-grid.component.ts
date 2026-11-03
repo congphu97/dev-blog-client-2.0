@@ -14,6 +14,7 @@ import { NgcAvatarModule, NgcSkeletonModule, NgcLoadingModule } from 'ngc-librar
 export class BlogGridComponent {
   posts = input.required<BlogPost[]>();
   isLoading = input<boolean>(false);
+  canEdit = input<boolean>(false);
 
   skeletonCards = Array.from({ length: 6 });
 
@@ -33,6 +34,9 @@ export class BlogGridComponent {
 
   onChooseToEdit(post: BlogPost, event?: Event) {
     event?.stopPropagation();
+    if (!this.canEdit()) {
+      return;
+    }
     this.chooseToEdit.emit(post);
   }
 

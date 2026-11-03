@@ -1,5 +1,8 @@
 import { Component, computed, debounced, effect, inject, linkedSignal, OnInit, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { IonContent, ModalController } from '@ionic/angular/standalone';
+import { Store } from '@ngrx/store';
+import { authFeature } from '../../store/auth';
 import { arrayEqualByKey } from 'src/app/shared/signal-utils';
 import { BlogFormComponent, BlogSubmitData } from '../blog-form/blog-form.component';
 import { BlogPost, BlogCategory } from '../blog.models';
@@ -43,6 +46,11 @@ export class BlogContainerComponent implements OnInit {
   private modalCtrl = inject(ModalController);
   private blogService = inject(BlogService);
   private categoryService = inject(CategoryService);
+  private router = inject(Router);
+  private store = inject(Store);
+
+  // Trạng thái xác thực từ NgRx Global Store
+  public isAuthenticated = this.store.selectSignal(authFeature.selectIsAuthenticated);
 
   // Trạng thái loading toàn cục khi tải từ Firebase
   public isLoading = signal<boolean>(true);
@@ -499,12 +507,20 @@ end
 
   // Chọn bài khác để sửa và mở form cập nhật đầy đủ field
   chooseBlogToEdit(blog: BlogPost) {
+    if (!this.isAuthenticated()) {
+      this.router.navigate(['/login']);
+      return;
+    }
     this.selectedBlog.set(blog);
     this.openEditModal(blog);
   }
 
   // Lưu nhanh tiêu đề từ LinkedSignal
   async saveTitle() {
+    if (!this.isAuthenticated()) {
+      this.router.navigate(['/login']);
+      return;
+    }
     this.blogPosts.update(posts =>
       posts.map(p => p.id === this.selectedBlog().id ? { ...p, title: this.editTitle() } : p)
     );
@@ -524,6 +540,10 @@ end
   // Mở Modal Tạo bài viết với đầy đủ thông số model
   // ==========================================
   async openCreateModal(mode: 'signal-form' | 'reactive-form' | 'template-driven-form' = 'signal-form') {
+    if (!this.isAuthenticated()) {
+      this.router.navigate(['/login']);
+      return;
+    }
     const modal = await this.modalCtrl.create({
       component: BlogFormComponent,
       cssClass: 'blog-form-modal',
@@ -597,6 +617,10 @@ end
   // Mở Modal Cập nhật bài viết với đầy đủ thông số model
   // ==========================================
   async openEditModal(blog: BlogPost, mode: 'signal-form' | 'reactive-form' | 'template-driven-form' = 'signal-form') {
+    if (!this.isAuthenticated()) {
+      this.router.navigate(['/login']);
+      return;
+    }
     const modal = await this.modalCtrl.create({
       component: BlogFormComponent,
       cssClass: 'blog-form-modal',

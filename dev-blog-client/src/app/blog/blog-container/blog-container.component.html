@@ -105,12 +105,14 @@
       <app-blog-grid 
         [posts]="filteredBlogPosts()"
         [isLoading]="isLoading()"
+        [canEdit]="isAuthenticated()"
         (toggleFavorite)="toggleFavorite($event)"
         (chooseToEdit)="chooseBlogToEdit($event)"
       />
     } @else {
       <app-blog-list 
         [posts]="filteredBlogPosts()"
+        [canEdit]="isAuthenticated()"
         (toggleFavorite)="toggleFavorite($event)"
         (chooseToEdit)="chooseBlogToEdit($event)"
       />

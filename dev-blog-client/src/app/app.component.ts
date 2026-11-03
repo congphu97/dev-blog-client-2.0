@@ -6,12 +6,33 @@ import { App, URLOpenListenerEvent } from '@capacitor/app';
 import { NgcDrawerModule, NgcListModule, NgcButtonModule } from 'ngc-library';
 import { HeaderComponent } from './header/header.component';
 import { DrawerService } from './shared/drawer.service';
+import { GeminiChatComponent } from './shared/components/gemini-chat/gemini-chat.component';
+import { addIcons } from 'ionicons';
+import {
+  chevronBackOutline,
+  chevronForwardOutline,
+  chevronBack,
+  chevronForward,
+  closeOutline,
+  close,
+  menuOutline,
+  menu,
+} from 'ionicons/icons';
 
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
   styleUrls: ['app.component.scss'],
-  imports: [CommonModule, IonApp, IonRouterOutlet, NgcDrawerModule, NgcListModule, NgcButtonModule, HeaderComponent],
+  imports: [
+    CommonModule, 
+    IonApp, 
+    IonRouterOutlet, 
+    NgcDrawerModule, 
+    NgcListModule, 
+    NgcButtonModule, 
+    HeaderComponent,
+    GeminiChatComponent
+  ],
 })
 export class AppComponent implements OnInit {
   public drawerService = inject(DrawerService);
@@ -20,6 +41,23 @@ export class AppComponent implements OnInit {
     private router: Router,
     private zone: NgZone
   ) {
+    // Đăng ký toàn bộ icon cần thiết cho ngc-library và ionic (chevron toggle drawer, close, menu)
+    addIcons({
+      chevronBackOutline,
+      chevronForwardOutline,
+      chevronBack,
+      chevronForward,
+      closeOutline,
+      close,
+      menuOutline,
+      menu,
+      'chevron-back-outline': chevronBackOutline,
+      'chevron-forward-outline': chevronForwardOutline,
+      'chevron-back': chevronBack,
+      'chevron-forward': chevronForward,
+      'close-outline': closeOutline,
+    });
+
     // Tự động đóng Drawer mỗi khi chuyển trang trên Mobile
     this.router.events.subscribe(() => {
       if (typeof window !== 'undefined' && window.innerWidth <= 768) {

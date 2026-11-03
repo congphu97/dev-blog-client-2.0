@@ -62,6 +62,7 @@ describe('BlogListComponent', () => {
 
     it('nên hiển thị đúng tiêu đề và tóm tắt của bài viết đầu tiên', () => {
       fixture.componentRef.setInput('posts', mockPosts);
+      fixture.componentRef.setInput('canEdit', true);
       fixture.detectChanges();
 
       const firstTitle = fixture.nativeElement.querySelector('.item-title')?.textContent?.trim();
@@ -96,6 +97,7 @@ describe('BlogListComponent', () => {
       spyOn(component.toggleFavorite, 'emit');
 
       fixture.componentRef.setInput('posts', mockPosts);
+      fixture.componentRef.setInput('canEdit', true);
       fixture.detectChanges();
 
       // Tìm nút favorite đầu tiên và giả lập thao tác click
@@ -110,6 +112,7 @@ describe('BlogListComponent', () => {
       spyOn(component.chooseToEdit, 'emit');
 
       fixture.componentRef.setInput('posts', mockPosts);
+      fixture.componentRef.setInput('canEdit', true);
       fixture.detectChanges();
 
       // Giả lập click nút "✏️ Sửa bài này"
