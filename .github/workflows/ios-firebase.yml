@@ -52,7 +52,9 @@ jobs:
       - name: 6. Build mã nguồn Web (Angular www)
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: npm run build
+        run: |
+          node scripts/set-env.js
+          npm run build
 
       - name: 7. Đồng bộ sang iOS Native (Capacitor Sync)
         run: npx cap sync ios

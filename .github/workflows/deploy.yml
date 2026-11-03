@@ -42,7 +42,9 @@ jobs:
       - name: Build Web Production
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: npm run build -- --base-href /${{ github.event.repository.name }}/
+        run: |
+          node scripts/set-env.js
+          npm run build -- --base-href /${{ github.event.repository.name }}/
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
